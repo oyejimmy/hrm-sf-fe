@@ -1,0 +1,154 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+import { store } from './store';
+import { GlobalStyles } from './styles/global-styles';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider } from './features/auth/AuthProvider';
+import { ProtectedRoute } from './features/auth/ProtectedRoute';
+import RoleBasedRedirect from './features/auth/RoleBasedRedirect';
+
+// Layout Components
+import { AdminLayout } from './components/Layout/AdminLayout';
+import { EmployeeLayout } from './components/Layout/EmployeeLayout';
+import { TeamLeadLayout } from './components/Layout/TeamLeadLayout';
+
+// Auth Components
+import { Login } from './features/auth/Login';
+import { Signup } from './features/auth/Signup';
+
+// Admin Components
+import { AdminDashboard } from './features/admin/Dashboard';
+import { EmployeeManagement } from './features/admin/EmployeeManagement';
+import { AttendanceAndLeave } from './features/admin/AttendanceAndLeave';
+import { ReportsAnalytics } from './features/admin/ReportsAnalytics';
+import { Recruitments } from './features/admin/Recruitments';
+import { PerformanceManagement } from './features/admin/PerformanceManagement';
+import { TrainingManagement } from './features/admin/TrainingManagement';
+import { DocumentManagement } from './features/admin/DocumentManagement';
+import { CommunicationAndNotification } from './features/admin/CommunicationAndNotification';
+
+// Employee Components
+import { EmployeeDashboard } from './features/employee/Dashboard';
+import { Attendance } from './features/employee/Attendance';
+import { LeaveManagement } from './features/employee/LeaveManagement';
+import { TrainingAndDevelopment } from './features/employee/TrainingAndDevelopment';
+import { Payslip } from './features/employee/Payslip';
+import { Assets } from './features/employee/Assets';
+import { Documents } from './features/employee/Documents';
+
+// Team Lead Components
+import { TeamLeadDashboard } from './features/teamLead/Dashboard';
+import { TeamAttendance } from './features/teamLead/TeamAttendance';
+import { TeamLeaveRequests } from './features/teamLead/TeamLeaveRequests';
+import { TeamPerformance } from './features/teamLead/TeamPerformance';
+import { TrainingAssignments } from './features/teamLead/TrainingAssignments';
+
+// Profile Component
+import { Profile } from './features/profile/Profile';
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+function App() {
+  return (
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <GlobalStyles />
+          <Router>
+            <AuthProvider>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/dashboard" element={<RoleBasedRedirect />} />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  
+                  {/* Protected Routes */}
+                  <Route
+                    path="/admin/*"
+                    element={
+                      <ProtectedRoute allowedRoles={['admin', 'hr']}>
+                        <AdminLayout />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route index element={<Navigate to="dashboard" replace />} />
+                    <Route path="dashboard" element={<AdminDashboard />} />
+                    <Route path="employees" element={<EmployeeManagement />} />
+                    <Route path="attendance-leave" element={<AttendanceAndLeave />} />
+                    <Route path="reports" element={<ReportsAnalytics />} />
+                    <Route path="recruitment" element={<Recruitments />} />
+                    <Route path="performance" element={<PerformanceManagement />} />
+                    <Route path="training" element={<TrainingManagement />} />
+                    <Route path="documents" element={<DocumentManagement />} />
+                    <Route path="communication" element={<CommunicationAndNotification />} />
+                  </Route>
+
+                  <Route
+                    path="/employee/*"
+                    element={
+                      <ProtectedRoute allowedRoles={['employee']}>
+                        <EmployeeLayout />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route index element={<Navigate to="dashboard" replace />} />
+                    <Route path="dashboard" element={<EmployeeDashboard />} />
+                    <Route path="attendance" element={<Attendance />} />
+                    <Route path="leave" element={<LeaveManagement />} />
+                    <Route path="training" element={<TrainingAndDevelopment />} />
+                    <Route path="payslip" element={<Payslip />} />
+                    <Route path="assets" element={<Assets />} />
+                    <Route path="documents" element={<Documents />} />
+                  </Route>
+
+                  <Route
+                    path="/team-lead/*"
+                    element={
+                      <ProtectedRoute allowedRoles={['team_lead']}>
+                        <TeamLeadLayout />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route index element={<Navigate to="dashboard" replace />} />
+                    <Route path="dashboard" element={<TeamLeadDashboard />} />
+                    <Route path="attendance" element={<TeamAttendance />} />
+                    <Route path="leave-requests" element={<TeamLeaveRequests />} />
+                    <Route path="performance" element={<TeamPerformance />} />
+                    <Route path="training" element={<TrainingAssignments />} />
+                  </Route>
+
+                  {/* Profile Route */}
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute allowedRoles={['admin', 'hr', 'team_lead', 'employee']}>
+                        <Profile />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Default Route */}
+                  <Route path="/" element={<Navigate to="/login" replace />} />
+                  <Route path="*" element={<Navigate to="/login" replace />} />
+                </Routes>
+              </AuthProvider>
+            </Router>
+          </ThemeProvider>
+      </QueryClientProvider>
+    </Provider>
+  );
+}
+
+export default App;
