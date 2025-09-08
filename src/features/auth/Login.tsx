@@ -9,6 +9,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { RootState, AppDispatch } from '../../store';
 import { authActions } from '../../store/sagas/authSaga';
 import { selectAuth, selectIsAuthenticated, selectUser, selectAuthLoading, selectAuthError } from '../../store/selectors/authSelectors';
+import { User } from '../../store/slices/authSlice';
 
 const { Title, Text } = Typography;
 
@@ -119,25 +120,14 @@ export const Login: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      // Redirect based on user role
-      const from = location.state?.from?.pathname || '/';
-      switch (user.role) {
-        case 'admin':
-        case 'hr':
-          navigate('/admin/dashboard', { replace: true });
-          console.log('Redirecting to admin dashboard');
-          break;
-        case 'team_lead':
-          navigate('/team-lead/dashboard', { replace: true });
-          console.log('Redirecting to team lead dashboard');
-          break;
-        case 'employee':
-          navigate('/employee/dashboard', { replace: true });
-          console.log('Redirecting to employee dashboard');
-          break;
-        default:
-          navigate(from, { replace: true });
-          console.log('Redirecting to default route:', from);
+      // Redirect based on redirect_url from backend
+      if ((user as User).redirect_url) {
+        navigate((user as User).redirect_url!, { replace: true });
+        console.log('Redirecting to:', (user as User).redirect_url);
+      } else {
+        const from = location.state?.from?.pathname || '/';
+        navigate(from, { replace: true });
+        console.log('Redirecting to default route:', from);
       }
     }
   }, [isAuthenticated, user, navigate, location]);

@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { ThemeProvider as StyledThemeProvider } from 'styled-components';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, theme } from 'antd';
 
 // Define theme types
 export type ThemeMode = 'light' | 'dark';
@@ -160,7 +160,7 @@ const antDarkTheme = {
     colorText: '#ffffff',
     colorTextSecondary: '#a6a6a6',
   },
-  algorithm: 'dark',
+  algorithm: theme.darkAlgorithm,
 };
 
 // Theme context interface
