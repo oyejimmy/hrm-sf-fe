@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Form, Input, Button, Card, Alert, Typography } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { RootState } from '../../store';
-import { login, clearError } from '../../store/slices/authSlice';
+import { login, clearError, getCurrentUser } from '../../store/slices/authSlice';
 import { validateFormData, isValidEmail } from '../../utils/security';
 import { getDashboardRoute } from '../../utils/authHelpers';
 
@@ -22,11 +22,22 @@ export const Login: React.FC = () => {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user?.redirect_url) {
+      // Use redirect_url from API response
+      navigate(user.redirect_url);
+    } else if (isAuthenticated && user?.role) {
+      // Fallback to role-based routing
       const dashboardRoute = getDashboardRoute(user.role);
       navigate(dashboardRoute);
     }
   }, [isAuthenticated, user, navigate]);
+
+  useEffect(() => {
+    // Fetch user data after successful login
+    if (isAuthenticated && !user?.role) {
+      dispatch(getCurrentUser() as any);
+    }
+  }, [isAuthenticated, user, dispatch]);
 
   useEffect(() => {
     return () => {

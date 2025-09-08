@@ -10,12 +10,15 @@ import {
   LaptopOutlined,
   FileOutlined,
 } from '@ant-design/icons';
+import { Header } from '../Header';
+import { useTheme } from '../../contexts/ThemeContext';
 
-const { Header, Sider, Content } = Layout;
+const { Sider, Content } = Layout;
 
 export const EmployeeLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isDarkMode } = useTheme();
 
   const menuItems = [
     {
@@ -56,25 +59,27 @@ export const EmployeeLayout: React.FC = () => {
   ];
 
   const handleMenuClick = ({ key }: { key: string }) => {
+    console.log(key);
     navigate(key);
   };
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider theme="dark" width={250}>
+      <Sider theme={isDarkMode ? 'dark' : 'light'} width={250}>
         <div style={{ 
           height: 64, 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center',
-          color: 'white',
+          color: isDarkMode ? 'white' : '#1890ff',
           fontSize: '18px',
-          fontWeight: 'bold'
+          fontWeight: 'bold',
+          borderBottom: `1px solid ${isDarkMode ? '#303030' : '#f0f0f0'}`
         }}>
           HRM Employee
         </div>
         <Menu
-          theme="dark"
+          theme={isDarkMode ? 'dark' : 'light'}
           mode="inline"
           selectedKeys={[location.pathname]}
           items={menuItems}
@@ -82,10 +87,13 @@ export const EmployeeLayout: React.FC = () => {
         />
       </Sider>
       <Layout>
-        <Header style={{ background: '#fff', padding: '0 24px' }}>
-          <h2 style={{ margin: 0, color: '#1890ff' }}>Employee Portal</h2>
-        </Header>
-        <Content style={{ margin: '24px', background: '#fff', padding: '24px' }}>
+        <Header title="Employee Portal" />
+        <Content style={{ 
+          margin: '24px', 
+          background: isDarkMode ? '#141414' : '#fff', 
+          padding: '24px',
+          borderRadius: '8px'
+        }}>
           <Outlet />
         </Content>
       </Layout>

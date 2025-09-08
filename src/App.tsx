@@ -74,8 +74,9 @@ function App() {
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
                 {/* Protected Routes */}
+                {/* Admin Routes */}
                 <Route
-                  path="/admin/*"
+                  path="/admin"
                   element={
                     <ProtectedRoute allowedRoles={['admin', 'hr']}>
                       <AdminLayout />
@@ -94,8 +95,9 @@ function App() {
                   <Route path="communication" element={<CommunicationAndNotification />} />
                 </Route>
 
+                {/* Employee Routes */}
                 <Route
-                  path="/employee/*"
+                  path="/employee"
                   element={
                     <ProtectedRoute allowedRoles={['employee']}>
                       <EmployeeLayout />
@@ -112,8 +114,9 @@ function App() {
                   <Route path="documents" element={<Documents />} />
                 </Route>
 
+                {/* Team Lead Routes */}
                 <Route
-                  path="/team-lead/*"
+                  path="/team-lead"
                   element={
                     <ProtectedRoute allowedRoles={['team_lead']}>
                       <TeamLeadLayout />

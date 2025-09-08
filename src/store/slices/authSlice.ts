@@ -143,7 +143,8 @@ const authSlice = createSlice({
         state.token = action.payload.access_token;
         state.refreshToken = action.payload.refresh_token;
         state.isAuthenticated = true;
-        state.user = action.payload as any; // Assign the entire payload as user, which includes redirect_url
+        // Store redirect_url separately and fetch user data
+        state.user = { redirect_url: action.payload.redirect_url } as any;
         state.error = null;
       })
       .addCase(login.rejected, (state, action) => {
