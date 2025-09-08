@@ -37,7 +37,7 @@ import LeaveManagement from './features/employee/EmployeeLeaveManagement';
 import TrainingAndDevelopment from './features/employee/EmployeeTrainingDevelopment';
 import Payslip from './features/employee/EmployeePayslip';
 import Assets from './features/employee/EmployeeAssets';
-import Documents from './features/employee/Documents';
+import Documents from './features/employee/EmployeeDocuments';
 
 // Team Lead Components
 import { TeamLeadDashboard } from './features/teamLead/Dashboard';
