@@ -23,7 +23,7 @@
     "@types/styled-components": "^5.1.34",
     "antd": "^5.27.3",
     "axios": "^1.11.0",
-    "dayjs": "^1.11.10",
+    "dayjs": "^1.11.18",
     "framer-motion": "^12.23.12",
     "react": "^18.2.0",
     "react-apexcharts": "^1.7.0",
