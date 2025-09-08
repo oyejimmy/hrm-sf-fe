@@ -3,7 +3,6 @@ import TopStats from "./components/TopStats";
 import QuickActions, { ActionItem } from "./components/QuickActions";
 import RecentActivities from "./components/RecentActivities";
 import Announcements from "./components/Announcements";
-import DepartmentOverview from "./components/DepartmentOverview";
 import TrainingSummary from "./components/TrainingSummary";
 import PerformanceSnapshot from "./components/PerformanceSnapshot";
 import RecruitmentPipeline from "./components/RecruitmentPipeline";
@@ -11,10 +10,7 @@ import AttendanceTrends from "./components/AttendanceTrends";
 // Added a comment to force re-compilation
 import type {
   TopStat,
-  Activity,
   Announcement,
-  DepartmentOverview as Dept,
-  TrainingSummaryItem,
   PerformanceSnapshotItem,
   RecruitmentPipelineItem,
   AttendanceTrendPoint,
@@ -22,6 +18,7 @@ import type {
 } from "./types";
 import { PlusOutlined, TeamOutlined, FileTextOutlined, BarChartOutlined } from "@ant-design/icons";
 import { PageContainer } from "./components/styles";
+import DepartmentOverview from "./components/DepartmentOverview";
 
 /** Mock / example data — replace with API calls in real app */
 const mockTopStats: TopStat[] = [
@@ -49,7 +46,7 @@ const mockAnnouncements: Announcement[] = [
   { id: "ann2", title: "Policy Update", body: "Remote work policy revised.", postedAt: "1 week ago", author: "HR" },
 ];
 
-const mockDepartments: Dept[] = [
+const mockDepartments: any = [
   { id: "d1", name: "Engineering", employees: 400, avgPerformance: 92 },
   { id: "d2", name: "Sales", employees: 250, avgPerformance: 81 },
   { id: "d3", name: "HR", employees: 50, avgPerformance: 88 },

@@ -38,6 +38,7 @@ import TrainingAndDevelopment from './features/employee/EmployeeTrainingDevelopm
 import Payslip from './features/employee/EmployeePayslip';
 import Assets from './features/employee/EmployeeAssets';
 import Documents from './features/employee/EmployeeDocuments';
+import EmployeeProfile from './features/profile/Profile';
 
 // Team Lead Components
 import { TeamLeadDashboard } from './features/teamLead/Dashboard';
@@ -45,7 +46,6 @@ import { TeamAttendance } from './features/teamLead/TeamAttendance';
 import { TeamLeaveRequests } from './features/teamLead/TeamLeaveRequests';
 import { TeamPerformance } from './features/teamLead/TeamPerformance';
 import { TrainingAssignments } from './features/teamLead/TrainingAssignments';
-import EmployeeProfile from './features/profile/Profile';
 import { AuthTest } from './features/auth/AuthTest';
 
 // Create a client
