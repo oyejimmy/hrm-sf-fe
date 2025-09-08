@@ -1,174 +1,131 @@
-import React, { useEffect } from "react";
-import { Modal, Form, Input, DatePicker, Select, Upload, Button, Row, Col, Switch } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-import styled from "styled-components";
-import { Employee } from "../types";
+import React from 'react';
+import { Modal, Form, Input, Select, DatePicker, Button } from 'antd';
 
 const { Option } = Select;
 
-interface Props {
+interface EmployeeModalProps {
   visible: boolean;
-  onClose: () => void;
-  onSave: (data: Employee) => void;
-  record: Employee | null | any;
+  onCancel: () => void;
+  onSave: (employee: Partial<any>) => void;
+  employee?: any | null;
+  isEditing: boolean;
 }
 
-const StyledModal = styled(Modal)`
-  .ant-modal-content {
-    border-radius: 12px;
-  }
-`;
-
-const EmployeeModal: React.FC<Props> = ({ visible, onClose, onSave, record }) => {
+const EmployeeModal: React.FC<EmployeeModalProps> = ({
+  visible,
+  onCancel,
+  onSave,
+  employee,
+  isEditing
+}) => {
   const [form] = Form.useForm();
 
-  useEffect(() => {
-    if (record) {
-      form.setFieldsValue(record);
-    } else {
+  const handleSubmit = () => {
+    form.validateFields().then(values => {
+      onSave(values);
       form.resetFields();
-    }
-  }, [record, form]);
-
-  const handleOk = () => {
-    form.validateFields().then((values: any) => {
-      const file = values.profilePicture?.file?.originFileObj;
-      const fakeUrl = file ? URL.createObjectURL(file) : record?.profilePicture || "";
-
-      onSave({
-        ...record,
-        ...values,
-        profilePicture: fakeUrl,
-        id: record?.id ?? Date.now(),
-      });
-      onClose();
     });
   };
 
+  const handleCancel = () => {
+    form.resetFields();
+    onCancel();
+  };
+
   return (
-    <StyledModal
+    <Modal
+      title={isEditing ? 'Edit Employee' : 'Add Employee'}
       open={visible}
-      title={record ? "Edit Employee" : "Add Employee"}
-      onCancel={onClose}
-      footer={null}
-      centered
-      width={700}
+      onCancel={handleCancel}
+      footer={[
+        <Button key="cancel" onClick={handleCancel}>
+          Cancel
+        </Button>,
+        <Button key="submit" type="primary" onClick={handleSubmit}>
+          {isEditing ? 'Update' : 'Add'} Employee
+        </Button>,
+      ]}
+      width={600}
     >
-      <Form form={form} layout="vertical">
-        <Row gutter={16}>
-          <Col xs={24} md={12}>
-            <Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}>
-              <Input placeholder="Enter full name" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
-            <Form.Item name="email" label="Email" rules={[{ required: true, type: "email" }]}>
-              <Input placeholder="Enter email" />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col xs={24} md={12}>
-            <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
-              <Input placeholder="Enter phone number" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
-            <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
-              <Select placeholder="Select gender">
-                <Option value="Male">Male</Option>
-                <Option value="Female">Female</Option>
-                <Option value="Other">Other</Option>
-              </Select>
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col xs={24} md={12}>
-            <Form.Item name="dob" label="Date of Birth" rules={[{ required: true }]}>
-              <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
-            <Form.Item name="joiningDate" label="Joining Date" rules={[{ required: true }]}>
-              <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col xs={24} md={12}>
-            <Form.Item name="department" label="Department" rules={[{ required: true }]}>
-              <Input placeholder="Enter department" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
-            <Form.Item name="designation" label="Designation" rules={[{ required: true }]}>
-              <Input placeholder="Enter designation" />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col xs={24} md={12}>
-            <Form.Item name="employeeId" label="Employee ID" rules={[{ required: true }]}>
-              <Input placeholder="Enter employee ID" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
-            <Form.Item name="role" label="Role" rules={[{ required: true }]}>
-              <Select>
-                <Option value="Admin">Admin</Option>
-                <Option value="User">User</Option>
-              </Select>
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col xs={24} md={12}>
-            <Form.Item name="status" label="Status" rules={[{ required: true }]}>
-              <Select>
-                <Option value="Active">Active</Option>
-                <Option value="Inactive">Inactive</Option>
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
-            {!record && (
-              <Form.Item name="password" label="Password" rules={[{ required: true }]}>
-                <Input.Password placeholder="Set password" />
-              </Form.Item>
-            )}
-            {record && (
-              <Form.Item label="Reset Password" name="resetPassword" valuePropName="checked">
-                <Switch />
-              </Form.Item>
-            )}
-          </Col>
-        </Row>
-
-        <Form.Item name="address" label="Address">
-          <Input.TextArea rows={2} placeholder="Enter address" />
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={employee || {}}
+      >
+        <Form.Item
+          name={['employee', 'name']}
+          label="Full Name"
+          rules={[{ required: true, message: 'Please enter employee name' }]}
+        >
+          <Input placeholder="Enter full name" />
         </Form.Item>
 
-        <Form.Item name="emergencyContact" label="Emergency Contact">
-          <Input placeholder="Enter emergency contact" />
+        <Form.Item
+          name="email"
+          label="Email"
+          rules={[
+            { required: true, message: 'Please enter email' },
+            { type: 'email', message: 'Please enter a valid email' }
+          ]}
+        >
+          <Input placeholder="Enter email address" />
         </Form.Item>
 
-        <Form.Item name="profilePicture" label="Profile Picture">
-          <Upload beforeUpload={() => false} maxCount={1}>
-            <Button icon={<UploadOutlined />}>Upload</Button>
-          </Upload>
+        <Form.Item
+          name="position"
+          label="Position"
+          rules={[{ required: true, message: 'Please select position' }]}
+        >
+          <Select placeholder="Select position">
+            <Option value="Frontend Developer">Frontend Developer</Option>
+            <Option value="Backend Developer">Backend Developer</Option>
+            <Option value="HR Manager">HR Manager</Option>
+            <Option value="Project Manager">Project Manager</Option>
+            <Option value="QA Engineer">QA Engineer</Option>
+          </Select>
         </Form.Item>
 
-        <Button type="primary" block onClick={handleOk}>
-          {record ? "Update Employee" : "Add Employee"}
-        </Button>
+        <Form.Item
+          name="department"
+          label="Department"
+          rules={[{ required: true, message: 'Please select department' }]}
+        >
+          <Select placeholder="Select department">
+            <Option value="Engineering">Engineering</Option>
+            <Option value="Human Resources">Human Resources</Option>
+            <Option value="Marketing">Marketing</Option>
+            <Option value="Operations">Operations</Option>
+            <Option value="Quality Assurance">Quality Assurance</Option>
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="status"
+          label="Status"
+          rules={[{ required: true, message: 'Please select status' }]}
+        >
+          <Select placeholder="Select status">
+            <Option value="Active">Active</Option>
+            <Option value="On Leave">On Leave</Option>
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="joinDate"
+          label="Join Date"
+          rules={[{ required: true, message: 'Please select join date' }]}
+        >
+          <DatePicker style={{ width: '100%' }} />
+        </Form.Item>
+
+        <Form.Item
+          name="dateOfLeave"
+          label="Date of Leave"
+        >
+          <DatePicker style={{ width: '100%' }} />
+        </Form.Item>
       </Form>
-    </StyledModal>
+    </Modal>
   );
 };
 

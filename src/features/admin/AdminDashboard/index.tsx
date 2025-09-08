@@ -1,118 +1,297 @@
-import React from "react";
-import TopStats from "./components/TopStats";
-import QuickActions, { ActionItem } from "./components/QuickActions";
-import RecentActivities from "./components/RecentActivities";
-import Announcements from "./components/Announcements";
-import TrainingSummary from "./components/TrainingSummary";
-import PerformanceSnapshot from "./components/PerformanceSnapshot";
-import RecruitmentPipeline from "./components/RecruitmentPipeline";
-import AttendanceTrends from "./components/AttendanceTrends";
-// Added a comment to force re-compilation
-import type {
-  TopStat,
-  Announcement,
-  PerformanceSnapshotItem,
-  RecruitmentPipelineItem,
-  AttendanceTrendPoint,
-  Role,
-} from "./types";
-import { PlusOutlined, TeamOutlined, FileTextOutlined, BarChartOutlined } from "@ant-design/icons";
-import { PageContainer } from "./components/styles";
-import DepartmentOverview from "./components/DepartmentOverview";
+import React from 'react';
+import {
+  Layout,
+  Card,
+  Row,
+  Col,
+  Statistic,
+  List,
+  Avatar,
+  Tag,
+  Button,
+  Typography,
+  Progress,
+  Badge,
+  Divider
+} from 'antd';
+import {
+  UserOutlined,
+  CalendarOutlined,
+  TeamOutlined,
+  DashboardOutlined,
+  BellOutlined,
+  PlusOutlined,
+  ScheduleOutlined,
+  BookOutlined,
+  FileTextOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined
+} from '@ant-design/icons';
+import styled from 'styled-components';
+import HeaderComponent from '../../../components/PageHeader';
 
-/** Mock / example data — replace with API calls in real app */
-const mockTopStats: TopStat[] = [
-  { id: "s1", title: "Total Employees", value: 1250, color: "#1890ff", icon: <PlusOutlined /> },
-  { id: "s2", title: "Active Today", value: 1180, color: "#52c41a" },
-  { id: "s3", title: "On Leave", value: 45, color: "#faad14" },
-  { id: "s4", title: "Avg Performance", value: "87.5", suffix: "%", color: "#722ed1" },
-];
+const { Header, Content } = Layout;
+const { Title, Text } = Typography;
 
-const mockActions: ActionItem[] = [
-  { id: "a1", title: "Add Employee", icon: <PlusOutlined />, roles: ["HR_ADMIN", "PMO"] as Role[] },
-  { id: "a2", title: "Schedule Interview", icon: <TeamOutlined />, roles: ["HR_ADMIN"] as Role[] },
-  { id: "a3", title: "Create Training", icon: <FileTextOutlined />, roles: ["HR_ADMIN", "PMO"] as Role[] },
-  { id: "a4", title: "Generate Report", icon: <BarChartOutlined />, roles: ["HR_ADMIN", "FINANCE"] as Role[] },
-];
+// Styled Components
+const StyledLayout = styled(Layout)`
+  min-height: 100vh;
+  background-color: #f5f7fa;
+`;
 
-const mockActivities: any = [
-  { id: "act1", activity: "John Doe requested annual leave", time: "2 hours ago", status: "Pending" },
-  { id: "act2", activity: "Sarah completed training", time: "4 hours ago", status: "Completed" },
-  { id: "act3", activity: "Mike logged attendance", time: "6 hours ago", status: "Present" },
-];
+const StyledHeader = styled(Header)`
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  z-index: 1;
+`;
 
-const mockAnnouncements: Announcement[] = [
-  { id: "ann1", title: "Company Meeting", body: "All-hands scheduled Friday 2 PM.", postedAt: "2 days ago", author: "CEO" },
-  { id: "ann2", title: "Policy Update", body: "Remote work policy revised.", postedAt: "1 week ago", author: "HR" },
-];
+const PageTitle = styled(Title)`
+  margin: 0 !important;
+  color: #262626 !important;
+`;
 
-const mockDepartments: any = [
-  { id: "d1", name: "Engineering", employees: 400, avgPerformance: 92 },
-  { id: "d2", name: "Sales", employees: 250, avgPerformance: 81 },
-  { id: "d3", name: "HR", employees: 50, avgPerformance: 88 },
-  { id: "d4", name: "Finance", employees: 80, avgPerformance: 85 },
-];
+const DashboardContent = styled(Content)`
+  padding: 24px;
+`;
 
-const mockTraining: any = [
-  { id: "t1", track: "Frontend", assigned: 40, completed: 24, avgProgress: 60 },
-  { id: "t2", track: "DevOps", assigned: 30, completed: 10, avgProgress: 35 },
-];
+const StatisticCard = styled(Card)`
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  .ant-card-body {
+    padding: 20px;
+  }
+`;
 
-const mockPerformance: PerformanceSnapshotItem[] = [
-  { id: "p1", cycle: "Q1 2025", avgScore: 78, completedCount: 120 },
-  { id: "p2", cycle: "Q2 2025", avgScore: 82, completedCount: 130 },
-];
+const SectionCard = styled(Card)`
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+  .ant-card-head {
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .ant-card-head-title {
+    font-weight: 600;
+    color: #262626;
+  }
+`;
 
-const mockPipeline: RecruitmentPipelineItem[] = [
-  { id: "r1", stage: "Applied", count: 120 },
-  { id: "r2", stage: "Interviewing", count: 32 },
-  { id: "r3", stage: "Offered", count: 8 },
-];
+const QuickActionButton = styled(Button)`
+  height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  background-color: #fff;
+  transition: all 0.3s;
+  &:hover {
+    border-color: #1890ff;
+    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+  }
+`;
 
-const mockAttendance: AttendanceTrendPoint[] = [
-  { date: "2025-09-01", present: 1100, absent: 50 },
-  { date: "2025-09-02", present: 1120, absent: 30 },
-];
+const PendingApprovalItem = styled.div`
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+  &:last-child {
+    border-bottom: none;
+  }
+`;
 
-interface Props {
-  role?: Role; // current user role, used for role-based visibility
-}
+const AnnouncementItem = styled.div`
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+  &:last-child {
+    border-bottom: none;
+  }
+`;
 
-/** Main Admin Dashboard component */
-const AdminDashboard: React.FC<Props> = ({ role = "HR_ADMIN" }) => {
+const HolidayItem = styled.div`
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const ActivityItem = styled.div`
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+// Main Dashboard Component
+const AdminDashboard: React.FC = () => {
+  // Sample data
+  const pendingApprovals = [
+    { name: 'John Ben', department: 'Engineering', time: 'Now 12-18' },
+    { name: 'Wact Ben', department: 'Designer', time: 'Now 09-18' },
+    { name: 'Sheils', department: 'QA', time: 'Now 17-18' },
+  ];
+
+  const announcements = [
+    { title: 'Holiday Notice', content: 'Company will be closed on December 25th for Christmas' },
+    { title: 'Policy Update', content: 'New Work-from-home policy effective January 1st' },
+    { title: 'Holiday Notice', content: 'Schedule maintenance on Sunday 2AM–4AM' },
+  ];
+
+  const holidays = [
+    { name: 'Labour Day', date: 'November 1, 2025 Tuesday' },
+    { name: 'Independence Day', date: 'March 04, 2025 Friday' },
+    { name: 'Eid Ul Fitr', date: 'April 23, 2025 Monday' },
+  ];
+
+  const activities = [
+    { action: 'Sarah Johnson submitted a leave request', time: '2 hours ago' },
+    { action: 'New candidate applied for Frontend Developer Position', time: '5 hours ago' },
+    { action: 'React.js Training Module completed by 15 employees', time: '1 day ago' },
+  ];
+
+  const quickActions = [
+    { icon: <PlusOutlined />, label: 'Add Employee' },
+    { icon: <ScheduleOutlined />, label: 'Schedule Interview' },
+    { icon: <BookOutlined />, label: 'Create Training' },
+    { icon: <FileTextOutlined />, label: 'Generate Report' },
+  ];
+
   return (
-    <PageContainer>
-      <h2 style={{ marginBottom: 16 }}>HRM Admin Dashboard</h2>
+    <StyledLayout>
+      <HeaderComponent
+        title="Dashboard"
+        subtitle="Welcome back! Here's what's happening at our company today."
+      />
 
-      {/* Top stats */}
-      <TopStats stats={mockTopStats} />
 
-      {/* Quick actions + Recent activities */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 420px", gap: 16, marginBottom: 16 }}>
-        <QuickActions actions={mockActions} role={role} />
-        <RecentActivities activities={mockActivities} />
-      </div>
+      <DashboardContent>
+        <Row gutter={[24, 24]}>
+          {/* Statistics Cards */}
+          <Col xs={24} sm={12} lg={6}>
+            <StatisticCard>
+              <Statistic
+                title="Total Employees"
+                value={248}
+                prefix={<TeamOutlined />}
+                valueStyle={{ color: '#1890ff' }}
+              />
+            </StatisticCard>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <StatisticCard>
+              <Statistic
+                title="Active Today"
+                value={235}
+                prefix={<UserOutlined />}
+                valueStyle={{ color: '#52c41a' }}
+              />
+            </StatisticCard>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <StatisticCard>
+              <Statistic
+                title="On Leave"
+                value={13}
+                prefix={<CalendarOutlined />}
+                valueStyle={{ color: '#faad14' }}
+              />
+            </StatisticCard>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <StatisticCard>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <Text>Performance Score</Text>
+                <div style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
+                  <Progress
+                    type="circle"
+                    percent={84}
+                    width={50}
+                    format={percent => `8.4/10`}
+                    strokeColor="#722ed1"
+                  />
+                </div>
+              </div>
+            </StatisticCard>
+          </Col>
 
-      {/* Announcements */}
-      <Announcements announcements={mockAnnouncements} />
+          {/* Left Column */}
+          <Col xs={24} lg={16}>
+            {/* Announcements */}
+            <SectionCard title="Announcements" extra={<BellOutlined />}>
+              {announcements.map((announcement, index) => (
+                <AnnouncementItem key={index}>
+                  <Text strong>{announcement.title}</Text>
+                  <br />
+                  <Text type="secondary">{announcement.content}</Text>
+                </AnnouncementItem>
+              ))}
+            </SectionCard>
 
-      {/* Department overview + training + performance */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 16, marginTop: 16 }}>
-        <div>
-          {/* Departments */}
-          <DepartmentOverview departments={mockDepartments} />
-          {/* Recruitment pipeline */}
-          <RecruitmentPipeline pipeline={mockPipeline} />
-          {/* Attendance */}
-          <AttendanceTrends trends={mockAttendance} />
-        </div>
+            {/* Recent Activities */}
+            <SectionCard title="Recent Activities">
+              {activities.map((activity, index) => (
+                <ActivityItem key={index}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Text>{activity.action}</Text>
+                    <Text type="secondary">{activity.time}</Text>
+                  </div>
+                </ActivityItem>
+              ))}
+            </SectionCard>
+          </Col>
 
-        <div>
-          <TrainingSummary summaries={mockTraining} />
-          <PerformanceSnapshot items={mockPerformance} />
-        </div>
-      </div>
-    </PageContainer>
+          {/* Right Column */}
+          <Col xs={24} lg={8}>
+            {/* Upcoming Holidays */}
+            <SectionCard title="Upcoming Holidays">
+              {holidays.map((holiday, index) => (
+                <HolidayItem key={index}>
+                  <Text strong>{holiday.name}</Text>
+                  <br />
+                  <Text type="secondary">{holiday.date}</Text>
+                </HolidayItem>
+              ))}
+            </SectionCard>
+
+            {/* Quick Actions */}
+            <SectionCard title="Quick Action">
+              <Row gutter={[16, 16]}>
+                {quickActions.map((action, index) => (
+                  <Col xs={12} key={index}>
+                    <QuickActionButton>
+                      <div style={{ fontSize: '20px', marginBottom: '8px' }}>
+                        {action.icon}
+                      </div>
+                      <Text>{action.label}</Text>
+                    </QuickActionButton>
+                  </Col>
+                ))}
+              </Row>
+            </SectionCard>
+
+            {/* Pending Approvals */}
+            <SectionCard title="Pending Approvals">
+              {pendingApprovals.map((approval, index) => (
+                <PendingApprovalItem key={index}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <Text strong>{approval.name}</Text>
+                      <br />
+                      <Text type="secondary">{approval.department}</Text>
+                    </div>
+                    <Tag color="orange">{approval.time}</Tag>
+                  </div>
+                </PendingApprovalItem>
+              ))}
+            </SectionCard>
+          </Col>
+        </Row>
+      </DashboardContent>
+    </StyledLayout>
   );
 };
 
