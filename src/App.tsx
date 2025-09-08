@@ -31,11 +31,11 @@ import CommunicationAndNotification from './features/admin/CommunicationAndNotif
 import TrainingManagement from './features/admin/TrainingManagement';
 
 // Employee Components
-import EmployeeDashboard from './features/employee/Dashboard';
-import Attendance from './features/employee/Attendance';
-import LeaveManagement from './features/employee/LeaveManagement';
-import TrainingAndDevelopment from './features/employee/TrainingAndDevelopment';
-import Payslip from './features/employee/Payslip';
+import EmployeeDashboard from './features/employee/EmployeeDashboard';
+import Attendance from './features/employee/EmployeeAttendance';
+import LeaveManagement from './features/employee/EmployeeLeaveManagement';
+import TrainingAndDevelopment from './features/employee/EmployeeTrainingDevelopment';
+import Payslip from './features/employee/EmployeePayslip';
 import Assets from './features/employee/EmployeeAssets';
 import Documents from './features/employee/Documents';
 
@@ -45,9 +45,7 @@ import { TeamAttendance } from './features/teamLead/TeamAttendance';
 import { TeamLeaveRequests } from './features/teamLead/TeamLeaveRequests';
 import { TeamPerformance } from './features/teamLead/TeamPerformance';
 import { TrainingAssignments } from './features/teamLead/TrainingAssignments';
-
-// Profile Component
-import { Profile } from './features/profile/Profile';
+import EmployeeProfile from './features/profile/Profile';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -134,7 +132,7 @@ function App() {
                   path="/profile"
                   element={
                     <ProtectedRoute allowedRoles={['admin', 'hr', 'team_lead', 'employee']}>
-                      <Profile />
+                      <EmployeeProfile />
                     </ProtectedRoute>
                   }
                 />
