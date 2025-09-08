@@ -61,12 +61,9 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
   const breadcrumb = breadcrumbItems.length > 0 ? (
     <BreadcrumbContainer>
       <Breadcrumb>
-        <Breadcrumb.Item href="/">
-          <HomeOutlined />
-        </Breadcrumb.Item>
         {breadcrumbItems.map((item, index) => (
-          <Breadcrumb.Item 
-            key={index} 
+          <Breadcrumb.Item
+            key={index}
             href={item.href}
           >
             {item.title}
@@ -83,9 +80,9 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
       <Flex justify="space-between" align="flex-start" wrap="wrap">
         <Flex align="center" gap="middle">
           {showBackButton && (
-            <Button 
-              type="text" 
-              icon={<ArrowLeftOutlined />} 
+            <Button
+              type="text"
+              icon={<ArrowLeftOutlined />}
               onClick={onBack || (() => window.history.back())}
             />
           )}
