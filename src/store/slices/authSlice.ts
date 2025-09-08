@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { authApi } from '../../services/api/authApi';
+import { tokenStorage } from '../../utils/security';
 
 export interface User {
   id: string;
@@ -28,9 +29,9 @@ export interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  token: localStorage.getItem('access_token'),
-  refreshToken: localStorage.getItem('refresh_token'),
-  isAuthenticated: !!localStorage.getItem('access_token'),
+  token: tokenStorage.getToken('access_token'),
+  refreshToken: tokenStorage.getToken('refresh_token'),
+  isAuthenticated: !!tokenStorage.getToken('access_token'),
   isLoading: false,
   error: null,
 };
@@ -41,8 +42,8 @@ export const login = createAsyncThunk(
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
     try {
       const response = await authApi.login(credentials);
-      localStorage.setItem('access_token', response.access_token);
-      localStorage.setItem('refresh_token', response.refresh_token);
+      tokenStorage.setToken('access_token', response.access_token);
+      tokenStorage.setToken('refresh_token', response.refresh_token);
       return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.detail || 'Login failed');
@@ -92,8 +93,8 @@ export const refreshToken = createAsyncThunk(
       }
       
       const response = await authApi.refreshToken(refreshTokenValue);
-      localStorage.setItem('access_token', response.access_token);
-      localStorage.setItem('refresh_token', response.refresh_token);
+      tokenStorage.setToken('access_token', response.access_token);
+      tokenStorage.setToken('refresh_token', response.refresh_token);
       return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.detail || 'Token refresh failed');
@@ -106,13 +107,13 @@ export const logout = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       await authApi.logout();
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+      tokenStorage.removeToken('access_token');
+      tokenStorage.removeToken('refresh_token');
       return null;
     } catch (error: any) {
-      // Even if logout fails on server, clear local storage
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+      // Even if logout fails on server, clear storage
+      tokenStorage.removeToken('access_token');
+      tokenStorage.removeToken('refresh_token');
       return null;
     }
   }
@@ -184,8 +185,8 @@ const authSlice = createSlice({
         state.user = null;
         state.token = null;
         state.refreshToken = null;
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
+        tokenStorage.removeToken('access_token');
+        tokenStorage.removeToken('refresh_token');
       })
       
       // Refresh Token
@@ -198,8 +199,8 @@ const authSlice = createSlice({
         state.user = null;
         state.token = null;
         state.refreshToken = null;
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
+        tokenStorage.removeToken('access_token');
+        tokenStorage.removeToken('refresh_token');
       })
       
       // Logout

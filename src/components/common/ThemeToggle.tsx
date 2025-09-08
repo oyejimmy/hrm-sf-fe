@@ -25,17 +25,17 @@ interface ThemeToggleProps {
 }
 
 export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className }) => {
-  const { themeMode, toggleTheme } = useTheme();
+  const { isDarkMode, toggleTheme } = useTheme();
   
   return (
-    <Tooltip title={themeMode === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}>
+    <Tooltip title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
       <ThemeButton 
         type="text" 
         onClick={toggleTheme}
         className={className}
-        aria-label={themeMode === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+        aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
       >
-        {themeMode === 'light' ? <BulbOutlined /> : <BulbFilled />}
+        {isDarkMode ? <BulbFilled /> : <BulbOutlined />}
       </ThemeButton>
     </Tooltip>
   );

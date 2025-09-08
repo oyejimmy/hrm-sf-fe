@@ -1,89 +1,102 @@
-import { LeaveType, LeaveStatus } from '../../constants/enums';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface LeaveRequest {
   id: string;
   user_id: string;
-  leave_type: LeaveType;
+  leave_type: string;
   start_date: string;
   end_date: string;
   reason: string;
-  status: LeaveStatus;
+  status: string;
+  days_requested: number;
+  admin_notes?: string;
   approved_by?: string;
   approved_at?: string;
-  rejection_reason?: string;
-  emergency_contact?: string;
-  documents?: string[];
   created_at: string;
   updated_at: string;
 }
 
-export interface LeaveState {
-  leaveRequests: LeaveRequest[];
-  currentLeaveRequest: LeaveRequest | null;
+export interface LeaveBalance {
+  user_id: string;
+  annual_leave_balance: number;
+  sick_leave_balance: number;
+  total_leave_taken: number;
+  year: number;
+}
+
+interface LeaveState {
+  requests: LeaveRequest[];
+  myRequests: LeaveRequest[];
+  pendingRequests: LeaveRequest[];
+  balance: LeaveBalance | null;
   isLoading: boolean;
   error: string | null;
 }
 
 const initialState: LeaveState = {
-  leaveRequests: [],
-  currentLeaveRequest: null,
+  requests: [],
+  myRequests: [],
+  pendingRequests: [],
+  balance: null,
   isLoading: false,
   error: null,
 };
 
-export const leaveReducer = (state = initialState, action: any): LeaveState => {
-  switch (action.type) {
-    case 'LEAVE_FETCH_REQUEST':
-    case 'LEAVE_CREATE_REQUEST':
-    case 'LEAVE_APPROVE_REQUEST':
-      return {
-        ...state,
-        isLoading: true,
-        error: null,
-      };
-      
-    case 'LEAVE_FETCH_SUCCESS':
-      return {
-        ...state,
-        isLoading: false,
-        leaveRequests: action.payload,
-        error: null,
-      };
-      
-    case 'LEAVE_CREATE_SUCCESS':
-      return {
-        ...state,
-        isLoading: false,
-        leaveRequests: [...state.leaveRequests, action.payload],
-        error: null,
-      };
-      
-    case 'LEAVE_APPROVE_SUCCESS':
-      return {
-        ...state,
-        isLoading: false,
-        leaveRequests: state.leaveRequests.map(leave => 
-          leave.id === action.payload.id ? action.payload : leave
-        ),
-        error: null,
-      };
-      
-    case 'LEAVE_FETCH_FAILURE':
-    case 'LEAVE_CREATE_FAILURE':
-    case 'LEAVE_APPROVE_FAILURE':
-      return {
-        ...state,
-        isLoading: false,
-        error: action.payload,
-      };
-      
-    case 'LEAVE_CLEAR_ERROR':
-      return {
-        ...state,
-        error: null,
-      };
-      
-    default:
-      return state;
-  }
-};
+const leaveSlice = createSlice({
+  name: 'leave',
+  initialState,
+  reducers: {
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
+    },
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
+    setRequests: (state, action: PayloadAction<LeaveRequest[]>) => {
+      state.requests = action.payload;
+    },
+    setMyRequests: (state, action: PayloadAction<LeaveRequest[]>) => {
+      state.myRequests = action.payload;
+    },
+    setPendingRequests: (state, action: PayloadAction<LeaveRequest[]>) => {
+      state.pendingRequests = action.payload;
+    },
+    setBalance: (state, action: PayloadAction<LeaveBalance | null>) => {
+      state.balance = action.payload;
+    },
+    addRequest: (state, action: PayloadAction<LeaveRequest>) => {
+      state.myRequests.unshift(action.payload);
+      state.requests.unshift(action.payload);
+    },
+    updateRequest: (state, action: PayloadAction<LeaveRequest>) => {
+      const updateArrays = [state.requests, state.myRequests, state.pendingRequests];
+      updateArrays.forEach(array => {
+        const index = array.findIndex(req => req.id === action.payload.id);
+        if (index !== -1) {
+          array[index] = action.payload;
+        }
+      });
+    },
+    removeFromPending: (state, action: PayloadAction<string>) => {
+      state.pendingRequests = state.pendingRequests.filter(req => req.id !== action.payload);
+    },
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
+});
+
+export const {
+  setLoading,
+  setError,
+  setRequests,
+  setMyRequests,
+  setPendingRequests,
+  setBalance,
+  addRequest,
+  updateRequest,
+  removeFromPending,
+  clearError,
+} = leaveSlice.actions;
+
+export const leaveReducer = leaveSlice.reducer;

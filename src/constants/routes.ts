@@ -1,24 +1,3 @@
-// src/routes/index.tsx
-import React from "react";
-import { Navigate } from "react-router-dom";
-
-// Employee Pages
-import EmployeeDashboard from "../features/employee/Dashboard";
-import Attendance from "../features/employee/Attendance";
-import LeaveManagement from "../features/employee/LeaveManagement";
-import TrainingAndDevelopment from "../features/employee/TrainingAndDevelopment";
-import Payslip from "../features/employee/Payslip";
-import Assets from "../features/employee/Assets";
-import Documents from "../features/employee/Documents";
-
-// Profile Page
-import EmployeeProfile from "../features/profile";
-
-// Admin Pages (placeholders for now)
-import AdminDashboard from "../features/admin/Dashboard";
-import Reports from "../features/admin/Reports";
-import Employees from "../features/admin/Employees";
-
 // Route Constants
 export const ROUTES = {
   LOGIN: "/login",
@@ -86,25 +65,3 @@ export const ROUTE_PERMISSIONS: Record<string, string[]> = {
 
   [ROUTES.PROFILE]: ["admin", "hr", "team_lead", "employee"],
 };
-
-// All Route Definitions
-export const APP_ROUTES = [
-  { path: ROUTES.HOME, element: <Navigate to={ROUTES.EMPLOYEE.DASHBOARD} /> },
-
-  // Employee
-  { path: ROUTES.EMPLOYEE.DASHBOARD, element: <EmployeeDashboard /> },
-  { path: ROUTES.EMPLOYEE.ATTENDANCE, element: <Attendance /> },
-  { path: ROUTES.EMPLOYEE.LEAVE, element: <LeaveManagement /> },
-  { path: ROUTES.EMPLOYEE.TRAINING, element: <TrainingAndDevelopment /> },
-  { path: ROUTES.EMPLOYEE.PAYSLIP, element: <Payslip /> },
-  { path: ROUTES.EMPLOYEE.ASSETS, element: <Assets /> },
-  { path: ROUTES.EMPLOYEE.DOCUMENTS, element: <Documents /> },
-
-  // Profile
-  { path: ROUTES.PROFILE, element: <EmployeeProfile /> },
-
-  // Admin (placeholders)
-  { path: ROUTES.ADMIN.DASHBOARD, element: <AdminDashboard /> },
-  { path: ROUTES.ADMIN.REPORTS, element: <Reports /> },
-  { path: ROUTES.ADMIN.EMPLOYEES, element: <Employees /> },
-];

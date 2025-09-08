@@ -1,23 +1,23 @@
-import { EmploymentStatus, Department, PositionLevel } from '../../constants/enums';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface Employee {
   id: string;
   user_id: string;
   employee_id: string;
-  department: Department;
+  department: string;
   position: string;
-  position_level: PositionLevel;
-  employment_status: EmploymentStatus;
-  hire_date: string;
-  salary?: number;
   manager_id?: string;
+  hire_date: string;
+  employment_status: string;
+  salary?: number;
   work_location?: string;
-  work_schedule?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface EmployeeState {
+interface EmployeeState {
   employees: Employee[];
   currentEmployee: Employee | null;
   isLoading: boolean;
@@ -31,75 +31,49 @@ const initialState: EmployeeState = {
   error: null,
 };
 
-export const employeeReducer = (state = initialState, action: any): EmployeeState => {
-  switch (action.type) {
-    case 'EMPLOYEE_FETCH_REQUEST':
-    case 'EMPLOYEE_CREATE_REQUEST':
-    case 'EMPLOYEE_UPDATE_REQUEST':
-    case 'EMPLOYEE_DELETE_REQUEST':
-      return {
-        ...state,
-        isLoading: true,
-        error: null,
-      };
-      
-    case 'EMPLOYEE_FETCH_SUCCESS':
-      return {
-        ...state,
-        isLoading: false,
-        employees: action.payload,
-        error: null,
-      };
-      
-    case 'EMPLOYEE_CREATE_SUCCESS':
-      return {
-        ...state,
-        isLoading: false,
-        employees: [...state.employees, action.payload],
-        error: null,
-      };
-      
-    case 'EMPLOYEE_UPDATE_SUCCESS':
-      return {
-        ...state,
-        isLoading: false,
-        employees: state.employees.map(emp => 
-          emp.id === action.payload.id ? action.payload : emp
-        ),
-        error: null,
-      };
-      
-    case 'EMPLOYEE_DELETE_SUCCESS':
-      return {
-        ...state,
-        isLoading: false,
-        employees: state.employees.filter(emp => emp.id !== action.payload),
-        error: null,
-      };
-      
-    case 'EMPLOYEE_FETCH_FAILURE':
-    case 'EMPLOYEE_CREATE_FAILURE':
-    case 'EMPLOYEE_UPDATE_FAILURE':
-    case 'EMPLOYEE_DELETE_FAILURE':
-      return {
-        ...state,
-        isLoading: false,
-        error: action.payload,
-      };
-      
-    case 'EMPLOYEE_SET_CURRENT':
-      return {
-        ...state,
-        currentEmployee: action.payload,
-      };
-      
-    case 'EMPLOYEE_CLEAR_ERROR':
-      return {
-        ...state,
-        error: null,
-      };
-      
-    default:
-      return state;
-  }
-};
+const employeeSlice = createSlice({
+  name: 'employee',
+  initialState,
+  reducers: {
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
+    },
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
+    setEmployees: (state, action: PayloadAction<Employee[]>) => {
+      state.employees = action.payload;
+    },
+    setCurrentEmployee: (state, action: PayloadAction<Employee | null>) => {
+      state.currentEmployee = action.payload;
+    },
+    addEmployee: (state, action: PayloadAction<Employee>) => {
+      state.employees.push(action.payload);
+    },
+    updateEmployee: (state, action: PayloadAction<Employee>) => {
+      const index = state.employees.findIndex(emp => emp.id === action.payload.id);
+      if (index !== -1) {
+        state.employees[index] = action.payload;
+      }
+    },
+    removeEmployee: (state, action: PayloadAction<string>) => {
+      state.employees = state.employees.filter(emp => emp.id !== action.payload);
+    },
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
+});
+
+export const {
+  setLoading,
+  setError,
+  setEmployees,
+  setCurrentEmployee,
+  addEmployee,
+  updateEmployee,
+  removeEmployee,
+  clearError,
+} = employeeSlice.actions;
+
+export const employeeReducer = employeeSlice.reducer;

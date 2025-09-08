@@ -3,37 +3,38 @@ import { API_BASE_URL } from '../../constants/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+  timeout: 10000,
 });
 
 export const employeeApi = {
-  getEmployees: async () => {
-    const response = await api.get('/employees');
+  getEmployees: async (skip = 0, limit = 20, department?: string) => {
+    const params = new URLSearchParams();
+    params.append('skip', skip.toString());
+    params.append('limit', limit.toString());
+    if (department) params.append('department', department);
+    
+    const response = await api.get(`/employees?${params.toString()}`);
     return response.data;
   },
 
-  createEmployee: async (employeeData: any) => {
-    const response = await api.post('/employees', employeeData);
+  getEmployee: async (employeeId: string) => {
+    const response = await api.get(`/employees/${employeeId}`);
     return response.data;
   },
 
-  updateEmployee: async (id: string, employeeData: any) => {
-    const response = await api.put(`/employees/${id}`, employeeData);
+  createEmployee: async (data: any) => {
+    const response = await api.post('/employees', data);
     return response.data;
   },
 
-  deleteEmployee: async (id: string) => {
-    await api.delete(`/employees/${id}`);
+  updateEmployee: async (employeeId: string, data: any) => {
+    const response = await api.put(`/employees/${employeeId}`, data);
+    return response.data;
+  },
+
+  deleteEmployee: async (employeeId: string) => {
+    const response = await api.delete(`/employees/${employeeId}`);
+    return response.data;
   },
 
   getEmployeeProfile: async (userId: string) => {

@@ -30,7 +30,7 @@ export const attendanceActions = {
 
 function* fetchAttendanceSaga(action: PayloadAction<string | undefined>): Generator<CallEffect | PutEffect, void, any> {
   try {
-    const response = yield call(attendanceApi.getAttendance, action.payload);
+    const response = yield call([attendanceApi, 'getTodayAttendance']);
     yield put(attendanceActions.fetchSuccess(response));
   } catch (error: any) {
     yield put(attendanceActions.fetchFailure(error.response?.data?.detail || 'Failed to fetch attendance'));
@@ -39,7 +39,7 @@ function* fetchAttendanceSaga(action: PayloadAction<string | undefined>): Genera
 
 function* logAttendanceSaga(action: PayloadAction<any>): Generator<CallEffect | PutEffect, void, any> {
   try {
-    const response = yield call(attendanceApi.logAttendance, action.payload);
+    const response = yield call([attendanceApi, 'logAttendance'], action.payload);
     yield put(attendanceActions.logSuccess(response));
   } catch (error: any) {
     yield put(attendanceActions.logFailure(error.response?.data?.detail || 'Failed to log attendance'));
@@ -48,7 +48,7 @@ function* logAttendanceSaga(action: PayloadAction<any>): Generator<CallEffect | 
 
 function* updateAttendanceSaga(action: PayloadAction<{ id: string; data: any }>): Generator<CallEffect | PutEffect, void, any> {
   try {
-    const response = yield call(attendanceApi.updateAttendance, action.payload.id, action.payload.data);
+    const response = yield call([attendanceApi, 'updateAttendance'], action.payload.id, action.payload.data);
     yield put(attendanceActions.updateSuccess(response));
   } catch (error: any) {
     yield put(attendanceActions.updateFailure(error.response?.data?.detail || 'Failed to update attendance'));

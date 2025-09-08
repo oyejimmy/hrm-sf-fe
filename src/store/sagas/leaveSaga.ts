@@ -30,7 +30,7 @@ export const leaveActions = {
 
 function* fetchLeaveRequestsSaga(): Generator<CallEffect | PutEffect, void, any> {
   try {
-    const response = yield call(leaveApi.getLeaveRequests);
+    const response = yield call([leaveApi, 'getMyLeaveRequests']);
     yield put(leaveActions.fetchSuccess(response));
   } catch (error: any) {
     yield put(leaveActions.fetchFailure(error.response?.data?.detail || 'Failed to fetch leave requests'));
@@ -39,7 +39,7 @@ function* fetchLeaveRequestsSaga(): Generator<CallEffect | PutEffect, void, any>
 
 function* createLeaveRequestSaga(action: PayloadAction<any>): Generator<CallEffect | PutEffect, void, any> {
   try {
-    const response = yield call(leaveApi.createLeaveRequest, action.payload);
+    const response = yield call([leaveApi, 'createLeaveRequest'], action.payload);
     yield put(leaveActions.createSuccess(response));
   } catch (error: any) {
     yield put(leaveActions.createFailure(error.response?.data?.detail || 'Failed to create leave request'));
@@ -48,7 +48,7 @@ function* createLeaveRequestSaga(action: PayloadAction<any>): Generator<CallEffe
 
 function* approveLeaveRequestSaga(action: PayloadAction<{ id: string; data: any }>): Generator<CallEffect | PutEffect, void, any> {
   try {
-    const response = yield call(leaveApi.approveLeaveRequest, action.payload.id, action.payload.data);
+    const response = yield call([leaveApi, 'approveLeaveRequest'], action.payload.id, action.payload.data);
     yield put(leaveActions.approveSuccess(response));
   } catch (error: any) {
     yield put(leaveActions.approveFailure(error.response?.data?.detail || 'Failed to approve leave request'));

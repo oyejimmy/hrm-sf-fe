@@ -32,7 +32,7 @@ export const notificationActions = {
 
 function* fetchNotificationsSaga(): Generator<CallEffect<any> | PutEffect<any>, void, any> {
   try {
-    const response = yield call(notificationApi.getNotifications);
+    const response = yield call([notificationApi, 'getNotifications']);
     yield put(notificationActions.fetchSuccess(response));
   } catch (error: any) {
     yield put(notificationActions.fetchFailure(error.response?.data?.detail || 'Failed to fetch notifications'));
@@ -41,7 +41,7 @@ function* fetchNotificationsSaga(): Generator<CallEffect<any> | PutEffect<any>, 
 
 function* sendNotificationSaga(action: PayloadAction<any>): Generator<CallEffect<any> | PutEffect<any>, void, any> {
   try {
-    const response = yield call(notificationApi.sendNotification, action.payload);
+    const response = yield call([notificationApi, 'createNotification'], action.payload);
     yield put(notificationActions.sendSuccess(response));
   } catch (error: any) {
     yield put(notificationActions.sendFailure(error.response?.data?.detail || 'Failed to send notification'));
@@ -50,7 +50,7 @@ function* sendNotificationSaga(action: PayloadAction<any>): Generator<CallEffect
 
 function* markNotificationReadSaga(action: PayloadAction<string>): Generator<CallEffect<any> | PutEffect<any>, void, any> {
   try {
-    yield call(notificationApi.markAsRead, action.payload);
+    yield call([notificationApi, 'markAsRead'], action.payload);
     yield put(notificationActions.markReadSuccess(action.payload));
   } catch (error: any) {
     yield put(notificationActions.markReadFailure(error.response?.data?.detail || 'Failed to mark notification as read'));

@@ -46,6 +46,7 @@ import { TeamLeaveRequests } from './features/teamLead/TeamLeaveRequests';
 import { TeamPerformance } from './features/teamLead/TeamPerformance';
 import { TrainingAssignments } from './features/teamLead/TrainingAssignments';
 import EmployeeProfile from './features/profile/Profile';
+import { AuthTest } from './features/auth/AuthTest';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -137,9 +138,18 @@ function App() {
                   }
                 />
 
+                {/* Auth Test Route */}
+                <Route
+                  path="/auth-test"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'hr', 'team_lead', 'employee']}>
+                      <AuthTest />
+                    </ProtectedRoute>
+                  }
+                />
+
                 {/* Default Route */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
-                <Route path="*" element={<Navigate to="/login" replace />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </AuthProvider>
           </Router>

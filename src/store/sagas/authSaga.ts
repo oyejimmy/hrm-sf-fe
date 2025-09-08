@@ -2,6 +2,7 @@ import { call, put, takeEvery, takeLatest, CallEffect, PutEffect } from 'redux-s
 import { PayloadAction } from '@reduxjs/toolkit';
 import { authApi } from '../../services/api/authApi';
 import { API_ENDPOINTS } from '../../constants/api';
+import { tokenStorage, validateFormData } from '../../utils/security';
 
 // Action Types
 export const AUTH_ACTIONS = {
@@ -80,9 +81,10 @@ export const authActions = {
 // Sagas
 function* loginSaga(action: PayloadAction<{ email: string; password: string }>): Generator<CallEffect | PutEffect, void, any> {
   try {
-    const response = yield call(authApi.login, action.payload);
-    localStorage.setItem('access_token', response.access_token);
-    localStorage.setItem('refresh_token', response.refresh_token);
+    const sanitizedPayload: any = validateFormData(action.payload);
+    const response = yield call({ context: authApi, fn: authApi.login }, sanitizedPayload);
+    tokenStorage.setToken('access_token', response.access_token);
+    tokenStorage.setToken('refresh_token', response.refresh_token);
     yield put(authActions.loginSuccess(response));
   } catch (error: any) {
     yield put(authActions.loginFailure(error.response?.data?.detail || 'Login failed'));
@@ -91,7 +93,8 @@ function* loginSaga(action: PayloadAction<{ email: string; password: string }>):
 
 function* signupSaga(action: PayloadAction<any>): Generator<CallEffect | PutEffect, void, any> {
   try {
-    const response = yield call(authApi.signup, action.payload);
+    const sanitizedPayload: any = validateFormData(action.payload);
+    const response = yield call({ context: authApi, fn: authApi.signup }, sanitizedPayload);
     yield put(authActions.signupSuccess(response));
   } catch (error: any) {
     yield put(authActions.signupFailure(error.response?.data?.detail || 'Signup failed'));
@@ -100,43 +103,43 @@ function* signupSaga(action: PayloadAction<any>): Generator<CallEffect | PutEffe
 
 function* getUserSaga(): Generator<CallEffect | PutEffect, void, any> {
   try {
-    const response = yield call(authApi.getCurrentUser);
+    const response = yield call({ context: authApi, fn: authApi.getCurrentUser });
     yield put(authActions.getUserSuccess(response));
   } catch (error: any) {
     yield put(authActions.getUserFailure(error.response?.data?.detail || 'Failed to get user info'));
     // Clear tokens on failure
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    tokenStorage.removeToken('access_token');
+    tokenStorage.removeToken('refresh_token');
   }
 }
 
 function* refreshSaga(): Generator<CallEffect | PutEffect, void, any> {
   try {
-    const refreshToken = localStorage.getItem('refresh_token');
+    const refreshToken = tokenStorage.getToken('refresh_token');
     if (!refreshToken) {
       throw new Error('No refresh token available');
     }
-    
-    const response = yield call(authApi.refreshToken, refreshToken);
-    localStorage.setItem('access_token', response.access_token);
-    localStorage.setItem('refresh_token', response.refresh_token);
+
+    const response = yield call({ context: authApi, fn: authApi.refreshToken }, refreshToken);
+    tokenStorage.setToken('access_token', response.access_token);
+    tokenStorage.setToken('refresh_token', response.refresh_token);
     yield put(authActions.refreshSuccess(response));
   } catch (error: any) {
     yield put(authActions.refreshFailure(error.response?.data?.detail || 'Token refresh failed'));
     // Clear tokens on failure
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    tokenStorage.removeToken('access_token');
+    tokenStorage.removeToken('refresh_token');
   }
 }
 
 function* logoutSaga(): Generator<CallEffect | PutEffect, void, any> {
   try {
-    yield call(authApi.logout);
+    yield call({ context: authApi, fn: authApi.logout });
   } catch (error) {
-    // Even if logout fails on server, clear local storage
+    // Even if logout fails on server, clear storage
   } finally {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    tokenStorage.removeToken('access_token');
+    tokenStorage.removeToken('refresh_token');
   }
 }
 

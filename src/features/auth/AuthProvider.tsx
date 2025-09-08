@@ -1,59 +1,40 @@
-import React, { createContext, useContext, useEffect, ReactNode } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../store';
-import { authActions } from '../../store/sagas/authSaga';
-import { selectAuth, selectIsAuthenticated, selectUser, selectAuthLoading } from '../../store/selectors/authSelectors';
-
-interface AuthContextType {
-  isAuthenticated: boolean;
-  user: any;
-  isLoading: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+import { RootState } from '../../store';
+import { getCurrentUser } from '../../store/slices/authSlice';
+import { tokenStorage } from '../../utils/security';
+import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 
 interface AuthProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-  const user = useSelector(selectUser);
-  const isLoading = useSelector(selectAuthLoading);
+  const dispatch = useDispatch();
+  const { isAuthenticated, isLoading, user } = useSelector((state: RootState) => state.auth);
+  const [initializing, setInitializing] = React.useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token && !user) {
-      console.log('Token found, fetching user data');
-      dispatch(authActions.getUserRequest());
-    }
+    const initializeAuth = async () => {
+      const token = tokenStorage.getToken('access_token');
+      
+      if (token && !user) {
+        try {
+          await dispatch(getCurrentUser() as any);
+        } catch (error) {
+          console.error('Failed to get current user:', error);
+        }
+      }
+      
+      setInitializing(false);
+    };
+
+    initializeAuth();
   }, [dispatch, user]);
-  
-  // Add another effect to log when user data changes
-  useEffect(() => {
-    if (user) {
-      console.log('User authenticated:', user.role);
-    }
-  }, [user]);
 
-  const value = {
-    isAuthenticated,
-    user,
-    isLoading,
-  };
+  if (initializing || (isAuthenticated && isLoading && !user)) {
+    return <LoadingSpinner tip="Initializing..." />;
+  }
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <>{children}</>;
 };

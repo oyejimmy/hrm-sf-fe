@@ -1,12 +1,12 @@
-import { AttendanceStatus } from '../../constants/enums';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface Attendance {
+export interface AttendanceRecord {
   id: string;
   user_id: string;
   date: string;
-  check_in?: string;
-  check_out?: string;
-  status: AttendanceStatus;
+  check_in_time?: string;
+  check_out_time?: string;
+  status: string;
   work_hours?: number;
   overtime_hours?: number;
   notes?: string;
@@ -14,73 +14,79 @@ export interface Attendance {
   updated_at: string;
 }
 
-export interface AttendanceState {
-  attendance: Attendance[];
-  currentAttendance: Attendance | null;
+export interface AttendanceSummary {
+  user_id: string;
+  month: number;
+  year: number;
+  total_days: number;
+  present_days: number;
+  absent_days: number;
+  late_days: number;
+  half_days: number;
+  total_work_hours: number;
+  total_overtime_hours: number;
+  attendance_percentage: number;
+}
+
+interface AttendanceState {
+  records: AttendanceRecord[];
+  todayRecords: AttendanceRecord[];
+  summary: AttendanceSummary | null;
   isLoading: boolean;
   error: string | null;
 }
 
 const initialState: AttendanceState = {
-  attendance: [],
-  currentAttendance: null,
+  records: [],
+  todayRecords: [],
+  summary: null,
   isLoading: false,
   error: null,
 };
 
-export const attendanceReducer = (state = initialState, action: any): AttendanceState => {
-  switch (action.type) {
-    case 'ATTENDANCE_FETCH_REQUEST':
-    case 'ATTENDANCE_LOG_REQUEST':
-    case 'ATTENDANCE_UPDATE_REQUEST':
-      return {
-        ...state,
-        isLoading: true,
-        error: null,
-      };
-      
-    case 'ATTENDANCE_FETCH_SUCCESS':
-      return {
-        ...state,
-        isLoading: false,
-        attendance: action.payload,
-        error: null,
-      };
-      
-    case 'ATTENDANCE_LOG_SUCCESS':
-      return {
-        ...state,
-        isLoading: false,
-        attendance: [...state.attendance, action.payload],
-        error: null,
-      };
-      
-    case 'ATTENDANCE_UPDATE_SUCCESS':
-      return {
-        ...state,
-        isLoading: false,
-        attendance: state.attendance.map(att => 
-          att.id === action.payload.id ? action.payload : att
-        ),
-        error: null,
-      };
-      
-    case 'ATTENDANCE_FETCH_FAILURE':
-    case 'ATTENDANCE_LOG_FAILURE':
-    case 'ATTENDANCE_UPDATE_FAILURE':
-      return {
-        ...state,
-        isLoading: false,
-        error: action.payload,
-      };
-      
-    case 'ATTENDANCE_CLEAR_ERROR':
-      return {
-        ...state,
-        error: null,
-      };
-      
-    default:
-      return state;
-  }
-};
+const attendanceSlice = createSlice({
+  name: 'attendance',
+  initialState,
+  reducers: {
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
+    },
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
+    setRecords: (state, action: PayloadAction<AttendanceRecord[]>) => {
+      state.records = action.payload;
+    },
+    setTodayRecords: (state, action: PayloadAction<AttendanceRecord[]>) => {
+      state.todayRecords = action.payload;
+    },
+    setSummary: (state, action: PayloadAction<AttendanceSummary | null>) => {
+      state.summary = action.payload;
+    },
+    addRecord: (state, action: PayloadAction<AttendanceRecord>) => {
+      state.records.unshift(action.payload);
+    },
+    updateRecord: (state, action: PayloadAction<AttendanceRecord>) => {
+      const index = state.records.findIndex(record => record.id === action.payload.id);
+      if (index !== -1) {
+        state.records[index] = action.payload;
+      }
+    },
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
+});
+
+export const {
+  setLoading,
+  setError,
+  setRecords,
+  setTodayRecords,
+  setSummary,
+  addRecord,
+  updateRecord,
+  clearError,
+} = attendanceSlice.actions;
+
+export const attendanceReducer = attendanceSlice.reducer;

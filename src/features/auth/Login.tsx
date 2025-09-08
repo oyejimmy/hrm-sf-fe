@@ -1,162 +1,78 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Form, Input, Button, Card, Typography, Alert, Space, Checkbox } from 'antd';
+import { useNavigate, Link } from 'react-router-dom';
+import { Form, Input, Button, Card, Alert, Typography } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
-import { useTheme } from '../../contexts/ThemeContext';
+import { RootState } from '../../store';
+import { login, clearError } from '../../store/slices/authSlice';
+import { validateFormData, isValidEmail } from '../../utils/security';
+import { getDashboardRoute } from '../../utils/authHelpers';
 
-import { RootState, AppDispatch } from '../../store';
-import { authActions } from '../../store/sagas/authSaga';
-import { selectAuth, selectIsAuthenticated, selectUser, selectAuthLoading, selectAuthError } from '../../store/selectors/authSelectors';
-import { User } from '../../store/slices/authSlice';
+const { Title } = Typography;
 
-const { Title, Text } = Typography;
-
-const LoginContainer = styled.div`
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: ${({ theme }) => theme.themeMode === 'dark' 
-    ? 'linear-gradient(135deg, #1f1f1f 0%, #2d1b3d 100%)' 
-    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};
-  padding: 20px;
-  transition: background 0.3s ease;
-  
-  @media (max-width: 768px) {
-    padding: 16px;
-  }
-`;
-
-const LoginCard = styled(Card)`
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  background: ${({ theme }) => theme.themeMode === 'dark' ? '#1f1f1f' : '#ffffff'};
-  
-  .ant-card-body {
-    padding: 24px;
-    
-    @media (max-width: 768px) {
-      padding: 16px;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    max-width: 100%;
-  }
-`;
-
-const Logo = styled.div`
-  text-align: center;
-  margin-bottom: 32px;
-`;
-
-const StyledTitle = styled(Title)`
-  color: ${({ theme }) => theme.themeMode === 'dark' ? '#1890ff' : '#1890ff'} !important;
-  margin-bottom: 8px !important;
-  
-  @media (max-width: 768px) {
-    font-size: 24px !important;
-  }
-`;
-
-const StyledText = styled(Text)`
-  color: ${({ theme }) => theme.themeMode === 'dark' ? '#b3b3b3' : '#8c8c8c'};
-  font-size: 14px;
-  
-  @media (max-width: 768px) {
-    font-size: 13px;
-  }
-`;
-
-const StyledButton = styled(Button)`
-  width: 100%;
-  height: 40px;
-  font-size: 16px;
-  font-weight: 500;
-  
-  @media (max-width: 768px) {
-    height: 38px;
-    font-size: 15px;
-  }
-`;
-
-const LinkText = styled(Text)`
-  text-align: center;
-  display: block;
-  margin-top: 16px;
-  color: ${({ theme }) => theme.themeMode === 'dark' ? '#b3b3b3' : '#8c8c8c'};
-  
-  a {
-    color: ${({ theme }) => theme.themeMode === 'dark' ? '#40a9ff' : '#1890ff'};
-    text-decoration: none;
-    
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-  
-  @media (max-width: 768px) {
-    font-size: 13px;
-    margin-top: 12px;
-  }
-`;
+interface LoginFormData {
+  email: string;
+  password: string;
+}
 
 export const Login: React.FC = () => {
-  const { themeMode } = useTheme();
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const location = useLocation();
-  
-  const isLoading = useSelector(selectAuthLoading);
-  const error = useSelector(selectAuthError);
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-  const user = useSelector(selectUser);
-  
+  const { isLoading, error, isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const [form] = Form.useForm();
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      // Redirect based on redirect_url from backend
-      if ((user as User).redirect_url) {
-        navigate((user as User).redirect_url!, { replace: true });
-        console.log('Redirecting to:', (user as User).redirect_url);
-      } else {
-        const from = location.state?.from?.pathname || '/';
-        navigate(from, { replace: true });
-        console.log('Redirecting to default route:', from);
-      }
+      const dashboardRoute = getDashboardRoute(user.role);
+      navigate(dashboardRoute);
     }
-  }, [isAuthenticated, user, navigate, location]);
+  }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
     return () => {
-      dispatch(authActions.clearError());
+      dispatch(clearError());
     };
   }, [dispatch]);
 
-  const handleSubmit = async (values: { email: string; password: string }) => {
-    dispatch(authActions.loginRequest(values));
+  const handleSubmit = async (values: LoginFormData) => {
+    if (!isValidEmail(values.email)) {
+      form.setFields([
+        {
+          name: 'email',
+          errors: ['Please enter a valid email address'],
+        },
+      ]);
+      return;
+    }
+
+    const sanitizedData = validateFormData(values) as LoginFormData;
+    dispatch(login(sanitizedData) as any);
   };
 
   return (
-    <LoginContainer>
-      <LoginCard>
-        <Logo>
-          <StyledTitle level={2}>HRM System</StyledTitle>
-          <StyledText>Sign in to your account</StyledText>
-        </Logo>
+    <div style={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    }}>
+      <Card style={{ width: 400, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <Title level={2} style={{ color: '#1890ff', marginBottom: 8 }}>
+            HRM System
+          </Title>
+          <p style={{ color: '#666', margin: 0 }}>Sign in to your account</p>
+        </div>
 
         {error && (
           <Alert
-            message="Login Failed"
-            description={error}
+            message={error}
             type="error"
             showIcon
-            style={{ marginBottom: 24 }}
+            closable
+            onClose={() => dispatch(clearError())}
+            style={{ marginBottom: 16 }}
           />
         )}
 
@@ -164,11 +80,12 @@ export const Login: React.FC = () => {
           form={form}
           name="login"
           onFinish={handleSubmit}
-          autoComplete="off"
+          layout="vertical"
           size="large"
         >
           <Form.Item
             name="email"
+            label="Email"
             rules={[
               { required: true, message: 'Please input your email!' },
               { type: 'email', message: 'Please enter a valid email!' }
@@ -176,40 +93,46 @@ export const Login: React.FC = () => {
           >
             <Input
               prefix={<UserOutlined />}
-              placeholder="Email"
+              placeholder="Enter your email"
               autoComplete="email"
             />
           </Form.Item>
 
           <Form.Item
             name="password"
+            label="Password"
             rules={[
               { required: true, message: 'Please input your password!' },
-              { min: 8, message: 'Password must be at least 8 characters!' }
+              { min: 6, message: 'Password must be at least 6 characters!' }
             ]}
           >
             <Input.Password
               prefix={<LockOutlined />}
-              placeholder="Password"
+              placeholder="Enter your password"
               autoComplete="current-password"
             />
           </Form.Item>
 
           <Form.Item>
-            <StyledButton
+            <Button
               type="primary"
               htmlType="submit"
               loading={isLoading}
+              block
+              style={{ height: 40 }}
             >
               Sign In
-            </StyledButton>
+            </Button>
           </Form.Item>
         </Form>
 
-        <LinkText>
-          Don't have an account? <Link to="/signup">Sign up</Link>
-        </LinkText>
-      </LoginCard>
-    </LoginContainer>
+        <div style={{ textAlign: 'center', marginTop: 16 }}>
+          <span style={{ color: '#666' }}>Don't have an account? </span>
+          <Link to="/signup" style={{ color: '#1890ff' }}>
+            Sign up here
+          </Link>
+        </div>
+      </Card>
+    </div>
   );
 };

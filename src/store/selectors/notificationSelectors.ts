@@ -7,10 +7,10 @@ export const selectNotificationLoading = (state: RootState) => state.notificatio
 export const selectNotificationError = (state: RootState) => state.notification.error;
 
 export const selectUnreadNotifications = (state: RootState) =>
-  state.notification.notifications.filter(notif => notif.status === 'unread');
+  state.notification.notifications.filter(notif => !notif.read);
 
 export const selectReadNotifications = (state: RootState) =>
-  state.notification.notifications.filter(notif => notif.status === 'read');
+  state.notification.notifications.filter(notif => notif.read);
 
 export const selectNotificationsByType = (type: string) => (state: RootState) =>
   state.notification.notifications.filter(notif => notif.type === type);

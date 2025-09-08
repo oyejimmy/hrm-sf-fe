@@ -7,38 +7,26 @@ export const GlobalStyles = createGlobalStyle`
     box-sizing: border-box;
   }
 
-  html {
-    font-size: 16px;
-    line-height: 1.5;
-  }
-
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background-color: #f0f2f5;
-    color: #262626;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: #f5f5f5;
   }
 
-  #root {
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+      monospace;
+  }
+
+  .ant-layout {
     min-height: 100vh;
   }
 
-  /* Ant Design overrides */
-  .ant-layout {
-    background: #f0f2f5;
-  }
-
-  .ant-layout-sider {
-    background: #001529;
-  }
-
-  .ant-menu-dark {
-    background: #001529;
-  }
-
-  .ant-menu-dark .ant-menu-item-selected {
-    background-color: #1890ff;
+  .ant-layout-content {
+    background: #fff;
   }
 
   .ant-card {
@@ -48,103 +36,66 @@ export const GlobalStyles = createGlobalStyle`
 
   .ant-btn {
     border-radius: 6px;
-    font-weight: 500;
   }
 
   .ant-input {
     border-radius: 6px;
   }
 
-  .ant-select-selector {
+  .ant-select .ant-select-selector {
     border-radius: 6px;
   }
 
-  .ant-table {
-    border-radius: 8px;
-    overflow: hidden;
+  .ant-form-item-label > label {
+    font-weight: 500;
   }
 
-  .ant-modal {
-    border-radius: 8px;
+  .ant-statistic-title {
+    font-weight: 500;
+    color: #666;
   }
 
-  .ant-drawer {
-    border-radius: 8px 0 0 8px;
+  .ant-statistic-content {
+    font-weight: 600;
   }
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
   }
 
   ::-webkit-scrollbar-track {
     background: #f1f1f1;
-    border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb {
     background: #c1c1c1;
-    border-radius: 3px;
+    border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
   }
 
-  /* Loading states */
-  .loading-container {
+  /* Loading spinner */
+  .loading-spinner {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 200px;
+    height: 200px;
   }
 
-  /* Error states */
-  .error-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 200px;
+  /* Error message */
+  .error-message {
+    text-align: center;
     color: #ff4d4f;
+    padding: 20px;
   }
 
-  /* Empty states */
-  .empty-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 200px;
-    color: #8c8c8c;
-  }
-
-  /* Responsive utilities */
-  @media (max-width: 768px) {
-    .ant-layout-sider {
-      position: fixed !important;
-      height: 100vh;
-      z-index: 1000;
-    }
-    
-    .ant-layout-content {
-      margin-left: 0 !important;
-    }
-  }
-
-  /* Print styles */
-  @media print {
-    .ant-layout-sider,
-    .ant-layout-header,
-    .ant-btn,
-    .ant-pagination {
-      display: none !important;
-    }
-    
-    .ant-layout-content {
-      margin: 0 !important;
-      padding: 0 !important;
-    }
+  /* Success message */
+  .success-message {
+    text-align: center;
+    color: #52c41a;
+    padding: 20px;
   }
 `;

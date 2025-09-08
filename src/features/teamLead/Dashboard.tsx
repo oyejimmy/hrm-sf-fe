@@ -1,13 +1,10 @@
 import React from 'react';
-import { Card, Typography } from 'antd';
-
-const { Title } = Typography;
+import { Card } from 'antd';
 
 export const TeamLeadDashboard: React.FC = () => {
   return (
-    <Card>
-      <Title level={2}>Team Lead Dashboard</Title>
-      <p>Team Lead Dashboard component - Coming soon!</p>
+    <Card title="Team Lead Dashboard">
+      <p>Team lead dashboard functionality will be implemented here.</p>
     </Card>
   );
 };

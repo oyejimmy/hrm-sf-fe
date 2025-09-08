@@ -41,7 +41,7 @@ export const employeeActions = {
 // Sagas
 function* fetchEmployeesSaga(): Generator<CallEffect | PutEffect, void, any> {
   try {
-    const response = yield call(employeeApi.getEmployees);
+    const response = yield call([employeeApi, 'getEmployees']);
     yield put(employeeActions.fetchSuccess(response));
   } catch (error: any) {
     yield put(employeeActions.fetchFailure(error.response?.data?.detail || 'Failed to fetch employees'));
@@ -50,7 +50,7 @@ function* fetchEmployeesSaga(): Generator<CallEffect | PutEffect, void, any> {
 
 function* createEmployeeSaga(action: PayloadAction<any>): Generator<CallEffect | PutEffect, void, any> {
   try {
-    const response = yield call(employeeApi.createEmployee, action.payload);
+    const response = yield call([employeeApi, 'createEmployee'], action.payload);
     yield put(employeeActions.createSuccess(response));
   } catch (error: any) {
     yield put(employeeActions.createFailure(error.response?.data?.detail || 'Failed to create employee'));
@@ -59,7 +59,7 @@ function* createEmployeeSaga(action: PayloadAction<any>): Generator<CallEffect |
 
 function* updateEmployeeSaga(action: PayloadAction<{ id: string; data: any }>): Generator<CallEffect | PutEffect, void, any> {
   try {
-    const response = yield call(employeeApi.updateEmployee, action.payload.id, action.payload.data);
+    const response = yield call([employeeApi, 'updateEmployee'], action.payload.id, action.payload.data);
     yield put(employeeActions.updateSuccess(response));
   } catch (error: any) {
     yield put(employeeActions.updateFailure(error.response?.data?.detail || 'Failed to update employee'));
@@ -68,7 +68,7 @@ function* updateEmployeeSaga(action: PayloadAction<{ id: string; data: any }>): 
 
 function* deleteEmployeeSaga(action: PayloadAction<string>): Generator<CallEffect | PutEffect, void, any> {
   try {
-    yield call(employeeApi.deleteEmployee, action.payload);
+    yield call([employeeApi, 'deleteEmployee'], action.payload);
     yield put(employeeActions.deleteSuccess(action.payload));
   } catch (error: any) {
     yield put(employeeActions.deleteFailure(error.response?.data?.detail || 'Failed to delete employee'));

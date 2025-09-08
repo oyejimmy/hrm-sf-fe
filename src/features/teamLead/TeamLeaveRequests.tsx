@@ -1,13 +1,10 @@
 import React from 'react';
-import { Card, Typography } from 'antd';
-
-const { Title } = Typography;
+import { Card } from 'antd';
 
 export const TeamLeaveRequests: React.FC = () => {
   return (
-    <Card>
-      <Title level={2}>Team Leave Requests</Title>
-      <p>Team Leave Requests component - Coming soon!</p>
+    <Card title="Team Leave Requests">
+      <p>Team leave requests functionality will be implemented here.</p>
     </Card>
   );
 };
