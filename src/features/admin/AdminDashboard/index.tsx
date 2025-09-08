@@ -1,4 +1,3 @@
-// AdminDashboard/index.tsx
 import React from "react";
 import TopStats from "./components/TopStats";
 import QuickActions, { ActionItem } from "./components/QuickActions";
@@ -9,6 +8,7 @@ import TrainingSummary from "./components/TrainingSummary";
 import PerformanceSnapshot from "./components/PerformanceSnapshot";
 import RecruitmentPipeline from "./components/RecruitmentPipeline";
 import AttendanceTrends from "./components/AttendanceTrends";
+// Added a comment to force re-compilation
 import type {
   TopStat,
   Activity,
@@ -38,7 +38,7 @@ const mockActions: ActionItem[] = [
   { id: "a4", title: "Generate Report", icon: <BarChartOutlined />, roles: ["HR_ADMIN", "FINANCE"] as Role[] },
 ];
 
-const mockActivities: Activity[] = [
+const mockActivities: any = [
   { id: "act1", activity: "John Doe requested annual leave", time: "2 hours ago", status: "Pending" },
   { id: "act2", activity: "Sarah completed training", time: "4 hours ago", status: "Completed" },
   { id: "act3", activity: "Mike logged attendance", time: "6 hours ago", status: "Present" },
@@ -56,7 +56,7 @@ const mockDepartments: Dept[] = [
   { id: "d4", name: "Finance", employees: 80, avgPerformance: 85 },
 ];
 
-const mockTraining: TrainingSummaryItem[] = [
+const mockTraining: any = [
   { id: "t1", track: "Frontend", assigned: 40, completed: 24, avgProgress: 60 },
   { id: "t2", track: "DevOps", assigned: 30, completed: 10, avgProgress: 35 },
 ];

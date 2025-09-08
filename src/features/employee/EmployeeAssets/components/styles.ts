@@ -1,7 +1,11 @@
 import styled from "styled-components";
+import { theme } from 'antd';
 
 export const AssetCard = styled.div`
-  background: ${({ theme }: any) => theme.token.colorBgContainer};
+  background: ${() => {
+    const { token } = theme.useToken();
+    return token.colorBgContainer || '#fff';
+  }};
   padding: 16px;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
@@ -40,7 +44,10 @@ export const SectionHeader = styled.h2`
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 16px;
-  color: ${({ theme }) => theme?.colors?.primary || "#262626"};
+  color: ${() => {
+    const { token } = theme.useToken();
+    return token.colorPrimary || "#262626";
+  }}; 
 `;
 
 export const FlexRow = styled.div`
