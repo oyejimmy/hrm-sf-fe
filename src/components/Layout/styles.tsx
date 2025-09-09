@@ -22,10 +22,6 @@ const StyledSider = styled(Sider)`
 `;
 
 const StyledContent = styled(Content)`
-  margin: ${props => props.theme?.spacing?.lg || '24px'};
-  background: ${props => props.theme?.colors?.surface || '#ffffff'};
-  padding: ${props => props.theme?.spacing?.lg || '24px'};
-  border-radius: ${props => props.theme?.borderRadius?.lg || '8px'};
   min-height: calc(100vh - 112px);
 `;
 

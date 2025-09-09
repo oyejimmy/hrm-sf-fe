@@ -127,7 +127,7 @@ export const Header: React.FC<HeaderProps> = ({ title }) => {
       <Space size="middle">
         <Tag
           icon={<UserOutlined />}
-          color={currentTheme.colors.primary}>
+          color={isDarkMode ? currentTheme?.colors?.secondary : "blue"}>
           {title}
         </Tag>
 
