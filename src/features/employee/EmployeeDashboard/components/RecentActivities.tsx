@@ -1,5 +1,5 @@
 import React from "react";
-import { Timeline, Tag } from "antd";
+import { List } from "antd";
 import { SectionCard } from "./styles";
 import type { Activity } from "../types";
 
@@ -9,16 +9,21 @@ interface Props {
 
 const RecentActivities: React.FC<Props> = ({ activities }) => (
   <SectionCard title="Recent Activities">
-    <Timeline>
-      {activities.map((a) => (
-        <Timeline.Item key={a.id}>
-          {a.action} — {a.date}{" "}
-          <Tag color={a.status === "Completed" ? "green" : a.status === "Pending" ? "orange" : "blue"}>
-            {a.status}
-          </Tag>
-        </Timeline.Item>
-      ))}
-    </Timeline>
+    <List
+      dataSource={activities}
+      renderItem={(item: any) => (
+        <List.Item style={{ padding: '8px 0', border: 'none' }}>
+          <List.Item.Meta
+            description={
+              <div>
+                <div>{item.action}</div>
+                <span style={{ fontSize: '12px', color: '#999' }}>{item.time}</span>
+              </div>
+            }
+          />
+        </List.Item>
+      )}
+    />
   </SectionCard>
 );
 

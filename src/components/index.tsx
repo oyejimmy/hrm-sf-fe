@@ -1,3 +1,6 @@
-// This is a placeholder for a component.
+import styled from "styled-components";
 
-export {};
+export const Wrapper = styled.div`
+  padding: 24px;
+  background-color: #f5f5f5;
+`;

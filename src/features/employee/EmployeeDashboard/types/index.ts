@@ -1,5 +1,3 @@
-// EmployeeDashboard/types/index.ts
-
 export interface EmployeeProfile {
   name: string;
   designation: string;
@@ -10,9 +8,9 @@ export interface EmployeeProfile {
 export interface StatCard {
   id: string;
   title: string;
-  value: number | string;
+  value: number;
   suffix?: string;
-  color?: string;
+  color: string;
   icon?: React.ReactNode;
 }
 
@@ -20,20 +18,21 @@ export interface ScheduleEvent {
   id: string;
   date: string;
   title: string;
-  type: "Meeting" | "Training" | "Deadline" | "Event";
+  type: string;
 }
 
 export interface TrainingModule {
   id: string;
   name: string;
-  progress: number; // %
+  progress: number;
 }
 
 export interface Activity {
   id: string;
   action: string;
   date: string;
-  status: "Completed" | "Pending" | "In Progress";
+  time: any;
+  status: string;
 }
 
 export interface Announcement {
@@ -41,7 +40,7 @@ export interface Announcement {
   title: string;
   description: string;
   date: string;
-  type: "General" | "Policy" | "Event";
+  type: string;
 }
 
 export interface QuickAction {
@@ -49,4 +48,22 @@ export interface QuickAction {
   label: string;
   icon: React.ReactNode;
   onClick: () => void;
+}
+
+export interface Holiday {
+  id: string;
+  name: string;
+  date: string;
+  day: string;
+}
+
+export interface TrainingProgram {
+  id: string;
+  course: string;
+  category: string;
+  instructor: string;
+  duration: string;
+  enrollment: string;
+  status: string;
+  action: string;
 }
