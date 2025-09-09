@@ -8,12 +8,11 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-      sans-serif;
+    font-family: ${props => props.theme.typography.fontFamily};
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #f5f5f5;
+    background-color: ${props => props.theme.colors.background};
+    color: ${props => props.theme.colors.textPrimary};
   }
 
   code {
@@ -26,37 +25,39 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   .ant-layout-content {
-    background: #fff;
+    background: ${props => props.theme.colors.surface};
   }
 
   .ant-card {
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: ${props => props.theme.borderRadius.lg};
+    box-shadow: ${props => props.theme.shadows.md};
   }
 
   .ant-btn {
-    border-radius: 6px;
+    border-radius: ${props => props.theme.borderRadius.md};
   }
 
   .ant-input {
-    border-radius: 6px;
+    border-radius: ${props => props.theme.borderRadius.md};
   }
 
   .ant-select .ant-select-selector {
-    border-radius: 6px;
+    border-radius: ${props => props.theme.borderRadius.md};
   }
 
   .ant-form-item-label > label {
-    font-weight: 500;
+    font-weight: ${props => props.theme.typography.fontWeight.medium};
+    color: ${props => props.theme.colors.textPrimary};
   }
 
   .ant-statistic-title {
-    font-weight: 500;
-    color: #666;
+    font-weight: ${props => props.theme.typography.fontWeight.medium};
+    color: ${props => props.theme.colors.textSecondary};
   }
 
   .ant-statistic-content {
-    font-weight: 600;
+    font-weight: ${props => props.theme.typography.fontWeight.semibold};
+    color: ${props => props.theme.colors.textPrimary};
   }
 
   /* Custom scrollbar */
@@ -65,16 +66,16 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: ${props => props.theme.colors.surfaceSecondary};
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 4px;
+    background: ${props => props.theme.colors.border};
+    border-radius: ${props => props.theme.borderRadius.sm};
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
+    background: ${props => props.theme.colors.textSecondary};
   }
 
   /* Loading spinner */
@@ -88,14 +89,14 @@ export const GlobalStyles = createGlobalStyle`
   /* Error message */
   .error-message {
     text-align: center;
-    color: #ff4d4f;
-    padding: 20px;
+    color: ${props => props.theme.colors.error};
+    padding: ${props => props.theme.spacing.lg};
   }
 
   /* Success message */
   .success-message {
     text-align: center;
-    color: #52c41a;
-    padding: 20px;
+    color: ${props => props.theme.colors.success};
+    padding: ${props => props.theme.spacing.lg};
   }
 `;

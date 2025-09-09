@@ -12,31 +12,31 @@ const { TabPane } = Tabs;
 // Styled Components
 const StyledLayout = styled(Layout)`
   min-height: 100vh;
-//   background-color: ${props => props.theme.isDarkMode ? '#141414' : '#f5f5f5'};
+  background-color: ${props => props.theme.colors.background};
 `;
 
 const DashboardContent = styled(Content)`
-  padding: 24px;
+  padding: ${props => props.theme.spacing.lg};
   
-  @media (max-width: 768px) {
-    padding: 16px;
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    padding: ${props => props.theme.spacing.md};
   }
 `;
 
 const StatCard = styled(Card)`
-  border-radius: 8px;
-//   border: 1px solid ${props => props.theme.isDarkMode ? '#434343' : '#f0f0f0'};
-//   background-color: ${props => props.theme.isDarkMode ? '#1f1f1f' : '#ffffff'};
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  border-radius: ${props => props.theme.borderRadius.lg};
+  border: 1px solid ${props => props.theme.colors.borderLight};
+  background-color: ${props => props.theme.colors.surface};
+  box-shadow: ${props => props.theme.shadows.sm};
   height: 100%;
   
   .ant-card-body {
-    padding: 20px;
+    padding: ${props => props.theme.spacing.lg};
   }
   
-  @media (max-width: 768px) {
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
     .ant-card-body {
-      padding: 16px;
+      padding: ${props => props.theme.spacing.md};
     }
   }
 `;
@@ -53,58 +53,58 @@ const StatInfo = styled.div`
 `;
 
 const StatLabel = styled.span`
-//   color: ${props => props.theme.isDarkMode ? '#8c8c8c' : '#8c8c8c'};
-  font-size: 14px;
+  color: ${props => props.theme.colors.textSecondary};
+  font-size: ${props => props.theme.typography.fontSize.sm};
   
-  @media (max-width: 768px) {
-    font-size: 12px;
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    font-size: ${props => props.theme.typography.fontSize.xs};
   }
 `;
 
 const StatValue = styled.h3`
-  margin: 8px 0 0 0;
-//   color: ${props => props.theme.isDarkMode ? '#ffffff' : '#262626'};
-  font-size: 24px;
-  font-weight: 600;
+  margin: ${props => props.theme.spacing.sm} 0 0 0;
+  color: ${props => props.theme.colors.textPrimary};
+  font-size: ${props => props.theme.typography.fontSize.xxl};
+  font-weight: ${props => props.theme.typography.fontWeight.semibold};
   
-  @media (max-width: 768px) {
-    font-size: 18px;
-    margin: 4px 0 0 0;
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    font-size: ${props => props.theme.typography.fontSize.lg};
+    margin: ${props => props.theme.spacing.xs} 0 0 0;
   }
 `;
 
 const StatIcon = styled.div`
-  font-size: 24px;
-  color: #1890ff;
+  font-size: ${props => props.theme.typography.fontSize.xxl};
+  color: ${props => props.theme.colors.primary};
   
-  @media (max-width: 768px) {
-    font-size: 20px;
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    font-size: ${props => props.theme.typography.fontSize.xl};
   }
 `;
 
 const GreenStatIcon = styled(StatIcon)`
-  color: #52c41a;
+  color: ${props => props.theme.colors.success};
 `;
 
 const OrangeStatIcon = styled(StatIcon)`
-  color: #fa8c16;
+  color: ${props => props.theme.colors.warning};
 `;
 
 const PurpleStatIcon = styled(StatIcon)`
-  color: #722ed1;
+  color: ${props => props.theme.colors.secondary};
 `;
 
 const AddPolicyButton = styled(Button)`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: ${props => props.theme.spacing.sm};
 `;
 
 const DirectoryCard = styled(Card)`
-  border-radius: 8px;
-//   border: 1px solid ${props => props.theme.isDarkMode ? '#434343' : '#f0f0f0'};
-//   background-color: ${props => props.theme.isDarkMode ? '#1f1f1f' : '#ffffff'};
-  margin-top: 24px;
+  border-radius: ${props => props.theme.borderRadius.lg};
+  border: 1px solid ${props => props.theme.colors.borderLight};
+  background-color: ${props => props.theme.colors.surface};
+  margin-top: ${props => props.theme.spacing.lg};
   
   .ant-card-body {
     padding: 0;
@@ -115,61 +115,61 @@ const DirectoryHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-//   border-bottom: 1px solid ${props => props.theme.isDarkMode ? '#434343' : '#f0f0f0'};
+  padding: ${props => props.theme.spacing.md} ${props => props.theme.spacing.lg};
+  border-bottom: 1px solid ${props => props.theme.colors.borderLight};
   
-  @media (max-width: 768px) {
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
-    padding: 16px;
+    gap: ${props => props.theme.spacing.md};
+    padding: ${props => props.theme.spacing.md};
   }
 `;
 
 const SearchInput = styled(Input)`
-  border-radius: 6px;
+  border-radius: ${props => props.theme.borderRadius.md};
   width: 250px;
   
-  @media (max-width: 768px) {
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
     width: 100%;
   }
 `;
 
 const StyledTable = styled(Table)`
-  border-radius: 8px;
+  border-radius: ${props => props.theme.borderRadius.lg};
   
   .ant-table-thead > tr > th {
-    // background-color: ${props => props.theme.isDarkMode ? '#1d1d1d' : '#fafafa'};
-    // color: ${props => props.theme.isDarkMode ? '#ffffff' : '#262626'};
-    // border-bottom: 1px solid ${props => props.theme.isDarkMode ? '#434343' : '#f0f0f0'};
+    background-color: ${props => props.theme.colors.surfaceSecondary};
+    color: ${props => props.theme.colors.textPrimary};
+    border-bottom: 1px solid ${props => props.theme.colors.borderLight};
   }
   
   .ant-table-tbody > tr > td {
-    // border-bottom: 1px solid ${props => props.theme.isDarkMode ? '#434343' : '#f0f0f0'};
-    // color: ${props => props.theme.isDarkMode ? '#ffffff' : '#262626'};
+    border-bottom: 1px solid ${props => props.theme.colors.borderLight};
+    color: ${props => props.theme.colors.textPrimary};
   }
   
   .ant-table-tbody > tr {
-    // background-color: ${props => props.theme.isDarkMode ? '#1f1f1f' : '#ffffff'};
+    background-color: ${props => props.theme.colors.surface};
   }
   
   .ant-table-tbody > tr:hover > td {
-    // background-color: ${props => props.theme.isDarkMode ? '#2a2a2a' : '#fafafa'} !important;
+    background-color: ${props => props.theme.colors.surfaceSecondary} !important;
   }
   
-  @media (max-width: 768px) {
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
     .ant-table-thead > tr > th,
     .ant-table-tbody > tr > td {
-      padding: 8px;
+      padding: ${props => props.theme.spacing.sm};
     }
   }
 `;
 
 const PageTitle = styled.h4`
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-//   color: ${props => props.theme.isDarkMode ? '#ffffff' : '#262626'};
+  font-size: ${props => props.theme.typography.fontSize.md};
+  font-weight: ${props => props.theme.typography.fontWeight.semibold};
+  color: ${props => props.theme.colors.textPrimary};
 `;
 
 const AttendanceAndLeave: React.FC = () => {
@@ -234,10 +234,10 @@ const AttendanceAndLeave: React.FC = () => {
             key: "status",
             render: (status: string) => {
                 let color = 'default';
-                if (status === 'Present') color = 'green';
-                if (status === 'Absent') color = 'red';
-                if (status === 'Late') color = 'orange';
-                if (status === 'Half Day') color = 'blue';
+                if (status === 'Present') color = 'success';
+                if (status === 'Absent') color = 'error';
+                if (status === 'Late') color = 'warning';
+                if (status === 'Half Day') color = 'processing';
 
                 return <Tag color={color}>{status}</Tag>;
             }
@@ -266,9 +266,9 @@ const AttendanceAndLeave: React.FC = () => {
             key: "status",
             render: (status: string) => {
                 let color = 'default';
-                if (status === 'Approved') color = 'green';
-                if (status === 'Rejected') color = 'red';
-                if (status === 'Pending') color = 'orange';
+                if (status === 'Approved') color = 'success';
+                if (status === 'Rejected') color = 'error';
+                if (status === 'Pending') color = 'warning';
 
                 return <Tag color={color}>{status}</Tag>;
             }

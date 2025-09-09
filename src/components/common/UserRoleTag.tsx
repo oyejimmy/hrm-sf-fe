@@ -11,44 +11,44 @@ interface UserRoleTagProps {
 const StyledTag = styled(Tag)`
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  margin-right: 8px;
+  gap: ${props => props.theme?.spacing?.xs || '4px'};
+  padding: 2px ${props => props.theme?.spacing?.sm || '8px'};
+  border-radius: ${props => props.theme?.borderRadius?.sm || '4px'};
+  font-size: ${props => props.theme?.typography?.fontSize?.xs || '12px'};
+  font-weight: ${props => props.theme?.typography?.fontWeight?.medium || 500};
+  margin-right: ${props => props.theme?.spacing?.sm || '8px'};
   
-  @media (max-width: 768px) {
+  @media (max-width: ${props => props.theme?.breakpoints?.md || '768px'}) {
     padding: 1px 6px;
     font-size: 11px;
   }
 `;
 
 export const UserRoleTag: React.FC<UserRoleTagProps> = ({ role, className }) => {
-  // Define tag properties based on role
+  // Define tag properties based on role using theme colors
   const getRoleTagProps = () => {
     switch (role.toLowerCase()) {
       case 'admin':
         return {
-          color: 'red',
+          color: 'error',
           icon: <CrownOutlined />,
           text: 'Admin'
         };
       case 'hr':
         return {
-          color: 'volcano',
+          color: 'warning',
           icon: <CrownOutlined />,
           text: 'HR'
         };
       case 'team_lead':
         return {
-          color: 'geekblue',
+          color: 'processing',
           icon: <TeamOutlined />,
           text: 'Team Lead'
         };
       case 'employee':
         return {
-          color: 'green',
+          color: 'success',
           icon: <UserOutlined />,
           text: 'Employee'
         };

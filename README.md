@@ -1,4 +1,20 @@
-# Getting Started with Create React App
+# HRM System Frontend
+
+This is the frontend application for the HRM System, built with React, TypeScript, and a comprehensive theme system.
+
+## Theme System
+
+The application uses a custom theme system with consistent colors across light and dark modes:
+
+### Color Palette
+- **Primary Color**: #2958C4
+- **Secondary Color**: #C49629  
+- **Component Color**: #3D4C6F
+- **Monochromatic Palette**: #2958C4, #3D4C6F, #2D2F33
+
+All components use theme variables instead of hard-coded colors. See `THEME_GUIDE.md` for detailed usage instructions.
+
+## Getting Started
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

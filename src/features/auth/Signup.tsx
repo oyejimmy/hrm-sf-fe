@@ -3,12 +3,54 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { Form, Input, Button, Card, Alert, Typography, Select } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
+import styled from 'styled-components';
 import { RootState } from '../../store';
 import { signup, clearError } from '../../store/slices/authSlice';
 import { validateFormData, isValidEmail } from '../../utils/security';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const { Title } = Typography;
 const { Option } = Select;
+
+const SignupContainer = styled.div`
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, ${props => props.theme.colors.primary} 0%, ${props => props.theme.colors.component} 100%);
+`;
+
+const SignupCard = styled(Card)`
+  width: 450px;
+  box-shadow: ${props => props.theme.shadows.xl};
+  border-radius: ${props => props.theme.borderRadius.xl};
+`;
+
+const SignupTitle = styled(Title)`
+  color: ${props => props.theme.colors.primary} !important;
+  margin-bottom: ${props => props.theme.spacing.sm} !important;
+`;
+
+const SignupSubtitle = styled.p`
+  color: ${props => props.theme.colors.textSecondary};
+  margin: 0;
+`;
+
+const SignupButton = styled(Button)`
+  height: 40px;
+`;
+
+const LoginText = styled.span`
+  color: ${props => props.theme.colors.textSecondary};
+`;
+
+const LoginLink = styled(Link)`
+  color: ${props => props.theme.colors.primary};
+  
+  &:hover {
+    color: ${props => props.theme.colors.secondary};
+  }
+`;
 
 interface SignupFormData {
   email: string;
@@ -23,6 +65,7 @@ export const Signup: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isLoading, error } = useSelector((state: RootState) => state.auth);
+  const { currentTheme } = useTheme();
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -64,19 +107,13 @@ export const Signup: React.FC = () => {
   };
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-    }}>
-      <Card style={{ width: 450, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+    <SignupContainer>
+      <SignupCard>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <Title level={2} style={{ color: '#1890ff', marginBottom: 8 }}>
+          <SignupTitle level={2}>
             Create Account
-          </Title>
-          <p style={{ color: '#666', margin: 0 }}>Join the HRM System</p>
+          </SignupTitle>
+          <SignupSubtitle>Join the HRM System</SignupSubtitle>
         </div>
 
         {error && (
@@ -193,25 +230,24 @@ export const Signup: React.FC = () => {
           </Form.Item>
 
           <Form.Item>
-            <Button
+            <SignupButton
               type="primary"
               htmlType="submit"
               loading={isLoading}
               block
-              style={{ height: 40 }}
             >
               Create Account
-            </Button>
+            </SignupButton>
           </Form.Item>
         </Form>
 
         <div style={{ textAlign: 'center', marginTop: 16 }}>
-          <span style={{ color: '#666' }}>Already have an account? </span>
-          <Link to="/login" style={{ color: '#1890ff' }}>
+          <LoginText>Already have an account? </LoginText>
+          <LoginLink to="/login">
             Sign in here
-          </Link>
+          </LoginLink>
         </div>
-      </Card>
-    </div>
+      </SignupCard>
+    </SignupContainer>
   );
 };

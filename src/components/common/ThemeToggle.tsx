@@ -12,9 +12,15 @@ const ThemeButton = styled(Button)`
   height: 32px;
   border-radius: 50%;
   padding: 0;
-  margin-left: 8px;
+  margin-left: ${props => props.theme?.spacing?.sm || '8px'};
+  color: ${props => props.theme?.colors?.secondary || '#C49629'};
   
-  @media (max-width: 768px) {
+  &:hover {
+    color: ${props => props.theme?.colors?.primary || '#2958C4'};
+    background-color: ${props => props.theme?.colors?.surfaceSecondary || '#fafafa'};
+  }
+  
+  @media (max-width: ${props => props.theme?.breakpoints?.md || '768px'}) {
     width: 28px;
     height: 28px;
   }

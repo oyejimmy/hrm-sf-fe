@@ -1,12 +1,19 @@
-export const theme = {
-  themeMode: 'light',
+// Light theme colors
+const lightTheme = {
+  themeMode: 'light' as const,
   colors: {
-    primary: '#1890ff',
-    secondary: '#722ed1',
+    primary: '#2958C4',
+    secondary: '#C49629',
+    component: '#3D4C6F',
+    monochromatic: {
+      primary: '#2958C4',
+      secondary: '#3D4C6F',
+      tertiary: '#2D2F33',
+    },
     success: '#52c41a',
-    warning: '#faad14',
+    warning: '#C49629',
     error: '#ff4d4f',
-    info: '#1890ff',
+    info: '#2958C4',
     
     // Background colors
     background: '#f0f2f5',
@@ -14,8 +21,8 @@ export const theme = {
     surfaceSecondary: '#fafafa',
     
     // Text colors
-    textPrimary: '#262626',
-    textSecondary: '#8c8c8c',
+    textPrimary: '#2D2F33',
+    textSecondary: '#3D4C6F',
     textDisabled: '#bfbfbf',
     
     // Border colors
@@ -24,10 +31,51 @@ export const theme = {
     
     // Status colors
     statusActive: '#52c41a',
-    statusInactive: '#faad14',
+    statusInactive: '#C49629',
     statusSuspended: '#ff4d4f',
   },
-  
+};
+
+// Dark theme colors
+const darkTheme = {
+  themeMode: 'dark' as const,
+  colors: {
+    primary: '#2958C4',
+    secondary: '#C49629',
+    component: '#3D4C6F',
+    monochromatic: {
+      primary: '#2958C4',
+      secondary: '#3D4C6F',
+      tertiary: '#2D2F33',
+    },
+    success: '#52c41a',
+    warning: '#C49629',
+    error: '#ff4d4f',
+    info: '#2958C4',
+    
+    // Background colors
+    background: '#141414',
+    surface: '#1f1f1f',
+    surfaceSecondary: '#262626',
+    
+    // Text colors
+    textPrimary: '#ffffff',
+    textSecondary: '#d9d9d9',
+    textDisabled: '#595959',
+    
+    // Border colors
+    border: '#434343',
+    borderLight: '#303030',
+    
+    // Status colors
+    statusActive: '#52c41a',
+    statusInactive: '#C49629',
+    statusSuspended: '#ff4d4f',
+  },
+};
+
+// Shared theme properties
+const sharedTheme = {
   spacing: {
     xs: '4px',
     sm: '8px',
@@ -93,3 +141,17 @@ export const theme = {
     tooltip: 1070,
   },
 };
+
+export const theme = {
+  light: {
+    ...lightTheme,
+    ...sharedTheme,
+  },
+  dark: {
+    ...darkTheme,
+    ...sharedTheme,
+  },
+};
+
+// Export individual themes for direct use
+export { lightTheme, darkTheme };

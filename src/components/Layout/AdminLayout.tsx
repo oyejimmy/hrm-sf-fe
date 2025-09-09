@@ -14,8 +14,38 @@ import {
 } from '@ant-design/icons';
 import { Header } from '../Header';
 import { useTheme } from '../../contexts/ThemeContext';
+import styled from 'styled-components';
 
 const { Sider, Content } = Layout;
+
+const StyledLayout = styled(Layout)`
+  min-height: 100vh;
+`;
+
+const StyledSider = styled(Sider)`
+  .ant-layout-sider-children {
+    display: flex;
+    flex-direction: column;
+  }
+`;
+
+const LogoContainer = styled.div`
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${props => props.theme?.colors?.primary || '#2958C4'};
+  font-size: ${props => props.theme?.typography?.fontSize?.lg || '18px'};
+  font-weight: ${props => props.theme?.typography?.fontWeight?.bold || 700};
+  border-bottom: 1px solid ${props => props.theme?.colors?.borderLight || '#f0f0f0'};
+`;
+
+const StyledContent = styled(Content)`
+  margin: ${props => props.theme?.spacing?.lg || '24px'};
+  background: ${props => props.theme?.colors?.surface || '#ffffff'};
+  padding: ${props => props.theme?.spacing?.lg || '24px'};
+  border-radius: ${props => props.theme?.borderRadius?.lg || '8px'};
+`;
 
 export const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -75,20 +105,11 @@ export const AdminLayout: React.FC = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider theme={isDarkMode ? 'dark' : 'light'} width={250}>
-        <div style={{ 
-          height: 64, 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          color: isDarkMode ? 'white' : '#1890ff',
-          fontSize: '18px',
-          fontWeight: 'bold',
-          borderBottom: `1px solid ${isDarkMode ? '#303030' : '#f0f0f0'}`
-        }}>
+    <StyledLayout>
+      <StyledSider theme={isDarkMode ? 'dark' : 'light'} width={250}>
+        <LogoContainer>
           HRM Admin
-        </div>
+        </LogoContainer>
         <Menu
           theme={isDarkMode ? 'dark' : 'light'}
           mode="inline"
@@ -96,18 +117,13 @@ export const AdminLayout: React.FC = () => {
           items={menuItems}
           onClick={handleMenuClick}
         />
-      </Sider>
+      </StyledSider>
       <Layout>
         <Header title="Admin Panel" />
-        <Content style={{ 
-          margin: '24px', 
-          background: isDarkMode ? '#141414' : '#fff', 
-          padding: '24px',
-          borderRadius: '8px'
-        }}>
+        <StyledContent>
           <Outlet />
-        </Content>
+        </StyledContent>
       </Layout>
-    </Layout>
+    </StyledLayout>
   );
 };

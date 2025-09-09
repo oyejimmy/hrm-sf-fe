@@ -6,6 +6,12 @@ declare module 'styled-components' {
     colors: {
       primary: string;
       secondary: string;
+      component: string;
+      monochromatic: {
+        primary: string;
+        secondary: string;
+        tertiary: string;
+      };
       success: string;
       warning: string;
       error: string;

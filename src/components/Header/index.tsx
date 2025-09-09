@@ -22,71 +22,69 @@ interface HeaderProps {
 }
 
 // Styled Components
-const HeaderContainer = styled(AntHeader) <{ $isDarkMode: boolean }>`
-  background: ${props => props.$isDarkMode ? '#001529' : '#fff'} !important;
-  padding: 0 24px !important;
+const HeaderContainer = styled(AntHeader)`
+  background: ${props => props.theme?.colors?.surface || '#ffffff'} !important;
+  padding: 0 ${props => props.theme?.spacing?.lg || '24px'} !important;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid ${props => props.$isDarkMode ? '#303030' : '#f0f0f0'} !important;
-  box-shadow: ${props => props.$isDarkMode
-    ? '0 2px 12px rgba(0, 0, 0, 0.25)'
-    : '0 2px 12px rgba(0, 0, 0, 0.1)'} !important;
+  border-bottom: 1px solid ${props => props.theme?.colors?.borderLight || '#f0f0f0'} !important;
+  box-shadow: ${props => props.theme?.shadows?.md || '0 4px 6px rgba(0, 0, 0, 0.1)'} !important;
   transition: all 0.3s ease;
-  z-index: 1000;
+  z-index: ${props => props.theme?.zIndex?.sticky || 1020};
   position: sticky;
   top: 0;
   height: 64px;
 `;
 
-const ThemeToggleButton = styled(Button) <{ $isDarkMode: boolean }>`
+const ThemeToggleButton = styled(Button)`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.$isDarkMode ? '#ffd666' : '#faad14'};
+  color: ${props => props.theme?.colors?.secondary || '#C49629'};
   &:hover {
-    color: ${props => props.$isDarkMode ? '#ffd666' : '#1890ff'};
+    color: ${props => props.theme?.colors?.primary || '#2958C4'};
   }
 `;
 
-const NotificationButton = styled(Button) <{ $isDarkMode: boolean }>`
+const NotificationButton = styled(Button)`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.$isDarkMode ? '#fff' : '#595959'};
+  color: ${props => props.theme?.colors?.textSecondary || '#8c8c8c'};
   &:hover {
-    color: ${props => props.$isDarkMode ? '#ffd666' : '#1890ff'};
+    color: ${props => props.theme?.colors?.primary || '#2958C4'};
   }
 `;
 
-const UserButton = styled(Button) <{ $isDarkMode: boolean }>`
+const UserButton = styled(Button)`
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: ${props => props.$isDarkMode ? '#fff' : 'inherit'};
+  gap: ${props => props.theme?.spacing?.sm || '8px'};
+  color: ${props => props.theme?.colors?.textPrimary || '#262626'};
   background: transparent;
   border-radius: 20px;
   padding: 4px 12px 4px 4px;
   &:hover {
-    color: ${props => props.$isDarkMode ? '#fff' : 'inherit'};
+    color: ${props => props.theme?.colors?.textPrimary || '#262626'};
   }
 `;
 
 const UserAvatar = styled(Avatar)`
-  background: linear-gradient(135deg, #1890ff 0%, #52c41a 100%);
+  background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#2958C4'} 0%, ${props => props.theme?.colors?.secondary || '#C49629'} 100%);
 `;
 
-const VerticalDivider = styled(Divider) <{ $isDarkMode: boolean }>`
+const VerticalDivider = styled(Divider)`
   height: 24px;
-  margin: 0 16px;
-  border-color: ${props => props.$isDarkMode ? '#434343' : '#d9d9d9'};
+  margin: 0 ${props => props.theme?.spacing?.md || '16px'};
+  border-color: ${props => props.theme?.colors?.border || '#d9d9d9'};
 `;
 
 export const Header: React.FC<HeaderProps> = ({ title }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { isDarkMode, toggleTheme, currentTheme } = useTheme();
 
   const handleLogout = () => {
     dispatch(logout() as any);
@@ -121,7 +119,7 @@ export const Header: React.FC<HeaderProps> = ({ title }) => {
   ];
 
   return (
-    <HeaderContainer $isDarkMode={isDarkMode}>
+    <HeaderContainer>
       <div style={{ width: 40 }}>
         {/* Spacer for balance */}
       </div>
@@ -129,20 +127,17 @@ export const Header: React.FC<HeaderProps> = ({ title }) => {
       <Space size="middle">
         <Tag
           icon={<UserOutlined />}
-          color={isDarkMode ? "gold" : "blue"}>
+          color={currentTheme.colors.primary}>
           {title}
         </Tag>
 
         <ThemeToggleButton
-          $isDarkMode={isDarkMode}
           icon={isDarkMode ? <MoonOutlined /> : <SunOutlined />}
           onClick={toggleTheme}
           type="text"
         />
 
-
         <NotificationButton
-          $isDarkMode={isDarkMode}
           icon={
             <Badge dot count={3} size="small">
               <BellOutlined />
@@ -152,14 +147,14 @@ export const Header: React.FC<HeaderProps> = ({ title }) => {
           type="text"
         />
 
-        <VerticalDivider type="vertical" $isDarkMode={isDarkMode} />
+        <VerticalDivider type="vertical" />
 
         <Dropdown
           menu={{ items: userMenuItems }}
           placement="bottomRight"
           trigger={['click']}
         >
-          <UserButton $isDarkMode={isDarkMode} type="text">
+          <UserButton type="text">
             <UserAvatar
               size="small"
               icon={<UserOutlined />}

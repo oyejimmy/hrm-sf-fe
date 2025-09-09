@@ -22,54 +22,52 @@ const StyledLayout = styled(Layout)`
   min-height: 100vh;
 `;
 
-const StyledSider = styled(Sider) <{ $isDarkMode: boolean }>`
+const StyledSider = styled(Sider)`
   position: sticky;
   top: 0;
-  box-shadow: ${props => props.$isDarkMode
-    ? '2px 0 8px rgba(0, 0, 0, 0.15)'
-    : '2px 0 8px rgba(0, 0, 0, 0.1)'};
-  z-index: 999;
-  background: ${props => props.$isDarkMode ? '#141414' : 'white'};
+  box-shadow: ${props => props.theme?.shadows?.md || '0 4px 6px rgba(0, 0, 0, 0.1)'};
+  z-index: ${props => props.theme?.zIndex?.sticky || 1020};
+  background: ${props => props.theme?.colors?.surface || '#ffffff'};
   .ant-layout-sider-children {
     display: flex;
     flex-direction: column;
   }
 `;
 
-const StyledContent = styled(Content) <{ $isDarkMode: boolean }>`
-  margin: 24px;
-  background: ${props => props.$isDarkMode ? '#141414' : '#fff'};
-  padding: 24px;
-  border-radius: 8px;
+const StyledContent = styled(Content)`
+  margin: ${props => props.theme?.spacing?.lg || '24px'};
+  background: ${props => props.theme?.colors?.surface || '#ffffff'};
+  padding: ${props => props.theme?.spacing?.lg || '24px'};
+  border-radius: ${props => props.theme?.borderRadius?.lg || '8px'};
   min-height: calc(100vh - 112px);
 `;
 
-const LogoContainer = styled.div<{ $isDarkMode: boolean }>`
+const LogoContainer = styled.div`
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.$isDarkMode ? 'white' : '#1890ff'};
-  font-size: 18px;
-  font-weight: bold;
-  border-bottom: 1px solid ${props => props.$isDarkMode ? '#303030' : '#f0f0f0'};
+  color: ${props => props.theme?.colors?.primary || '#2958C4'};
+  font-size: ${props => props.theme?.typography?.fontSize?.lg || '18px'};
+  font-weight: ${props => props.theme?.typography?.fontWeight?.bold || 700};
+  border-bottom: 1px solid ${props => props.theme?.colors?.borderLight || '#f0f0f0'};
   flex-shrink: 0;
 `;
 
-const UserProfile = styled.div<{ $isDarkMode: boolean }>`
-  padding: 24px 16px;
+const UserProfile = styled.div`
+  padding: ${props => props.theme?.spacing?.lg || '24px'} ${props => props.theme?.spacing?.md || '16px'};
   text-align: center;
-  border-bottom: 1px solid ${props => props.$isDarkMode ? '#303030' : '#f0f0f0'};
-  background: ${props => props.$isDarkMode ? '#141414' : 'white'};
+  border-bottom: 1px solid ${props => props.theme?.colors?.borderLight || '#f0f0f0'};
+  background: ${props => props.theme?.colors?.surface || '#ffffff'};
   flex-shrink: 0;
 `;
 
-const UserAvatar = styled.div<{ $isDarkMode: boolean }>`
+const UserAvatar = styled.div`
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1890ff 0%, #52c41a 100%);
-  margin: 0 auto 16px;
+  background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#2958C4'} 0%, ${props => props.theme?.colors?.secondary || '#C49629'} 100%);
+  margin: 0 auto ${props => props.theme?.spacing?.md || '16px'};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,9 +75,9 @@ const UserAvatar = styled.div<{ $isDarkMode: boolean }>`
   font-size: 30px;
 `;
 
-const UserName = styled.h2<{ $isDarkMode: boolean }>`
-  margin: 0 0 8px;
-  color: ${props => props.$isDarkMode ? 'white' : '#262626'};
+const UserName = styled.h2`
+  margin: 0 0 ${props => props.theme?.spacing?.sm || '8px'};
+  color: ${props => props.theme?.colors?.textPrimary || '#2D2F33'};
 `;
 
 const MenuContainer = styled.div`
@@ -95,7 +93,7 @@ const MenuContainer = styled.div`
 export const EmployeeLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, currentTheme } = useTheme();
 
   const menuItems = [
     {
@@ -145,18 +143,17 @@ export const EmployeeLayout: React.FC = () => {
       <StyledSider
         theme={isDarkMode ? 'dark' : 'light'}
         width={300}
-        $isDarkMode={isDarkMode}
       >
-        <LogoContainer $isDarkMode={isDarkMode}>
+        <LogoContainer>
           HRM Employee
         </LogoContainer>
 
-        <UserProfile $isDarkMode={isDarkMode}>
-          <UserAvatar $isDarkMode={isDarkMode}>
+        <UserProfile>
+          <UserAvatar>
             <UserOutlined style={{ fontSize: '36px' }} />
           </UserAvatar>
-          <UserName $isDarkMode={isDarkMode}>Jamil</UserName>
-          <Tag color={isDarkMode ? "gold" : "purple"}>Welcome Back</Tag>
+          <UserName>Jamil</UserName>
+          <Tag color={currentTheme.colors.secondary}>Welcome Back</Tag>
         </UserProfile>
 
         <MenuContainer>
@@ -172,7 +169,7 @@ export const EmployeeLayout: React.FC = () => {
 
       <Layout>
         <Header title="Employee Portal" />
-        <StyledContent $isDarkMode={isDarkMode}>
+        <StyledContent>
           <Outlet />
         </StyledContent>
       </Layout>

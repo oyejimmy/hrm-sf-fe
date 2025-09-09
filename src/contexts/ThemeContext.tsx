@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider, theme as antdTheme } from 'antd';
+import { ThemeProvider as StyledThemeProvider } from 'styled-components';
+import { theme } from '../styles/theme';
 
 interface ThemeContextType {
   isDarkMode: boolean;
   toggleTheme: () => void;
+  currentTheme: any;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -22,23 +25,31 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  const currentTheme = isDarkMode ? theme.dark : theme.light;
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
   };
 
   return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
-      <ConfigProvider
-        theme={{
-          algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
-          token: {
-            colorPrimary: '#1890ff',
-          },
-        }}
-      >
-        {children}
-      </ConfigProvider>
+    <ThemeContext.Provider value={{ isDarkMode, toggleTheme, currentTheme }}>
+      <StyledThemeProvider theme={currentTheme}>
+        <ConfigProvider
+          theme={{
+            algorithm: isDarkMode ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+            token: {
+              colorPrimary: currentTheme.colors.primary,
+              colorInfo: currentTheme.colors.info,
+              colorSuccess: currentTheme.colors.success,
+              colorWarning: currentTheme.colors.warning,
+              colorError: currentTheme.colors.error,
+            },
+          }}
+        >
+          {children}
+        </ConfigProvider>
+      </StyledThemeProvider>
     </ThemeContext.Provider>
   );
 };
