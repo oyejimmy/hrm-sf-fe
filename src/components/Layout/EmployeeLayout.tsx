@@ -25,12 +25,11 @@ const StyledLayout = styled(Layout)`
 const StyledSider = styled(Sider) <{ $isDarkMode: boolean }>`
   position: sticky;
   top: 0;
-  height: 100vh;
   box-shadow: ${props => props.$isDarkMode
     ? '2px 0 8px rgba(0, 0, 0, 0.15)'
     : '2px 0 8px rgba(0, 0, 0, 0.1)'};
   z-index: 999;
-  
+  background: ${props => props.$isDarkMode ? '#141414' : 'white'};
   .ant-layout-sider-children {
     display: flex;
     flex-direction: column;
