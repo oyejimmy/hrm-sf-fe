@@ -23,12 +23,12 @@ interface HeaderProps {
 
 // Styled Components
 const HeaderContainer = styled(AntHeader)`
-  background: ${props => props.theme?.colors?.surface || '#ffffff'} !important;
+  background: ${props => props.theme?.themeMode === 'dark' ? '#001529' : '#ffffff'} !important;
   padding: 0 ${props => props.theme?.spacing?.lg || '24px'} !important;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid ${props => props.theme?.colors?.borderLight || '#f0f0f0'} !important;
+  border-bottom: 1px solid ${props => props.theme?.themeMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : (props.theme?.colors?.borderLight || '#f0f0f0')} !important;
   box-shadow: ${props => props.theme?.shadows?.md || '0 4px 6px rgba(0, 0, 0, 0.1)'} !important;
   transition: all 0.3s ease;
   z-index: ${props => props.theme?.zIndex?.sticky || 1020};
