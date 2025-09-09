@@ -82,30 +82,6 @@ const events: any = [
   { id: "e2", date: "2025-09-15", title: "React Training", type: "Training" },
 ];
 
-const activities: Activity[] = [
-  {
-    id: "a1",
-    action: "Sarah Johnson submitted a leave request",
-    time: "2 hours ago",
-    date: "2025-09-01",
-    status: "Completed"
-  },
-  {
-    id: "a2",
-    action: "New candidate applied for Frontend Developer Position",
-    time: "5 hours ago",
-    date: "2025-09-02",
-    status: "New"
-  },
-  {
-    id: "a3",
-    action: "ReactJS Training Module completed by 18 Employees",
-    time: "1 day ago",
-    date: "2025-09-03",
-    status: "Complete"
-  }
-];
-
 const holidays: Holiday[] = [
   {
     id: "h1",
@@ -170,7 +146,7 @@ const EmployeeDashboard: React.FC = () => {
           <Announcements />
         </Col>
         <Col span={8}>
-          <RecentActivities activities={activities} />
+          <RecentActivities />
         </Col>
         <Col span={8}>
           <UpcomingHolidays holidays={holidays} />

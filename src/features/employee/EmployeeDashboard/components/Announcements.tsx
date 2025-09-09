@@ -46,7 +46,7 @@ const scroll = keyframes`
 
 // 📦 Wrapper with hidden overflow
 const ScrollContainer = styled.div`
-  height: 250px; /* adjust height of visible area */
+  height: 250px;
   overflow: hidden;
   position: relative;
 `;
@@ -58,12 +58,27 @@ const ScrollContent = styled.div`
   animation: ${scroll} 15s linear infinite;
 
   &:hover {
-    animation-play-state: paused; /* pause on hover */
+    animation-play-state: paused;
+  }
+`;
+
+// 📋 Styled List Item with shadow + smooth hover
+const StyledListItem = styled(List.Item)<{ bg: string }>`
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  background: ${(props) => props.bg};
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease; /* smooth transition */
+
+  &:hover {
+    transform: translateY(-3px); /* lift effect */
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
   }
 `;
 
 const Announcements = () => {
-  // Duplicate list so animation loops smoothly
   const loopItems = [...announcements, ...announcements];
 
   return (
@@ -71,16 +86,9 @@ const Announcements = () => {
       <ScrollContainer>
         <ScrollContent>
           {loopItems.map((item, index) => (
-            <List.Item
+            <StyledListItem
               key={`${item.id}-${index}`}
-              style={{
-                padding: "12px",
-                border: "none",
-                borderRadius: "8px",
-                marginBottom: "8px",
-                background: backgroundColors[index % backgroundColors.length],
-                boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
-              }}
+              bg={backgroundColors[index % backgroundColors.length]}
             >
               <List.Item.Meta
                 title={
@@ -97,7 +105,7 @@ const Announcements = () => {
                   </div>
                 }
               />
-            </List.Item>
+            </StyledListItem>
           ))}
         </ScrollContent>
       </ScrollContainer>
