@@ -39,6 +39,7 @@ import Payslip from './features/employee/EmployeePayslip';
 import Assets from './features/employee/EmployeeAssets';
 import Documents from './features/employee/EmployeeDocuments';
 import EmployeeProfile from './features/profile/Profile';
+import EditProfile from './features/profile/EditProfile';
 
 // Team Lead Components
 import { TeamLeadDashboard } from './features/teamLead/Dashboard';
@@ -137,6 +138,14 @@ function App() {
                   element={
                     <ProtectedRoute allowedRoles={['admin', 'hr', 'team_lead', 'employee']}>
                       <EmployeeProfile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile/edit"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'hr', 'team_lead', 'employee']}>
+                      <EditProfile />
                     </ProtectedRoute>
                   }
                 />

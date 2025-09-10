@@ -39,6 +39,7 @@ export const ROUTES = {
   
   // Common Routes
   PROFILE: '/profile',
+  EDITPROFILE: '/profile/edit',
   HOME: '/',
 };
 
@@ -69,4 +70,5 @@ export const ROUTE_PERMISSIONS = {
   [ROUTES.TEAM_LEAD.TRAINING]: ['team_lead'],
   
   [ROUTES.PROFILE]: ['admin', 'hr', 'team_lead', 'employee'],
+  [ROUTES.EDITPROFILE]: ['admin', 'hr', 'team_lead', 'employee'],
 };
