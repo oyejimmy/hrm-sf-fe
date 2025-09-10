@@ -71,7 +71,6 @@ const stats: StatCard[] = [
   }
 ];
 
-
 const quickActions: any = [
   { id: "q1", label: "Apply Leave", icon: <CalendarOutlined />, onClick: () => alert("Leave request") },
   { id: "q2", label: "View Payslip", icon: <FileTextOutlined />, onClick: () => alert("Payslip view") },
@@ -80,39 +79,6 @@ const quickActions: any = [
 const events: any = [
   { id: "e1", date: "2025-09-10", title: "Team Meeting", type: "Meeting" },
   { id: "e2", date: "2025-09-15", title: "React Training", type: "Training" },
-];
-
-const trainings: TrainingProgram[] = [
-  {
-    id: "t1",
-    course: "ReactJS Development Fundamentals",
-    category: "Frontend Engineering",
-    instructor: "John Doe",
-    duration: "20 hours",
-    enrollment: "32 enrolled 18 completed",
-    status: "Active",
-    action: "View Details"
-  },
-  {
-    id: "t2",
-    course: "Python Backend Development",
-    category: "Backend Engineering",
-    instructor: "Dr. Lisa Wang",
-    duration: "Quarterly",
-    enrollment: "32 enrolled 18 completed",
-    status: "Completed",
-    action: "View Details"
-  },
-  {
-    id: "t3",
-    course: "ReactJS Development Fundamentals",
-    category: "AI/ML Engineering",
-    instructor: "John Doe",
-    duration: "40 hours",
-    enrollment: "28 enrolled 12 completed",
-    status: "Active",
-    action: "View Details"
-  }
 ];
 
 const EmployeeDashboard: React.FC = () => {
@@ -133,7 +99,7 @@ const EmployeeDashboard: React.FC = () => {
       </Row>
       <Row gutter={[24, 24]}>
         <Col xs={24} lg={24}>
-          <TrainingPrograms trainings={trainings} />
+          <TrainingPrograms />
         </Col>
       </Row>
       <Row gutter={[24, 24]}>
