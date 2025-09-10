@@ -94,6 +94,8 @@ function App() {
                   <Route path="training" element={<TrainingManagement />} />
                   <Route path="documents" element={<DocumentManagement />} />
                   <Route path="communication" element={<CommunicationAndNotification />} />
+                  <Route path="profile" element={<EmployeeProfile />} />
+                  <Route path="profile/edit" element={<EditProfile />} />
                 </Route>
 
                 {/* Employee Routes */}
@@ -113,6 +115,8 @@ function App() {
                   <Route path="payslip" element={<Payslip />} />
                   <Route path="assets" element={<Assets />} />
                   <Route path="documents" element={<Documents />} />
+                  <Route path="profile" element={<EmployeeProfile />} />
+                  <Route path="profile/edit" element={<EditProfile />} />
                 </Route>
 
                 {/* Team Lead Routes */}
@@ -130,25 +134,11 @@ function App() {
                   <Route path="leave-requests" element={<TeamLeaveRequests />} />
                   <Route path="performance" element={<TeamPerformance />} />
                   <Route path="training" element={<TrainingAssignments />} />
+                  <Route path="profile" element={<EmployeeProfile />} />
+                  <Route path="profile/edit" element={<EditProfile />} />
                 </Route>
 
-                {/* Profile Route */}
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute allowedRoles={['admin', 'hr', 'team_lead', 'employee']}>
-                      <EmployeeProfile />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile/edit"
-                  element={
-                    <ProtectedRoute allowedRoles={['admin', 'hr', 'team_lead', 'employee']}>
-                      <EditProfile />
-                    </ProtectedRoute>
-                  }
-                />
+
 
                 {/* Auth Test Route */}
                 <Route

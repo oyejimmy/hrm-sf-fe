@@ -31,189 +31,12 @@ import {
   Users,
   Trash2,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useTheme } from '../../contexts/ThemeContext';
+import * as S from './styles';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
-
-// Styled Components
-const PageContainer = styled.div<{ isDarkMode: boolean }>`
-  background: ${props => props.isDarkMode ? '#141414' : '#f0f2f5'};
-  min-height: 100vh;
-  padding: 24px;
-  color: ${props => props.isDarkMode ? 'white' : 'inherit'};
-`;
-
-const CoverSection = styled.div<{ bgImage?: string; isDarkMode: boolean }>`
-  height: 250px;
-  background: ${props => props.bgImage
-    ? `url(${props.bgImage}) center/cover`
-    : props.isDarkMode
-      ? 'linear-gradient(135deg, #434343 0%, #000000 100%)'
-      : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};
-  position: relative;
-  border-radius: 8px 8px 0 0;
-`;
-
-const ProfileContent = styled.div`
-  padding: 0 24px;
-  margin-top: -80px;
-  position: relative;
-  z-index: 1;
-`;
-
-const ProfileCard = styled(Card) <{ isDarkMode: boolean }>`
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  background: ${props => props.isDarkMode ? '#1f1f1f' : 'white'};
-  
-  .ant-card-body {
-    background: ${props => props.isDarkMode ? '#1f1f1f' : 'white'};
-    color: ${props => props.isDarkMode ? 'white' : 'inherit'};
-  }
-`;
-
-const UserInfoContainer = styled(Flex)`
-  margin-top: 16px;
-`;
-
-const UserInfo = styled.div`
-  flex: 1;
-  margin-left: 24px;
-`;
-
-const UserName = styled(Title) <{ isDarkMode: boolean }>`
-  margin-bottom: 0 !important;
-  font-weight: 600 !important;
-  color: ${props => props.isDarkMode ? 'white' : '#262626'} !important;
-  font-size: 28px !important;
-`;
-
-const UserDetailsVertical = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
-`;
-
-const UserDetailItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #555;
-  font-size: 14px;
-`;
-
-const StyledTabs = styled(Tabs) <{ isDarkMode: boolean }>`
-  margin-top: 24px;
-  
-  .ant-tabs-nav {
-    margin-bottom: 0;
-    background: ${props => props.isDarkMode ? '#1f1f1f' : 'white'};
-  }
-  
-  .ant-tabs-tab {
-    padding: 12px 16px;
-    font-size: 16px;
-    color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.85)' : 'inherit'};
-  }
-  
-  .ant-tabs-tab-active .ant-tabs-tab-btn {
-    color: #1890ff !important;
-    font-weight: 500;
-  }
-  
-  .ant-tabs-ink-bar {
-    background: #1890ff;
-  }
-`;
-
-const StyledCard = styled(Card) <{ isDarkMode: boolean }>`
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
-  margin-bottom: 24px;
-  transition: box-shadow 0.3s;
-  background: ${props => props.isDarkMode ? '#1f1f1f' : 'white'};
-  border: ${props => props.isDarkMode ? '1px solid #434343' : 'none'};
-  
-  .ant-card-head {
-    border-bottom: 1px solid ${props => props.isDarkMode ? '#434343' : '#f0f0f0'};
-    color: ${props => props.isDarkMode ? 'white' : 'inherit'};
-  }
-  
-  .ant-card-body {
-    color: ${props => props.isDarkMode ? 'white' : 'inherit'};
-  }
-  
-  &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-`;
-
-const SideInfoItem = styled.div<{ isDarkMode: boolean }>`
-  margin-bottom: 16px;
-  padding: 8px 0;
-  
-  .label {
-    display: flex;
-    align-items: center;
-    font-weight: 500;
-    color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.65)' : '#666'};
-    margin-bottom: 4px;
-  }
-  
-  .value {
-    color: ${props => props.isDarkMode ? 'white' : '#262626'};
-    font-size: 16px;
-  }
-  
-  a {
-    color: ${props => props.isDarkMode ? '#1890ff' : '#1890ff'};
-  }
-`;
-
-const EmergencyContactCard = styled(StyledCard)`
-  .ant-card-head-title {
-    font-weight: 600;
-    font-size: 16px;
-  }
-  
-  .ant-card-extra {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-`;
-
-const ContactInfoContainer = styled.div<{ isDarkMode: boolean }>`
-  padding: 16px;
-  border-radius: 8px;
-  background: ${props => props.isDarkMode ? '#2a2a2a' : '#fafafa'};
-  margin-bottom: 16px;
-  position: relative;
-  border: ${props => props.isDarkMode ? '1px solid #434343' : 'none'};
-`;
-
-const ContactDetails = styled.div`
-  margin-top: 8px;
-  
-  br {
-    margin-bottom: 8px;
-    display: block;
-    content: '';
-  }
-`;
-
-const AvatarContainer = styled.div`
-  position: relative;
-  display: inline-block;
-`;
-
-const AvatarImage = styled(Avatar)`
-  border: 4px solid white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-`;
 
 // Mock data for HRM employee profile
 const employeeData: any = {
@@ -274,66 +97,64 @@ const employeeData: any = {
 
 const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState('personal');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDarkMode } = useTheme();
   const [emergencyContacts, setEmergencyContacts] = useState(employeeData.emergencyContacts);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const getEditProfilePath = () => {
+    const currentPath = location.pathname;
+    return `${currentPath}/edit`;
+  };
 
   const handleDeleteContact = (contactId: number) => {
     setEmergencyContacts(emergencyContacts.filter((contact: any) => contact.id !== contactId));
   };
 
   return (
-    <PageContainer isDarkMode={isDarkMode}>
-      <StyledCard bodyStyle={{ padding: 0 }} isDarkMode={isDarkMode}>
-        <CoverSection bgImage={employeeData.personalInfo.coverImage} isDarkMode={isDarkMode} />
+    <S.PageContainer isDarkMode={isDarkMode}>
+      <S.StyledCard bodyStyle={{ padding: 0 }} isDarkMode={isDarkMode}>
+        <S.CoverSection bgImage={employeeData.personalInfo.coverImage} isDarkMode={isDarkMode} />
 
-        <ProfileCard isDarkMode={isDarkMode}>
-          <ProfileContent>
-            <UserInfoContainer align="flex-end">
-              <AvatarContainer>
-                <AvatarImage
+        <S.ProfileCard isDarkMode={isDarkMode}>
+          <S.ProfileContent>
+            <S.UserInfoContainer align="flex-end">
+              <S.AvatarContainer>
+                <S.AvatarImage
                   size={140}
                   src={employeeData.personalInfo.avatar || "https://images.unsplash.com/photo-1580489944761-15a19d65463f?q=80&w=1961&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
                 />
-              </AvatarContainer>
+              </S.AvatarContainer>
 
-              <UserInfo>
-                <UserName level={2} isDarkMode={isDarkMode}>
+              <S.UserInfo>
+                <S.UserName level={2} isDarkMode={isDarkMode}>
                   {employeeData.personalInfo.name}
-                </UserName>
-                <UserDetailsVertical>
-                  <UserDetailItem>
+                </S.UserName>
+                <S.UserDetailsVertical>
+                  <S.UserDetailItem>
                     <Briefcase size={18} color="#1890ff" />
                     <Text>{employeeData.personalInfo.position}</Text>
-                  </UserDetailItem>
-                  <UserDetailItem>
+                  </S.UserDetailItem>
+                  <S.UserDetailItem>
                     <MapPin size={18} color="#ff4d4f" />
                     <Text>{employeeData.personalInfo.location}</Text>
-                  </UserDetailItem>
-                </UserDetailsVertical>
-              </UserInfo>
+                  </S.UserDetailItem>
+                </S.UserDetailsVertical>
+              </S.UserInfo>
 
-              <Flex gap="small">
-                <Button
-                  type="default"
-                  onClick={() => setIsDarkMode(!isDarkMode)}
-                >
-                  {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-                </Button>
-                <Button
-                  type="primary"
-                  icon={<Edit size={16} />}
-                  onClick={() => navigate('/profile/edit')}
-                >
-                  Edit Profile
-                </Button>
-              </Flex>
-            </UserInfoContainer>
+              <Button
+                type="primary"
+                icon={<Edit size={16} />}
+                onClick={() => navigate(getEditProfilePath())}
+              >
+                Edit Profile
+              </Button>
+            </S.UserInfoContainer>
 
             <Row gutter={24} style={{ marginTop: 24 }}>
               <Col xs={24} md={8}>
-                <StyledCard title="Employee Details" isDarkMode={isDarkMode}>
-                  <SideInfoItem isDarkMode={isDarkMode}>
+                <S.StyledCard title="Employee Details" isDarkMode={isDarkMode}>
+                  <S.SideInfoItem isDarkMode={isDarkMode}>
                     <div className="label">
                       <Mail size={16} style={{ marginRight: 8, color: '#52c41a' }} />
                       Email
@@ -341,9 +162,9 @@ const Profile: React.FC = () => {
                     <a href={`mailto:${employeeData.personalInfo.email}`} className="value">
                       {employeeData.personalInfo.email}
                     </a>
-                  </SideInfoItem>
+                  </S.SideInfoItem>
 
-                  <SideInfoItem isDarkMode={isDarkMode}>
+                  <S.SideInfoItem isDarkMode={isDarkMode}>
                     <div className="label">
                       <Phone size={16} style={{ marginRight: 8, color: '#1890ff' }} />
                       Phone
@@ -351,44 +172,44 @@ const Profile: React.FC = () => {
                     <a href={`tel:${employeeData.personalInfo.phone}`} className="value">
                       {employeeData.personalInfo.phone}
                     </a>
-                  </SideInfoItem>
+                  </S.SideInfoItem>
 
-                  <SideInfoItem isDarkMode={isDarkMode}>
+                  <S.SideInfoItem isDarkMode={isDarkMode}>
                     <div className="label">
                       <Calendar size={16} style={{ marginRight: 8, color: '#faad14' }} />
                       Hired on
                     </div>
                     <div className="value">{employeeData.personalInfo.hireDate}</div>
-                  </SideInfoItem>
+                  </S.SideInfoItem>
 
-                  <SideInfoItem isDarkMode={isDarkMode}>
+                  <S.SideInfoItem isDarkMode={isDarkMode}>
                     <div className="label">
                       <Clock size={16} style={{ marginRight: 8, color: '#722ed1' }} />
                       Employment type
                     </div>
                     <div className="value">{employeeData.personalInfo.employmentType}</div>
-                  </SideInfoItem>
+                  </S.SideInfoItem>
 
-                  <SideInfoItem isDarkMode={isDarkMode}>
+                  <S.SideInfoItem isDarkMode={isDarkMode}>
                     <div className="label">
                       <Users size={16} style={{ marginRight: 8, color: '#13c2c2' }} />
                       Employee ID
                     </div>
                     <div className="value">{employeeData.personalInfo.employeeId}</div>
-                  </SideInfoItem>
+                  </S.SideInfoItem>
 
-                  <SideInfoItem isDarkMode={isDarkMode}>
+                  <S.SideInfoItem isDarkMode={isDarkMode}>
                     <div className="label">
                       <User size={16} style={{ marginRight: 8, color: '#eb2f96' }} />
                       Manager
                     </div>
                     <div className="value">{employeeData.personalInfo.manager}</div>
-                  </SideInfoItem>
-                </StyledCard>
+                  </S.SideInfoItem>
+                </S.StyledCard>
               </Col>
 
               <Col xs={24} md={16}>
-                <StyledTabs activeKey={activeTab} onChange={setActiveTab} isDarkMode={isDarkMode}>
+                <S.StyledTabs activeKey={activeTab} onChange={setActiveTab} isDarkMode={isDarkMode}>
                   <TabPane
                     tab={
                       <span>
@@ -398,38 +219,38 @@ const Profile: React.FC = () => {
                     }
                     key="personal"
                   >
-                    <StyledCard title="Personal Information" isDarkMode={isDarkMode}>
+                    <S.StyledCard title="Personal Information" isDarkMode={isDarkMode}>
                       <Row gutter={16}>
                         <Col span={12}>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Full Name</div>
                             <div className="value">{employeeData.personalInfo.name}</div>
-                          </SideInfoItem>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Email</div>
                             <div className="value">{employeeData.personalInfo.email}</div>
-                          </SideInfoItem>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Phone</div>
                             <div className="value">{employeeData.personalInfo.phone}</div>
-                          </SideInfoItem>
+                          </S.SideInfoItem>
                         </Col>
                         <Col span={12}>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Location</div>
                             <div className="value">{employeeData.personalInfo.location}</div>
-                          </SideInfoItem>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Employee ID</div>
                             <div className="value">{employeeData.personalInfo.employeeId}</div>
-                          </SideInfoItem>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Department</div>
                             <div className="value">{employeeData.personalInfo.department}</div>
-                          </SideInfoItem>
+                          </S.SideInfoItem>
                         </Col>
                       </Row>
-                    </StyledCard>
+                    </S.StyledCard>
                   </TabPane>
 
                   <TabPane
@@ -441,18 +262,18 @@ const Profile: React.FC = () => {
                     }
                     key="emergency"
                   >
-                    <EmergencyContactCard
+                    <S.EmergencyContactCard
                       title="Emergency Contacts"
                       isDarkMode={isDarkMode}
                     >
                       {emergencyContacts.map((contact: any) => (
-                        <ContactInfoContainer key={contact.id} isDarkMode={isDarkMode}>
+                        <S.ContactInfoContainer key={contact.id} isDarkMode={isDarkMode}>
                           <Row align="middle">
                             <Col flex="auto">
                               <Title level={4} style={{ marginBottom: 0 }}>{contact.name}</Title>
                             </Col>
                           </Row>
-                          <ContactDetails>
+                          <S.ContactDetails>
                             <Text strong>Relationship:</Text> {contact.relationship} <br />
                             <Text strong>Mobile Number:</Text> {contact.mobile} <br />
                             {contact.workPhone && (
@@ -466,8 +287,8 @@ const Profile: React.FC = () => {
                               </>
                             )}
                             <Text strong>Address:</Text> {contact.address}
-                          </ContactDetails>
-                        </ContactInfoContainer>
+                          </S.ContactDetails>
+                        </S.ContactInfoContainer>
                       ))}
                       {emergencyContacts.length === 0 && (
                         <div style={{ textAlign: 'center', padding: '20px' }}>
@@ -475,7 +296,7 @@ const Profile: React.FC = () => {
                           <p>No emergency contacts added yet</p>
                         </div>
                       )}
-                    </EmergencyContactCard>
+                    </S.EmergencyContactCard>
                   </TabPane>
 
                   <TabPane
@@ -487,38 +308,38 @@ const Profile: React.FC = () => {
                     }
                     key="job"
                   >
-                    <StyledCard title="Job Information" isDarkMode={isDarkMode}>
+                    <S.StyledCard title="Job Information" isDarkMode={isDarkMode}>
                       <Row gutter={16}>
                         <Col span={12}>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Title</div>
                             <div className="value">{employeeData.jobInfo.title}</div>
-                          </SideInfoItem>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Department</div>
                             <div className="value">{employeeData.jobInfo.department}</div>
-                          </SideInfoItem>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Reports To</div>
                             <div className="value">{employeeData.jobInfo.reportsTo}</div>
-                          </SideInfoItem>
+                          </S.SideInfoItem>
                         </Col>
                         <Col span={12}>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Team Size</div>
                             <div className="value">{employeeData.jobInfo.teamSize} people</div>
-                          </SideInfoItem>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Work Schedule</div>
                             <div className="value">{employeeData.jobInfo.workSchedule}</div>
-                          </SideInfoItem>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Location</div>
                             <div className="value">{employeeData.jobInfo.location}</div>
-                          </SideInfoItem>
+                          </S.SideInfoItem>
                         </Col>
                       </Row>
-                    </StyledCard>
+                    </S.StyledCard>
                   </TabPane>
 
                   <TabPane
@@ -530,30 +351,30 @@ const Profile: React.FC = () => {
                     }
                     key="compensation"
                   >
-                    <StyledCard title="Compensation Details" isDarkMode={isDarkMode}>
+                    <S.StyledCard title="Compensation Details" isDarkMode={isDarkMode}>
                       <Row gutter={16}>
                         <Col span={12}>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Base Salary</div>
                             <div className="value">{employeeData.compensation.salary}</div>
-                          </SideInfoItem>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Bonus Target</div>
                             <div className="value">{employeeData.compensation.bonus}</div>
-                          </SideInfoItem>
+                          </S.SideInfoItem>
                         </Col>
                         <Col span={12}>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Stock Options</div>
                             <div className="value">{employeeData.compensation.stockOptions}</div>
-                          </SideInfoItem>
-                          <SideInfoItem isDarkMode={isDarkMode}>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Next Review</div>
                             <div className="value">{employeeData.compensation.nextReview}</div>
-                          </SideInfoItem>
+                          </S.SideInfoItem>
                         </Col>
                       </Row>
-                    </StyledCard>
+                    </S.StyledCard>
                   </TabPane>
 
                   <TabPane
@@ -565,22 +386,22 @@ const Profile: React.FC = () => {
                     }
                     key="skills"
                   >
-                    <StyledCard title="Skills & Competencies" isDarkMode={isDarkMode}>
+                    <S.StyledCard title="Skills & Competencies" isDarkMode={isDarkMode}>
                       {employeeData.skills.map((skill: any, index: any) => (
-                        <SideInfoItem key={index} isDarkMode={isDarkMode}>
+                        <S.SideInfoItem key={index} isDarkMode={isDarkMode}>
                           <div className="label">{skill.name}</div>
                           <Progress percent={skill.level} showInfo={true} />
-                        </SideInfoItem>
+                        </S.SideInfoItem>
                       ))}
-                    </StyledCard>
+                    </S.StyledCard>
                   </TabPane>
-                </StyledTabs>
+                </S.StyledTabs>
               </Col>
             </Row>
-          </ProfileContent>
-        </ProfileCard>
-      </StyledCard>
-    </PageContainer>
+          </S.ProfileContent>
+        </S.ProfileCard>
+      </S.StyledCard>
+    </S.PageContainer>
   );
 };
 

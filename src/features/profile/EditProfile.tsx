@@ -42,234 +42,13 @@ import {
   MoreVertical,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import styled from 'styled-components';
+import { useTheme } from '../../contexts/ThemeContext';
+import * as S from './styles';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 const { Option } = Select;
 const { TextArea } = Input;
-
-// Styled Components
-const PageContainer = styled.div<{ isDarkMode: boolean }>`
-  background: ${props => props.isDarkMode ? '#141414' : '#f0f2f5'};
-  min-height: 100vh;
-  padding: 24px;
-  color: ${props => props.isDarkMode ? 'white' : 'inherit'};
-`;
-
-const CoverSection = styled.div<{ bgImage?: string; isDarkMode: boolean }>`
-  height: 250px;
-  background: ${props => props.bgImage 
-    ? `url(${props.bgImage}) center/cover` 
-    : props.isDarkMode 
-      ? 'linear-gradient(135deg, #434343 0%, #000000 100%)' 
-      : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};
-  position: relative;
-  border-radius: 8px 8px 0 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  padding: 24px;
-`;
-
-const CoverOverlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s;
-  border-radius: 8px 8px 0 0;
-  
-  &:hover {
-    opacity: 1;
-  }
-`;
-
-const ProfileContent = styled.div`
-  padding: 0 24px;
-  margin-top: -80px;
-  position: relative;
-  z-index: 1;
-`;
-
-const ProfileCard = styled(Card)<{ isDarkMode: boolean }>`
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  background: ${props => props.isDarkMode ? '#1f1f1f' : 'white'};
-  
-  .ant-card-body {
-    background: ${props => props.isDarkMode ? '#1f1f1f' : 'white'};
-    color: ${props => props.isDarkMode ? 'white' : 'inherit'};
-  }
-`;
-
-const UserInfoContainer = styled(Flex)`
-  margin-top: 16px;
-`;
-
-const UserInfo = styled.div`
-  flex: 1;
-  margin-left: 24px;
-`;
-
-const UserName = styled(Title)<{ isDarkMode: boolean }>`
-  margin-bottom: 0 !important;
-  font-weight: 600 !important;
-  color: ${props => props.isDarkMode ? 'white' : '#262626'} !important;
-  font-size: 28px !important;
-`;
-
-const UserDetailsVertical = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
-`;
-
-const UserDetailItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #555;
-  font-size: 14px;
-`;
-
-const StyledTabs = styled(Tabs)<{ isDarkMode: boolean }>`
-  margin-top: 24px;
-  
-  .ant-tabs-nav {
-    margin-bottom: 0;
-    background: ${props => props.isDarkMode ? '#1f1f1f' : 'white'};
-  }
-  
-  .ant-tabs-tab {
-    padding: 12px 16px;
-    font-size: 16px;
-    color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.85)' : 'inherit'};
-  }
-  
-  .ant-tabs-tab-active .ant-tabs-tab-btn {
-    color: #1890ff !important;
-    font-weight: 500;
-  }
-  
-  .ant-tabs-ink-bar {
-    background: #1890ff;
-  }
-`;
-
-const StyledCard = styled(Card)<{ isDarkMode: boolean }>`
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
-  margin-bottom: 24px;
-  transition: box-shadow 0.3s;
-  background: ${props => props.isDarkMode ? '#1f1f1f' : 'white'};
-  border: ${props => props.isDarkMode ? '1px solid #434343' : 'none'};
-  
-  .ant-card-head {
-    border-bottom: 1px solid ${props => props.isDarkMode ? '#434343' : '#f0f0f0'};
-    color: ${props => props.isDarkMode ? 'white' : 'inherit'};
-  }
-  
-  .ant-card-body {
-    color: ${props => props.isDarkMode ? 'white' : 'inherit'};
-  }
-  
-  &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-`;
-
-const AvatarContainer = styled.div`
-  position: relative;
-  display: inline-block;
-`;
-
-const AvatarEditOverlay = styled.div`
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  background: #1890ff;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border: 3px solid white;
-`;
-
-const AvatarImage = styled(Avatar)`
-  border: 4px solid white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-`;
-
-const FormItem = styled(Form.Item)<{ isDarkMode: boolean }>`
-  .ant-form-item-label > label {
-    color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.85)' : 'inherit'};
-  }
-`;
-
-const SideInfoItem = styled.div<{ isDarkMode: boolean }>`
-  margin-bottom: 16px;
-  padding: 8px 0;
-  
-  .label {
-    display: flex;
-    align-items: center;
-    font-weight: 500;
-    color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.65)' : '#666'};
-    margin-bottom: 4px;
-  }
-  
-  .value {
-    color: ${props => props.isDarkMode ? 'white' : '#262626'};
-    font-size: 16px;
-  }
-  
-  a {
-    color: ${props => props.isDarkMode ? '#1890ff' : '#1890ff'};
-  }
-`;
-
-const EmergencyContactCard = styled(StyledCard)`
-  .ant-card-head-title {
-    font-weight: 600;
-    font-size: 16px;
-  }
-  
-  .ant-card-extra {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-`;
-
-const ContactInfoContainer = styled.div<{ isDarkMode: boolean }>`
-  padding: 16px;
-  border-radius: 8px;
-  background: ${props => props.isDarkMode ? '#2a2a2a' : '#fafafa'};
-  margin-bottom: 16px;
-  position: relative;
-  border: ${props => props.isDarkMode ? '1px solid #434343' : 'none'};
-`;
-
-const ContactDetails = styled.div`
-  margin-top: 8px;
-  
-  br {
-    margin-bottom: 8px;
-    display: block;
-    content: '';
-  }
-`;
 
 // Mock data for HRM employee profile
 const initialEmployeeData = {
@@ -332,7 +111,7 @@ const initialEmployeeData = {
 
 const EditProfile: React.FC = () => {
   const [activeTab, setActiveTab] = useState('personal');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDarkMode } = useTheme();
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [avatarImage, setAvatarImage] = useState<string | null>(null);
   const [employeeData, setEmployeeData] = useState(initialEmployeeData);
@@ -374,6 +153,11 @@ const EditProfile: React.FC = () => {
     }
   };
 
+  const getProfilePath = () => {
+    const currentPath = location.pathname;
+    return currentPath.replace('/edit', '');
+  };
+
   const handleSave = () => {
     form.validateFields().then(values => {
       console.log('Form values:', values);
@@ -383,7 +167,7 @@ const EditProfile: React.FC = () => {
         personalInfo: { ...prev.personalInfo, ...values }
       }));
       message.success('Profile updated successfully');
-      navigate('/profile');
+      navigate(getProfilePath());
     }).catch(errorInfo => {
       console.log('Validation failed:', errorInfo);
     });
@@ -394,12 +178,12 @@ const EditProfile: React.FC = () => {
       id: editingContact ? editingContact.id : Date.now(),
       ...values
     };
-    
+
     if (editingContact) {
       // Update existing contact
       setEmployeeData(prev => ({
         ...prev,
-        emergencyContacts: prev.emergencyContacts.map(contact => 
+        emergencyContacts: prev.emergencyContacts.map(contact =>
           contact.id === editingContact.id ? newContact : contact
         )
       }));
@@ -412,7 +196,7 @@ const EditProfile: React.FC = () => {
       }));
       message.success('Emergency contact added successfully');
     }
-    
+
     setIsEditingContact(false);
     setEditingContact(null);
     emergencyForm.resetFields();
@@ -454,10 +238,10 @@ const EditProfile: React.FC = () => {
       <Menu.Item key="edit" icon={<Edit size={16} />} onClick={() => handleEditContact(contact)}>
         Edit
       </Menu.Item>
-      <Menu.Item 
-        key="delete" 
-        icon={<Trash2 size={16} />} 
-        danger 
+      <Menu.Item
+        key="delete"
+        icon={<Trash2 size={16} />}
+        danger
         onClick={() => handleDeleteContact(contact.id)}
       >
         Delete
@@ -466,180 +250,174 @@ const EditProfile: React.FC = () => {
   );
 
   return (
-    <PageContainer isDarkMode={isDarkMode}>
-      <StyledCard bodyStyle={{ padding: 0 }} isDarkMode={isDarkMode}>
-        <CoverSection bgImage={coverImage || employeeData.personalInfo.coverImage || undefined} isDarkMode={isDarkMode}>
-          <CoverOverlay>
+    <S.PageContainer isDarkMode={isDarkMode}>
+      <S.StyledCard bodyStyle={{ padding: 0 }} isDarkMode={isDarkMode}>
+        <S.CoverSection bgImage={coverImage || employeeData.personalInfo.coverImage || undefined} isDarkMode={isDarkMode}>
+          <S.CoverOverlay>
             <Upload {...uploadProps} onChange={handleCoverUpload}>
               <Button type="primary" icon={<Camera size={16} />}>
                 Change Cover
               </Button>
             </Upload>
-          </CoverOverlay>
-        </CoverSection>
+          </S.CoverOverlay>
+        </S.CoverSection>
 
-        <ProfileCard isDarkMode={isDarkMode}>
-          <ProfileContent>
-            <UserInfoContainer align="flex-end">
-              <AvatarContainer>
-                <AvatarImage
+        <S.ProfileCard isDarkMode={isDarkMode}>
+          <S.ProfileContent>
+            <S.UserInfoContainer align="flex-end">
+              <S.AvatarContainer>
+                <S.AvatarImage
                   size={140}
                   src={avatarImage || employeeData.personalInfo.avatar || "https://images.unsplash.com/photo-1580489944761-15a19d65463f?q=80&w=1961&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
                 />
                 <Upload {...uploadProps} onChange={handleAvatarUpload}>
-                  <AvatarEditOverlay>
+                  <S.AvatarEditOverlay>
                     <Camera size={16} color="white" />
-                  </AvatarEditOverlay>
+                  </S.AvatarEditOverlay>
                 </Upload>
-              </AvatarContainer>
-              
-              <UserInfo>
+              </S.AvatarContainer>
+
+              <S.UserInfo>
                 <Form form={form} initialValues={employeeData.personalInfo}>
                   <Form.Item name="name">
-                    <Input 
-                      style={{ fontSize: '28px', fontWeight: 600, color: isDarkMode ? 'white' : '#262626', border: 'none', background: 'transparent', padding: 0 }} 
+                    <Input
+                      style={{ fontSize: '28px', fontWeight: 600, color: isDarkMode ? 'white' : '#262626', border: 'none', background: 'transparent', padding: 0 }}
                       bordered={false}
                     />
                   </Form.Item>
                 </Form>
-                <UserDetailsVertical>
-                  <UserDetailItem>
+                <S.UserDetailsVertical>
+                  <S.UserDetailItem>
                     <Briefcase size={18} color="#1890ff" />
                     <Form form={form} initialValues={employeeData.personalInfo}>
                       <Form.Item name="position" style={{ margin: 0 }}>
-                        <Input 
-                          style={{ color: '#555', border: 'none', background: 'transparent', padding: 0 }} 
+                        <Input
+                          style={{ color: '#555', border: 'none', background: 'transparent', padding: 0 }}
                           bordered={false}
                         />
                       </Form.Item>
                     </Form>
-                  </UserDetailItem>
-                  <UserDetailItem>
+                  </S.UserDetailItem>
+                  <S.UserDetailItem>
                     <MapPin size={18} color="#ff4d4f" />
                     <Form form={form} initialValues={employeeData.personalInfo}>
                       <Form.Item name="location" style={{ margin: 0 }}>
-                        <Input 
-                          style={{ color: '#555', border: 'none', background: 'transparent', padding: 0 }} 
+                        <Input
+                          style={{ color: '#555', border: 'none', background: 'transparent', padding: 0 }}
                           bordered={false}
                         />
                       </Form.Item>
                     </Form>
-                  </UserDetailItem>
-                </UserDetailsVertical>
-              </UserInfo>
-              
+                  </S.UserDetailItem>
+                </S.UserDetailsVertical>
+              </S.UserInfo>
+
               <Flex gap="small">
-                <Button 
-                  type="default" 
-                  onClick={() => setIsDarkMode(!isDarkMode)}
-                >
-                  {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-                </Button>
-                <Button 
-                  type="default" 
+                <Button
+                  type="default"
                   icon={<ArrowLeft size={16} />}
-                  onClick={() => navigate('/profile')}
+                  onClick={() => navigate(getProfilePath())}
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="primary" 
+                <Button
+                  type="primary"
                   icon={<Save size={16} />}
                   onClick={handleSave}
                 >
                   Save Changes
                 </Button>
               </Flex>
-            </UserInfoContainer>
+            </S.UserInfoContainer>
 
             <Row gutter={24} style={{ marginTop: 24 }}>
               <Col xs={24} md={8}>
-                <StyledCard title="Employee Details" isDarkMode={isDarkMode}>
+                <S.StyledCard title="Employee Details" isDarkMode={isDarkMode}>
                   <Form form={form} layout="vertical" initialValues={employeeData.personalInfo}>
-                    <FormItem name="email" label="Email" isDarkMode={isDarkMode}>
+                    <S.FormItem name="email" label="Email" isDarkMode={isDarkMode}>
                       <Input prefix={<Mail />} />
-                    </FormItem>
-                    
-                    <FormItem name="phone" label="Phone" isDarkMode={isDarkMode}>
+                    </S.FormItem>
+
+                    <S.FormItem name="phone" label="Phone" isDarkMode={isDarkMode}>
                       <Input prefix={<Phone />} />
-                    </FormItem>
-                    
-                    <FormItem name="hireDate" label="Hired on" isDarkMode={isDarkMode}>
+                    </S.FormItem>
+
+                    <S.FormItem name="hireDate" label="Hired on" isDarkMode={isDarkMode}>
                       <Input prefix={<Calendar />} />
-                    </FormItem>
-                    
-                    <FormItem name="employmentType" label="Employment type" isDarkMode={isDarkMode}>
+                    </S.FormItem>
+
+                    <S.FormItem name="employmentType" label="Employment type" isDarkMode={isDarkMode}>
                       <Input prefix={<Clock />} />
-                    </FormItem>
-                    
-                    <FormItem name="employeeId" label="Employee ID" isDarkMode={isDarkMode}>
+                    </S.FormItem>
+
+                    <S.FormItem name="employeeId" label="Employee ID" isDarkMode={isDarkMode}>
                       <Input prefix={<Users />} />
-                    </FormItem>
-                    
-                    <FormItem name="manager" label="Manager" isDarkMode={isDarkMode}>
+                    </S.FormItem>
+
+                    <S.FormItem name="manager" label="Manager" isDarkMode={isDarkMode}>
                       <Input prefix={<User />} />
-                    </FormItem>
+                    </S.FormItem>
                   </Form>
-                </StyledCard>
+                </S.StyledCard>
               </Col>
 
               <Col xs={24} md={16}>
-                <StyledTabs activeKey={activeTab} onChange={setActiveTab} isDarkMode={isDarkMode}>
-                  <TabPane 
+                <S.StyledTabs activeKey={activeTab} onChange={setActiveTab} isDarkMode={isDarkMode}>
+                  <TabPane
                     tab={
                       <span>
                         <User size={16} style={{ marginRight: 8, color: '#1890ff' }} />
                         Personal
                       </span>
-                    } 
+                    }
                     key="personal"
                   >
-                    <StyledCard title="Personal Information" isDarkMode={isDarkMode}>
+                    <S.StyledCard title="Personal Information" isDarkMode={isDarkMode}>
                       <Form form={form} layout="vertical" initialValues={employeeData.personalInfo}>
                         <Row gutter={16}>
                           <Col span={12}>
-                            <FormItem name="name" label="Full Name" isDarkMode={isDarkMode}>
+                            <S.FormItem name="name" label="Full Name" isDarkMode={isDarkMode}>
                               <Input prefix={<User />} />
-                            </FormItem>
-                            <FormItem name="email" label="Email" isDarkMode={isDarkMode}>
+                            </S.FormItem>
+                            <S.FormItem name="email" label="Email" isDarkMode={isDarkMode}>
                               <Input prefix={<Mail />} />
-                            </FormItem>
-                            <FormItem name="phone" label="Phone" isDarkMode={isDarkMode}>
+                            </S.FormItem>
+                            <S.FormItem name="phone" label="Phone" isDarkMode={isDarkMode}>
                               <Input prefix={<Phone />} />
-                            </FormItem>
+                            </S.FormItem>
                           </Col>
                           <Col span={12}>
-                            <FormItem name="location" label="Location" isDarkMode={isDarkMode}>
+                            <S.FormItem name="location" label="Location" isDarkMode={isDarkMode}>
                               <Input prefix={<MapPin />} />
-                            </FormItem>
-                            <FormItem name="employeeId" label="Employee ID" isDarkMode={isDarkMode}>
+                            </S.FormItem>
+                            <S.FormItem name="employeeId" label="Employee ID" isDarkMode={isDarkMode}>
                               <Input prefix={<Users />} />
-                            </FormItem>
-                            <FormItem name="department" label="Department" isDarkMode={isDarkMode}>
+                            </S.FormItem>
+                            <S.FormItem name="department" label="Department" isDarkMode={isDarkMode}>
                               <Input prefix={<Briefcase />} />
-                            </FormItem>
+                            </S.FormItem>
                           </Col>
                         </Row>
                       </Form>
-                    </StyledCard>
+                    </S.StyledCard>
                   </TabPane>
-                  
-                  <TabPane 
+
+                  <TabPane
                     tab={
                       <span>
                         <Heart size={16} style={{ marginRight: 8, color: '#ff4d4f' }} />
                         Emergency Contacts
                       </span>
-                    } 
+                    }
                     key="emergency"
                   >
-                    <EmergencyContactCard
+                    <S.EmergencyContactCard
                       title="Emergency Contacts"
                       isDarkMode={isDarkMode}
                       extra={
                         !isEditingContact && (
-                          <Button 
-                            type="primary" 
+                          <Button
+                            type="primary"
                             icon={<Plus size={16} />}
                             onClick={() => setIsEditingContact(true)}
                           >
@@ -658,10 +436,10 @@ const EditProfile: React.FC = () => {
                           <Form.Item name="name" label="Name" rules={[{ required: true }]}>
                             <Input />
                           </Form.Item>
-                          <Form.Item name="relationship" label="Relationship" rules={[{ required: true }]}>
+                          <Form.Item name="relationship" label="Relationship" >
                             <Input />
                           </Form.Item>
-                          <Form.Item name="mobile" label="Mobile Number" rules={[{ required: true }]}>
+                          <Form.Item name="mobile" label="Mobile Number" >
                             <Input />
                           </Form.Item>
                           <Form.Item name="workPhone" label="Work Phone">
@@ -670,7 +448,7 @@ const EditProfile: React.FC = () => {
                           <Form.Item name="homePhone" label="Home Phone">
                             <Input />
                           </Form.Item>
-                          <Form.Item name="address" label="Address" rules={[{ required: true }]}>
+                          <Form.Item name="address" label="Address" >
                             <TextArea rows={3} />
                           </Form.Item>
                           <Form.Item>
@@ -685,7 +463,7 @@ const EditProfile: React.FC = () => {
                       ) : (
                         <>
                           {employeeData.emergencyContacts.map((contact) => (
-                            <ContactInfoContainer key={contact.id} isDarkMode={isDarkMode}>
+                            <S.ContactInfoContainer key={contact.id} isDarkMode={isDarkMode}>
                               <Row align="middle">
                                 <Col flex="auto">
                                   <Title level={4} style={{ marginBottom: 0 }}>{contact.name}</Title>
@@ -696,7 +474,7 @@ const EditProfile: React.FC = () => {
                                   </Dropdown>
                                 </Col>
                               </Row>
-                              <ContactDetails>
+                              <S.ContactDetails>
                                 <Text strong>Relationship:</Text> {contact.relationship} <br />
                                 <Text strong>Mobile Number:</Text> {contact.mobile} <br />
                                 {contact.workPhone && (
@@ -710,15 +488,15 @@ const EditProfile: React.FC = () => {
                                   </>
                                 )}
                                 <Text strong>Address:</Text> {contact.address}
-                              </ContactDetails>
-                            </ContactInfoContainer>
+                              </S.ContactDetails>
+                            </S.ContactInfoContainer>
                           ))}
                           {employeeData.emergencyContacts.length === 0 && (
                             <div style={{ textAlign: 'center', padding: '20px' }}>
                               <Heart size={48} color="#d9d9d9" />
                               <p>No emergency contacts added yet</p>
-                              <Button 
-                                type="primary" 
+                              <Button
+                                type="primary"
                                 icon={<Plus size={16} />}
                                 onClick={() => setIsEditingContact(true)}
                               >
@@ -728,102 +506,102 @@ const EditProfile: React.FC = () => {
                           )}
                         </>
                       )}
-                    </EmergencyContactCard>
+                    </S.EmergencyContactCard>
                   </TabPane>
-                  
-                  <TabPane 
+
+                  <TabPane
                     tab={
                       <span>
                         <Briefcase size={16} style={{ marginRight: 8, color: '#faad14' }} />
                         Job
                       </span>
-                    } 
+                    }
                     key="job"
                   >
-                    <StyledCard title="Job Information" isDarkMode={isDarkMode}>
+                    <S.StyledCard title="Job Information" isDarkMode={isDarkMode}>
                       <Row gutter={16}>
                         <Col span={12}>
-                          <FormItem name={['jobInfo', 'title']} label="Title" isDarkMode={isDarkMode}>
+                          <S.FormItem name={['jobInfo', 'title']} label="Title" isDarkMode={isDarkMode}>
                             <Input prefix={<Briefcase />} />
-                          </FormItem>
-                          <FormItem name={['jobInfo', 'department']} label="Department" isDarkMode={isDarkMode}>
+                          </S.FormItem>
+                          <S.FormItem name={['jobInfo', 'department']} label="Department" isDarkMode={isDarkMode}>
                             <Input prefix={<Users />} />
-                          </FormItem>
-                          <FormItem name={['jobInfo', 'reportsTo']} label="Reports To" isDarkMode={isDarkMode}>
+                          </S.FormItem>
+                          <S.FormItem name={['jobInfo', 'reportsTo']} label="Reports To" isDarkMode={isDarkMode}>
                             <Input prefix={<User />} />
-                          </FormItem>
+                          </S.FormItem>
                         </Col>
                         <Col span={12}>
-                          <FormItem name={['jobInfo', 'teamSize']} label="Team Size" isDarkMode={isDarkMode}>
+                          <S.FormItem name={['jobInfo', 'teamSize']} label="Team Size" isDarkMode={isDarkMode}>
                             <Input prefix={<Users />} />
-                          </FormItem>
-                          <FormItem name={['jobInfo', 'workSchedule']} label="Work Schedule" isDarkMode={isDarkMode}>
+                          </S.FormItem>
+                          <S.FormItem name={['jobInfo', 'workSchedule']} label="Work Schedule" isDarkMode={isDarkMode}>
                             <Input prefix={<Clock />} />
-                          </FormItem>
-                          <FormItem name={['jobInfo', 'location']} label="Location" isDarkMode={isDarkMode}>
+                          </S.FormItem>
+                          <S.FormItem name={['jobInfo', 'location']} label="Location" isDarkMode={isDarkMode}>
                             <Input prefix={<MapPin />} />
-                          </FormItem>
+                          </S.FormItem>
                         </Col>
                       </Row>
-                    </StyledCard>
+                    </S.StyledCard>
                   </TabPane>
-                  
-                  <TabPane 
+
+                  <TabPane
                     tab={
                       <span>
                         <DollarSign size={16} style={{ marginRight: 8, color: '#52c41a' }} />
                         Compensation
                       </span>
-                    } 
+                    }
                     key="compensation"
                   >
-                    <StyledCard title="Compensation Details" isDarkMode={isDarkMode}>
+                    <S.StyledCard title="Compensation Details" isDarkMode={isDarkMode}>
                       <Row gutter={16}>
                         <Col span={12}>
-                          <FormItem name={['compensation', 'salary']} label="Base Salary" isDarkMode={isDarkMode}>
+                          <S.FormItem name={['compensation', 'salary']} label="Base Salary" isDarkMode={isDarkMode}>
                             <Input prefix={<DollarSign />} />
-                          </FormItem>
-                          <FormItem name={['compensation', 'bonus']} label="Bonus Target" isDarkMode={isDarkMode}>
+                          </S.FormItem>
+                          <S.FormItem name={['compensation', 'bonus']} label="Bonus Target" isDarkMode={isDarkMode}>
                             <Input />
-                          </FormItem>
+                          </S.FormItem>
                         </Col>
                         <Col span={12}>
-                          <FormItem name={['compensation', 'stockOptions']} label="Stock Options" isDarkMode={isDarkMode}>
+                          <S.FormItem name={['compensation', 'stockOptions']} label="Stock Options" isDarkMode={isDarkMode}>
                             <Input />
-                          </FormItem>
-                          <FormItem name={['compensation', 'nextReview']} label="Next Review" isDarkMode={isDarkMode}>
+                          </S.FormItem>
+                          <S.FormItem name={['compensation', 'nextReview']} label="Next Review" isDarkMode={isDarkMode}>
                             <Input prefix={<Calendar />} />
-                          </FormItem>
+                          </S.FormItem>
                         </Col>
                       </Row>
-                    </StyledCard>
+                    </S.StyledCard>
                   </TabPane>
-                  
-                  <TabPane 
+
+                  <TabPane
                     tab={
                       <span>
                         <Award size={16} style={{ marginRight: 8, color: '#722ed1' }} />
                         Skills
                       </span>
-                    } 
+                    }
                     key="skills"
                   >
-                    <StyledCard title="Skills & Competencies" isDarkMode={isDarkMode}>
+                    <S.StyledCard title="Skills & Competencies" isDarkMode={isDarkMode}>
                       {employeeData.skills.map((skill, index) => (
-                        <SideInfoItem key={index} isDarkMode={isDarkMode}>
+                        <S.SideInfoItem key={index} isDarkMode={isDarkMode}>
                           <div className="label">{skill.name}</div>
                           <Progress percent={skill.level} showInfo={true} />
-                        </SideInfoItem>
+                        </S.SideInfoItem>
                       ))}
-                    </StyledCard>
+                    </S.StyledCard>
                   </TabPane>
-                </StyledTabs>
+                </S.StyledTabs>
               </Col>
             </Row>
-          </ProfileContent>
-        </ProfileCard>
-      </StyledCard>
-    </PageContainer>
+          </S.ProfileContent>
+        </S.ProfileCard>
+      </S.StyledCard>
+    </S.PageContainer>
   );
 };
 

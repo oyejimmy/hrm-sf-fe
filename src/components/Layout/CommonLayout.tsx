@@ -18,9 +18,8 @@ import {
   SettingOutlined,
   SunOutlined,
   MoonOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
 } from '@ant-design/icons';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import type { MenuProps } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
@@ -86,12 +85,21 @@ const SiderTitle = styled.div`
 `;
 
 const CollapseButton = styled(Button)`
-  color: ${props => props.theme?.themeMode === 'dark' ? 'white' : '#001529'};
-  border: none;
-  background: transparent;
-  
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   &:hover {
-    background: ${props => props.theme?.themeMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
+    transform: scale(1.05);
+  }
+  svg {
+    width: 16px;
+    height: 16px;
   }
 `;
 
@@ -99,6 +107,7 @@ const UserProfile = styled.div`
   padding: 16px;
   text-align: center;
   border-bottom: 1px solid ${props => props.theme?.themeMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : '#f0f0f0'};
+  position: relative;
 `;
 
 const UserAvatar = styled(Avatar)`
@@ -183,10 +192,11 @@ color: ${props => props.theme === 'dark' ? '#001529' : '#ffffff'};
 
 &.ant-layout-sider-dark {
     background: #001529 !important;
+    border-right: 2px solid white;
   }
   
   &.ant-layout-sider-light {
-    border-right: 1px solid #f0f0f0;
+    border-right: 1px solidrgb(115, 115, 115);
   }
   
   height: 100vh;
@@ -281,6 +291,11 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             icon: <BellOutlined />,
             label: 'Communication',
           },
+          {
+            key: '/admin/profile',
+            icon: <UserOutlined />,
+            label: 'Profile',
+          },
         ];
       case 'employee':
         return [
@@ -318,6 +333,11 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             key: '/employee/documents',
             icon: <FileOutlined />,
             label: 'Documents',
+          },
+          {
+            key: '/employee/profile',
+            icon: <UserOutlined />,
+            label: 'Profile',
           },
         ];
       default:
@@ -360,7 +380,10 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
       key: 'profile',
       icon: <UserOutlined />,
       label: 'Profile',
-      onClick: () => navigate('/profile'),
+      onClick: () => {
+        const profilePath = userRole === 'admin' || userRole === 'hr' ? '/admin/profile' : '/employee/profile';
+        navigate(profilePath);
+      },
     },
     {
       key: 'settings',
@@ -445,20 +468,40 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
           collapsible
           trigger={null}
         >
-          {/* Sider header with title and collapse button */}
-          <SiderHeader>
-            {!siderCollapsed && <SiderTitle>{getTitle()}</SiderTitle>}
-            <CollapseButton
-              icon={siderCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={toggleSider}
-              type="text"
-            />
-          </SiderHeader>
+          {/* Sider header with title */}
+          {!siderCollapsed && (
+            <SiderHeader>
+              <SiderTitle>{getTitle()}</SiderTitle>
+            </SiderHeader>
+          )}
 
-          {userRole === 'employee' && !siderCollapsed && (
+          {siderCollapsed && (
+            <div style={{ 
+              padding: '16px', 
+              textAlign: 'center', 
+              borderBottom: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#f0f0f0'}`,
+              marginTop: '65px'
+            }}>
+              <CollapseButton
+                onClick={toggleSider}
+                type="text"
+                style={{ position: 'static', margin: '0 auto', top: 'auto', right: 'auto' }}
+              >
+                <PanelLeftOpen size={16} />
+              </CollapseButton>
+            </div>
+          )}
+
+          {!siderCollapsed && (
             <UserProfile>
-              <UserAvatar size={64} icon={<UserOutlined />} />
-              <UserName>Jamil</UserName>
+              <CollapseButton
+                onClick={toggleSider}
+                type="text"
+              >
+                {siderCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+              </CollapseButton>
+              <UserAvatar size={64} icon={<UserOutlined />} src={user?.profile_picture} />
+              <UserName>{user?.first_name || 'User'}</UserName>
               <Tag color={isDarkMode ? currentTheme?.colors?.secondary : "purple"}>Welcome Back</Tag>
             </UserProfile>
           )}
