@@ -121,24 +121,38 @@ const SectionCard = styled(
 
 // 📋 Styled List Item with shadow + smooth hover
 const StyledListItem = styled(List.Item)<{ bg: string; isDarkMode: boolean }>`
-  padding: 12px;
-  border: none;
-  border-radius: 12px;
+  border: 1px solid ${(props) => (props.isDarkMode ? "#444" : "#f0f0f0")};
+  border-radius: 10px;
+  padding: 16px;
   margin-bottom: 12px;
-  background: ${(props) => (props.isDarkMode ? "#ffffff" : props.bg)};
+    background: ${(props) => (props.isDarkMode ? "#2a2a2a" : props.bg)};
   box-shadow: ${(props) =>
     props.isDarkMode
-      ? "0 2px 8px rgba(255, 255, 255, 0.8)"
-      : "0 2px 8px rgba(0, 0, 0, 0.10)"};
-  transition: all 0.3s ease;
-  position: relative;
+      ? "0 2px 6px rgba(0, 0, 0, 0.2)"
+      : "0 2px 6px rgba(0, 0, 0, 0.05)"};
+  transition: all 0.2s ease;
 
   &:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     box-shadow: ${(props) =>
-      props.isDarkMode
-        ? "0 4px 4px rgba(255, 255, 255, 0.9)"
-        : "0 4px 4px rgba(0, 0, 0, 0.18)"};
+    props.isDarkMode
+      ? "0 6px 14px rgba(0, 0, 0, 0.3)"
+      : "0 6px 14px rgba(0, 0, 0, 0.1)"};
+  }
+
+  .ant-list-item-meta {
+    align-items: flex-start;
+  }
+
+  .ant-list-item-meta-title {
+    color: ${(props) => (props.isDarkMode ? "#f0f0f0" : "#000")};
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  
+  .ant-list-item-meta-description {
+    color: ${(props) => (props.isDarkMode ? "#bbb" : "#999")};
+    font-size: 12px;
   }
 `;
 
@@ -191,13 +205,13 @@ const Announcements = () => {
                 isDarkMode={isDarkMode}
               >
                 <List.Item.Meta
-                  title={<strong style={{ color: "#262626" }}>{item.title}</strong>}
+                  title={<strong>{item.title}</strong>}
                   description={
                     <div>
-                      <div style={{ color: "#595959", marginBottom: "4px" }}>
+                      <div style={{ marginBottom: "4px" }}>
                         {item.description}
                       </div>
-                      <span style={{ fontSize: "12px", color: "#8c8c8c" }}>
+                      <span style={{ fontSize: "12px" }}>
                         {item.date}
                       </span>
                     </div>
