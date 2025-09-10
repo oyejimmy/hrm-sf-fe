@@ -1,16 +1,18 @@
 import React from "react";
-import { List } from "antd";
-import { SectionCard } from "./styles";
+import { List, Card } from "antd";
 import type { Announcement } from "../types";
 import styled, { keyframes } from "styled-components";
+import { useTheme } from "../../../../contexts/ThemeContext";
+import { BellOutlined } from "@ant-design/icons";
 
-const announcements: Announcement[] = [
+const announcements: (Announcement & { isNew?: boolean })[] = [
   {
     id: "an1",
     title: "Holiday Notice",
     description: "Company will be closed on December 25th for Christmas",
     date: "2025-12-20",
     type: "Holiday",
+    isNew: true,
   },
   {
     id: "an2",
@@ -18,6 +20,7 @@ const announcements: Announcement[] = [
     description: "New Work-from-home policy effective January 1st",
     date: "2025-12-15",
     type: "Policy",
+    isNew: false,
   },
   {
     id: "an3",
@@ -25,8 +28,46 @@ const announcements: Announcement[] = [
     description: "Scheduled maintenance on Sunday 2AM-4AM",
     date: "2025-12-10",
     type: "Maintenance",
+    isNew: true,
+  },
+  {
+    id: "an4",
+    title: "Quarterly Meeting",
+    description: "All-hands meeting scheduled for January 5th",
+    date: "2025-12-08",
+    type: "Meeting",
+    isNew: false,
+  },
+  {
+    id: "an5",
+    title: "System Upgrade",
+    description: "Upgrading internal systems to v2.1 on December 18th",
+    date: "2025-12-05",
+    type: "Maintenance",
+    isNew: true,
   },
 ];
+
+// 🔔 Keyframes for bell animation
+const ring = keyframes`
+  0%   { transform: rotate(0); }
+  10%  { transform: rotate(15deg); }
+  20%  { transform: rotate(-15deg); }
+  30%  { transform: rotate(10deg); }
+  40%  { transform: rotate(-10deg); }
+  50%  { transform: rotate(5deg); }
+  60%  { transform: rotate(-5deg); }
+  70%  { transform: rotate(0); }
+  100% { transform: rotate(0); }
+`;
+
+// 🔔 Animated Icon
+const AnimatedBell = styled(BellOutlined)`
+  font-size: 18px;
+  cursor: pointer;
+  animation: ${ring} 2s ease-in-out infinite;
+  transform-origin: top center;
+`;
 
 // 🎨 Gradient backgrounds
 const backgroundColors = [
@@ -49,6 +90,7 @@ const ScrollContainer = styled.div`
   height: 250px;
   overflow: hidden;
   position: relative;
+  border-radius: 12px;
 `;
 
 // 🌀 Animated inner container
@@ -62,50 +104,107 @@ const ScrollContent = styled.div`
   }
 `;
 
+// ✅ Fixed SectionCard — strip out isDarkMode before forwarding
+const SectionCard = styled(
+  ({ isDarkMode, ...rest }: { isDarkMode: boolean } & React.ComponentProps<typeof Card>) => (
+    <Card {...rest} />
+  )
+)`
+  border-radius: 8px;
+  margin-bottom: 16px;
+  background: ${(props) => (props.isDarkMode ? "#2f2f2f" : "#fff")};
+  box-shadow: ${(props) =>
+    props.isDarkMode
+      ? "0 2px 8px rgba(255, 255, 255, 0.8)"
+      : "0 2px 8px rgba(0, 0, 0, 0.09)"};
+`;
+
 // 📋 Styled List Item with shadow + smooth hover
-const StyledListItem = styled(List.Item)<{ bg: string }>`
+const StyledListItem = styled(List.Item)<{ bg: string; isDarkMode: boolean }>`
   padding: 12px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   margin-bottom: 12px;
-  background: ${(props) => props.bg};
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease; /* smooth transition */
+  background: ${(props) => (props.isDarkMode ? "#ffffff" : props.bg)};
+  box-shadow: ${(props) =>
+    props.isDarkMode
+      ? "0 2px 8px rgba(255, 255, 255, 0.8)"
+      : "0 2px 8px rgba(0, 0, 0, 0.10)"};
+  transition: all 0.3s ease;
+  position: relative;
 
   &:hover {
-    transform: translateY(-3px); /* lift effect */
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+    transform: translateY(-3px);
+    box-shadow: ${(props) =>
+      props.isDarkMode
+        ? "0 4px 4px rgba(255, 255, 255, 0.9)"
+        : "0 4px 4px rgba(0, 0, 0, 0.18)"};
   }
 `;
 
+// 📍 Wrapper for each item
+const ItemWrapper = styled.div`
+  position: relative;
+`;
+
+// 🔴 Pulse animation for "NEW" badge
+const pulse = keyframes`
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+`;
+
+const NewBadge = styled.div`
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ff4d4f;
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 8px;
+  animation: ${pulse} 1.5s infinite;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  z-index: 9999;
+  margin: 3px 8px;
+`;
+
 const Announcements = () => {
+  const { isDarkMode } = useTheme();
   const loopItems = [...announcements, ...announcements];
 
   return (
-    <SectionCard title="Announcements">
+    <SectionCard
+      title="Announcements"
+      isDarkMode={isDarkMode}
+      extra={<AnimatedBell style={{ color: isDarkMode ? "#fff" : "#000" }} />}
+    >
       <ScrollContainer>
         <ScrollContent>
           {loopItems.map((item, index) => (
-            <StyledListItem
-              key={`${item.id}-${index}`}
-              bg={backgroundColors[index % backgroundColors.length]}
-            >
-              <List.Item.Meta
-                title={
-                  <strong style={{ color: "#262626" }}>{item.title}</strong>
-                }
-                description={
-                  <div>
-                    <div style={{ color: "#595959", marginBottom: "4px" }}>
-                      {item.description}
+            <ItemWrapper key={`${item.id}-${index}`}>
+              {item.isNew && <NewBadge>NEW</NewBadge>}
+              <StyledListItem
+                bg={backgroundColors[index % backgroundColors.length]}
+                isDarkMode={isDarkMode}
+              >
+                <List.Item.Meta
+                  title={<strong style={{ color: "#262626" }}>{item.title}</strong>}
+                  description={
+                    <div>
+                      <div style={{ color: "#595959", marginBottom: "4px" }}>
+                        {item.description}
+                      </div>
+                      <span style={{ fontSize: "12px", color: "#8c8c8c" }}>
+                        {item.date}
+                      </span>
                     </div>
-                    <span style={{ fontSize: "12px", color: "#8c8c8c" }}>
-                      {item.date}
-                    </span>
-                  </div>
-                }
-              />
-            </StyledListItem>
+                  }
+                />
+              </StyledListItem>
+            </ItemWrapper>
           ))}
         </ScrollContent>
       </ScrollContainer>

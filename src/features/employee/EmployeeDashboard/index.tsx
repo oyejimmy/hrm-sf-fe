@@ -20,22 +20,9 @@ import UpcomingHolidays from './components/UpcomingHolidays';
 import TrainingPrograms from './components/TrainingRoadmap';
 import QuickActions from './components/QuickActions';
 import type {
-  EmployeeProfile,
   StatCard,
-  Announcement,
-  Activity,
-  Holiday,
-  TrainingProgram
 } from './types';
 import MySchedule from './components/MySchedule';
-
-// Mock Data
-const profile: EmployeeProfile = {
-  name: "John",
-  designation: "Software Engineer",
-  department: "Frontend Development",
-  avatarUrl: "https://i.pravatar.cc/150?img=3",
-};
 
 const stats: StatCard[] = [
   {
@@ -84,7 +71,7 @@ const events: any = [
 const EmployeeDashboard: React.FC = () => {
   return (
     <PageContainer>
-      <WelcomeHeader profile={profile} />
+      <WelcomeHeader />
       <MyStatsOverview stats={stats} />
       <Row gutter={[24, 24]}>
         <Col span={8}>
