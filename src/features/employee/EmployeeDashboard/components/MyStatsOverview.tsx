@@ -1,12 +1,12 @@
 import React from "react";
 import { Statistic, Card, Row, Col, Space } from "antd";
 import {
-    CheckCircleOutlined,
-    CalendarOutlined,
-    ClockCircleOutlined,
-    ExclamationCircleOutlined,
-    UserOutlined
-} from '@ant-design/icons';
+    CheckCircle,
+    Calendar,
+    Clock,
+    AlertCircle,
+    User
+} from 'lucide-react';
 import type { StatCard as StatCardType } from "../types";
 import { useTheme } from "../../../../contexts/ThemeContext";
 
@@ -31,15 +31,15 @@ const MyStatsOverview: React.FC<Props> = ({ stats }) => {
         "linear-gradient(135deg, rgb(100, 11, 75) 0%, rgb(255, 117, 244) 100%)" // Purple
     ];
 
-    // Maps stat titles to appropriate Ant Design icons
+    // Maps stat titles to appropriate Lucide React icons
     const getIconForTitle = (title: string) => {
         const iconMap: Record<string, React.ReactNode> = {
-            "Attendance Rate": <CheckCircleOutlined />,
-            "Leave Balance": <CalendarOutlined />,
-            "Work Hours": <ClockCircleOutlined />,
-            "Pending Requests": <ExclamationCircleOutlined />,
+            "Attendance Rate": <CheckCircle size={18} color="#fff" />,
+            "Leave Balance": <Calendar size={18} color="#fff" />,
+            "Work Hours": <Clock size={18} color="#fff" />,
+            "Pending Requests": <AlertCircle size={18} color="#fff" />,
         };
-        return iconMap[title] || <UserOutlined />;
+        return iconMap[title] || <User size={18} color="#fff" />;
     };
 
     // Returns additional content specific to each stat card type
@@ -165,14 +165,7 @@ const MyStatsOverview: React.FC<Props> = ({ stats }) => {
                                     flexShrink: 0,
                                     marginLeft: '8px',
                                 }}>
-                                    {React.isValidElement(iconElement) &&
-                                        React.cloneElement(iconElement as React.ReactElement, {
-                                            style: {
-                                                color: '#fff',
-                                                fontSize: '18px'
-                                            }
-                                        })
-                                    }
+                                    {iconElement}
                                 </div>
                             </div>
                             <div style={{ marginTop: 'auto', minHeight: '20px' }}>

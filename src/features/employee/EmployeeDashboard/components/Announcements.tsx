@@ -3,7 +3,8 @@ import { List, Card } from "antd";
 import type { Announcement } from "../types";
 import styled, { keyframes } from "styled-components";
 import { useTheme } from "../../../../contexts/ThemeContext";
-import { BellOutlined } from "@ant-design/icons";
+import { Bell } from "lucide-react";
+import { StyledCard } from "./styles";
 
 const announcements: (Announcement & { isNew?: boolean })[] = [
   {
@@ -62,11 +63,13 @@ const ring = keyframes`
 `;
 
 // 🔔 Animated Icon
-const AnimatedBell = styled(BellOutlined)`
-  font-size: 18px;
+const AnimatedBell = styled(Bell)<{ isDarkMode: boolean }>`
+  width: 18px;
+  height: 18px;
   cursor: pointer;
   animation: ${ring} 2s ease-in-out infinite;
   transform-origin: top center;
+  color: ${props => props.isDarkMode ? '#f0f0f0' : '#000'};
 `;
 
 // 🎨 Gradient backgrounds
@@ -102,21 +105,6 @@ const ScrollContent = styled.div`
   &:hover {
     animation-play-state: paused;
   }
-`;
-
-// ✅ Fixed SectionCard — strip out isDarkMode before forwarding
-const SectionCard = styled(
-  ({ isDarkMode, ...rest }: { isDarkMode: boolean } & React.ComponentProps<typeof Card>) => (
-    <Card {...rest} />
-  )
-)`
-  border-radius: 8px;
-  margin-bottom: 16px;
-  background: ${(props) => (props.isDarkMode ? "#2f2f2f" : "#fff")};
-  box-shadow: ${(props) =>
-    props.isDarkMode
-      ? "0 2px 8px rgba(255, 255, 255, 0.8)"
-      : "0 2px 8px rgba(0, 0, 0, 0.09)"};
 `;
 
 // 📋 Styled List Item with shadow + smooth hover
@@ -185,15 +173,14 @@ const NewBadge = styled.div`
   margin: 3px 8px;
 `;
 
-const Announcements = () => {
-  const { isDarkMode } = useTheme();
+const Announcements = ({ isDarkMode }: { isDarkMode: boolean }) => {
   const loopItems = [...announcements, ...announcements];
 
   return (
-    <SectionCard
+    <StyledCard
       title="Announcements"
-      isDarkMode={isDarkMode}
-      extra={<AnimatedBell style={{ color: isDarkMode ? "#fff" : "#000" }} />}
+      $isDarkMode={isDarkMode}
+      extra={<AnimatedBell isDarkMode={isDarkMode} />}
     >
       <ScrollContainer>
         <ScrollContent>
@@ -222,7 +209,7 @@ const Announcements = () => {
           ))}
         </ScrollContent>
       </ScrollContainer>
-    </SectionCard>
+    </StyledCard>
   );
 };
 

@@ -9,10 +9,11 @@ import {
   Space,
   theme,
 } from 'antd';
-import { BellOutlined, ProfileOutlined } from '@ant-design/icons';
+import { Bell, User } from 'lucide-react';
 import type { EmployeeProfile } from '../types';
 import styled, { css } from 'styled-components';
 import { theme as appTheme } from '../../../../styles/theme';
+import { StyledCard } from './styles';
 
 const { Title, Paragraph } = Typography;
 
@@ -22,38 +23,7 @@ const BREAKPOINTS = {
   SMALL: 576,
 } as const;
 
-// Styled components
-const StyledCard = styled(Card)<{ ismobile: string; mode: 'light' | 'dark' }>`
-  border-radius: 12px;
-  margin-bottom: 24px;
-  transition: all 0.3s ease;
-  border: 1px solid ${({ mode }) => appTheme[mode].colors.border};
-
-  /* Backgrounds for modes */
-  background: ${({ mode }) =>
-    mode === 'dark' ? '#2f2f2f' : appTheme[mode].colors.surface};
-
-  /* ✅ Soft tiny shadow on all sides */
-  box-shadow: ${({ mode }) =>
-    mode === 'dark'
-      ? '0 2px 8px rgba(255, 255, 255, 0.8)'  /* darker for dark mode */
-      : '0 2px 8px rgba(0, 0, 0, 0.10)'}; /* soft & light for light mode */
-
-  .ant-card-body {
-    padding: 24px;
-  }
-
-  ${({ ismobile }) =>
-    ismobile === 'true' &&
-    css`
-      margin-bottom: 16px;
-      .ant-card-body {
-        padding: 16px;
-      }
-    `}
-`;
-
-const StyledRow = styled(Row)<{ ismobile: string }>`
+const StyledRow = styled(Row) <{ ismobile: string }>`
   flex-wrap: nowrap;
 
   ${({ ismobile }) =>
@@ -79,10 +49,10 @@ const ProfileSection = styled.div<{ issmallscreen: string }>`
     `}
 `;
 
-const StyledTitle = styled(Title)<{ issmallscreen: string; mode: 'light' | 'dark' }>`
+const StyledTitle = styled(Title) <{ issmallscreen: string; isDarkMode: boolean }>`
   margin: 0;
   font-size: 1.5rem;
-  color: ${({ mode }) => appTheme[mode].colors.textPrimary} !important;
+  color: ${({ isDarkMode }) => appTheme[isDarkMode ? 'dark' : 'light'].colors.textPrimary} !important;
 
   ${({ issmallscreen }) =>
     issmallscreen === 'true' &&
@@ -91,9 +61,9 @@ const StyledTitle = styled(Title)<{ issmallscreen: string; mode: 'light' | 'dark
     `}
 `;
 
-const StyledParagraph = styled(Paragraph)<{ issmallscreen: string; mode: 'light' | 'dark' }>`
+const StyledParagraph = styled(Paragraph) <{ issmallscreen: string; isDarkMode: boolean }>`
   margin: 0;
-  color: ${({ mode }) => appTheme[mode].colors.textSecondary} !important;
+  color: ${({ isDarkMode }) => appTheme[isDarkMode ? 'dark' : 'light'].colors.textSecondary} !important;
 
   ${({ issmallscreen }) =>
     issmallscreen === 'true' &&
@@ -102,7 +72,7 @@ const StyledParagraph = styled(Paragraph)<{ issmallscreen: string; mode: 'light'
     `}
 `;
 
-const StyledSpace = styled(Space)<{ ismobile: string; issmallscreen: string }>`
+const StyledSpace = styled(Space) <{ ismobile: string; issmallscreen: string }>`
   display: flex;
   gap: 12px;
 
@@ -122,7 +92,7 @@ const StyledSpace = styled(Space)<{ ismobile: string; issmallscreen: string }>`
     `}
 `;
 
-const StyledButton = styled(Button)<{ ismobile: string }>`
+const StyledButton = styled(Button) <{ ismobile: string }>`
   ${({ ismobile }) =>
     ismobile === 'true' &&
     css`
@@ -142,14 +112,7 @@ const mockProfile: EmployeeProfile = {
   avatarUrl: 'https://i.pravatar.cc/150?img=5',
 };
 
-const WelcomeHeader: React.FC<Props> = ({ profile = mockProfile }) => {
-  const { token } = theme.useToken();
-
-  // ✅ Safe mode detection (dark/light)
-  const mode: 'light' | 'dark' =
-    token.colorBgBase === '#000000' || token.colorBgContainer === '#141414'
-      ? 'dark'
-      : 'light';
+const WelcomeHeader = ({ isDarkMode }: { isDarkMode: boolean }) => {
 
   const [windowSize, setWindowSize] = React.useState({
     width: window.innerWidth,
@@ -172,24 +135,24 @@ const WelcomeHeader: React.FC<Props> = ({ profile = mockProfile }) => {
   const isSmallScreen = windowSize.width <= BREAKPOINTS.SMALL;
 
   return (
-    <StyledCard ismobile={isMobile.toString()} mode={mode}>
+    <StyledCard $isMobile={isMobile} $isDarkMode={isDarkMode}>
       <StyledRow align="middle" justify="space-between" ismobile={isMobile.toString()}>
         <Col>
           <ProfileSection issmallscreen={isSmallScreen.toString()}>
-            <Avatar size={64} src={profile.avatarUrl} />
+            <Avatar size={64} src={mockProfile.avatarUrl} />
             <div>
               <StyledTitle
                 level={2}
                 issmallscreen={isSmallScreen.toString()}
-                mode={mode}
+                isDarkMode={isDarkMode}
               >
-                Welcome back, {profile.name}!
+                Welcome back, {mockProfile.name}!
               </StyledTitle>
               <StyledParagraph
                 issmallscreen={isSmallScreen.toString()}
-                mode={mode}
+                isDarkMode={isDarkMode}
               >
-                {profile.designation} — {profile.department}
+                {mockProfile.designation} — {mockProfile.department}
               </StyledParagraph>
             </div>
           </ProfileSection>
@@ -201,11 +164,11 @@ const WelcomeHeader: React.FC<Props> = ({ profile = mockProfile }) => {
             direction={isSmallScreen ? 'vertical' : 'horizontal'}
             size="middle"
           >
-            <StyledButton icon={<BellOutlined />} size="large" ismobile={isMobile.toString()}>
+            <StyledButton icon={<Bell size={16} color={isDarkMode ? '#f0f0f0' : '#000'} />} size="large" ismobile={isMobile.toString()}>
               Notifications
             </StyledButton>
             <StyledButton
-              icon={<ProfileOutlined />}
+              icon={<User size={16} />}
               type="primary"
               size="large"
               ismobile={isMobile.toString()}

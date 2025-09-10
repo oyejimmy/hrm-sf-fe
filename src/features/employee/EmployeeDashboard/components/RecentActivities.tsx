@@ -1,4 +1,3 @@
-import React from "react";
 import { List, Tag, Card } from "antd";
 import styled from "styled-components";
 import {
@@ -7,8 +6,9 @@ import {
   CheckCircle,
   DollarSign,
   CalendarCheck,
+  Clock,
 } from "lucide-react";
-import { useTheme } from "../../../../contexts/ThemeContext";
+import { StyledCard } from "./styles";
 
 // 📌 Mock data with different activity types
 const activities = [
@@ -49,61 +49,48 @@ const activities = [
   },
 ];
 
-// 🎨 Styled Card with dark mode support
-const StyledCard = styled(Card)<{isDarkMode: boolean }>`
-  border-radius: 12px;
-  box-shadow: ${(props) =>
-    props.isDarkMode
-      ? "0 4px 12px rgba(255, 255, 255, 0.05)"
-      : "0 4px 12px rgba(0, 0, 0, 0.08)"};
-  background: ${(props) => (props.isDarkMode ? "#1f1f1f" : "#fff")};
-  border: ${(props) => (props.isDarkMode ? "1px solid #444" : "1px solid #f0f0f0")};
-  
-  .ant-card-head {
-    border-bottom: ${(props) => (props.isDarkMode ? "1px solid #444" : "1px solid #f0f0f0")};
-    padding: 0 16px;
-  }
-  
-  .ant-card-head-title {
-    color: ${(props) => (props.isDarkMode ? "#f0f0f0" : "#000")};
-    font-weight: 600;
-    padding: 16px 0;
-  }
-  
-  .ant-card-body {
-    padding: 16px;
-  }
-`;
-
-// 🎨 Scroll container
-const ScrollContainer = styled.div<{isDarkMode: boolean }>`
-  max-height: 300px;
+// 🎨 Scroll container with blue scrollbar positioned to the right
+const ScrollContainer = styled.div<{ isDarkMode: boolean }>`
+  height: 250px;
   overflow-y: auto;
-  padding: 4px;
+  padding: 4px 8px 4px 4px; // More padding on right for scrollbar
   border-radius: 8px;
   scrollbar-gutter: stable;
+  margin-right: -4px; // Pull scrollbar to the edge
 
   &::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
+    height: 8px;
   }
   
   &::-webkit-scrollbar-track {
-    background: ${(props) => (props.isDarkMode ? "#2a2a2a" : "#f5f5f5")};
-    border-radius: 3px;
+    background: ${(props) => (props.isDarkMode ? "#2a2a2a" : "#f1f1f1")};
+    border-radius: 4px;
+    margin: 4px 0;
   }
   
   &::-webkit-scrollbar-thumb {
-    background: ${(props) => (props.isDarkMode ? "#555" : "#ccc")};
-    border-radius: 3px;
+    background: #1890ff;
+    border-radius: 4px;
   }
   
   &::-webkit-scrollbar-thumb:hover {
-    background: ${(props) => (props.isDarkMode ? "#777" : "#999")};
+    background: #40a9ff;
+  }
+
+  // Firefox scrollbar
+  scrollbar-width: thin;
+  scrollbar-color: #1890ff ${(props) => (props.isDarkMode ? "#2a2a2a" : "#f1f1f1")};
+
+  // Mobile responsiveness
+  @media (max-width: 768px) {
+    max-height: 250px;
+    padding: 4px 6px 4px 4px;
   }
 `;
 
 // 📋 List Item with dark/light mode
-const StyledListItem = styled(List.Item)<{isDarkMode: boolean }>`
+const StyledListItem = styled(List.Item) <{ isDarkMode: boolean }>`
   border: 1px solid ${(props) => (props.isDarkMode ? "#444" : "#f0f0f0")};
   border-radius: 10px;
   padding: 16px;
@@ -137,17 +124,28 @@ const StyledListItem = styled(List.Item)<{isDarkMode: boolean }>`
     color: ${(props) => (props.isDarkMode ? "#bbb" : "#999")};
     font-size: 12px;
   }
+
+  // Mobile responsiveness
+  @media (max-width: 768px) {
+    padding: 12px;
+    
+    .ant-list-item-meta {
+      flex-direction: column;
+    }
+    
+    .ant-list-item-meta-avatar {
+      margin-bottom: 8px;
+    }
+  }
 `;
 
-// Icon container with proper spacing
-const IconContainer = styled.div<{isDarkMode: boolean }>`
+// Icon container without background
+const IconContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background: ${(props) => (props.isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.04)")};
+  width: 32px;
+  height: 32px;
   margin-right: 12px;
 `;
 
@@ -158,6 +156,23 @@ const TitleContainer = styled.div`
   align-items: flex-start;
   gap: 12px;
   width: 100%;
+
+  // Mobile responsiveness
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 8px;
+    
+    .ant-tag {
+      align-self: flex-start;
+    }
+  }
+`;
+
+// Styled clock icon for the card header
+const ClockIcon = styled(Clock)<{ isDarkMode: boolean }>`
+  width: 18px;
+  height: 18px;
+  color: ${(props) => (props.isDarkMode ? '#f0f0f0' : '#000')};
 `;
 
 // ✅ Status tags
@@ -191,13 +206,13 @@ const getActivityIcon = (id: any) => {
   }
 };
 
-const RecentActivities = () => {
-  const { isDarkMode } = useTheme();
-  console.log(isDarkMode);
+const RecentActivities = ({ isDarkMode }: { isDarkMode: boolean }) => {
+
   return (
     <StyledCard
       title="Recent Activities"
-      isDarkMode={isDarkMode}
+      $isDarkMode={isDarkMode}
+      extra={<ClockIcon isDarkMode={isDarkMode} />}
     >
       <ScrollContainer isDarkMode={isDarkMode}>
         <List
@@ -206,7 +221,7 @@ const RecentActivities = () => {
             <StyledListItem key={item.id} isDarkMode={isDarkMode}>
               <List.Item.Meta
                 avatar={
-                  <IconContainer isDarkMode={isDarkMode}>
+                  <IconContainer>
                     {getActivityIcon(item.id)}
                   </IconContainer>
                 }

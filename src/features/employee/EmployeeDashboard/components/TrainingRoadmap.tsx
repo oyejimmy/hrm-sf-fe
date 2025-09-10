@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { Button, Tag, Modal, Rate, Progress, Row, Col, Divider, Typography } from "antd";
-import { SectionCard } from "./styles";
+import { Button, Tag, Modal, Rate, Progress, Row, Col, Divider, Typography, Table } from "antd";
+import { StyledCard } from "./styles";
 import type { TrainingProgram } from "../types";
 import styled from "styled-components";
+import { useTheme } from "../../../../contexts/ThemeContext";
+import { GraduationCap } from "lucide-react";
 
 const { Text } = Typography;
 
@@ -73,59 +75,134 @@ const trainings: any = [
     softwareRequirements: "Node.js v16+, VS Code recommended",
     materialsIncluded: ["Video Lectures", "Code Exercises", "Quizzes", "Slide Decks", "GitHub Repository"],
   },
+  {
+    id: "t2",
+    course: "Node.js Backend Development",
+    category: "Backend Engineering",
+    instructor: "Sarah Johnson",
+    duration: "25 hours",
+    enrollment: "28 enrolled, 15 completed",
+    status: "Active",
+    rating: 5,
+    description:
+      "Learn to build scalable backend applications with Node.js, Express, and MongoDB. Covers REST APIs, authentication, and deployment.",
+    courseLevel: "Intermediate",
+    prerequisites: "JavaScript, Basic HTTP knowledge",
+    version: "v3.0 (Updated: Nov 15, 2023)",
+    keyTopics: ["Express.js", "REST APIs", "MongoDB", "Authentication", "Error Handling", "Deployment"],
+    totalModules: "10 Modules, 52 Lessons",
+    capstoneProject: "Build a RESTful API for E-commerce",
+    enrollmentStatus: "Not Enrolled",
+    progress: 0,
+    grade: "N/A",
+    timeSpent: "0h / 25h",
+    lastAccessed: "Never",
+    nextLesson: "Module 1: Introduction to Node.js",
+    certificateAvailable: true,
+    instructorBio: "Sarah Johnson is a backend specialist with 8+ years of experience in Node.js and cloud infrastructure.",
+    instructorRating: "⭐ 4.9/5 (Based on 95 reviews)",
+    teachingAssistants: "Mike Chen, Lisa Wang",
+    supportChannel: "#nodejs-training-support",
+    officeHours: "Tuesdays, 4:00 PM - 6:00 PM EST",
+    format: "Instructor-Led",
+    platform: "Coursera",
+    softwareRequirements: "Node.js v18+, MongoDB, Postman",
+    materialsIncluded: ["Video Lectures", "Coding Challenges", "Projects", "Community Access"],
+  },
+  {
+    id: "t3",
+    course: "Advanced React Patterns",
+    category: "Frontend Engineering",
+    instructor: "Alex Rodriguez",
+    duration: "15 hours",
+    enrollment: "18 enrolled, 8 completed",
+    status: "Active",
+    rating: 4,
+    description:
+      "Master advanced React patterns and techniques for building highly performant and maintainable applications.",
+    courseLevel: "Advanced",
+    prerequisites: "React Fundamentals, JavaScript ES6+",
+    version: "v1.5 (Updated: Dec 5, 2023)",
+    keyTopics: ["Compound Components", "Render Props", "Higher-Order Components", "Custom Hooks", "Performance Optimization"],
+    totalModules: "6 Modules, 30 Lessons",
+    capstoneProject: "Build a Component Library",
+    enrollmentStatus: "Completed",
+    progress: 100,
+    grade: "96%",
+    timeSpent: "15h / 15h",
+    lastAccessed: "2 weeks ago",
+    nextLesson: "N/A - Course Completed",
+    certificateAvailable: true,
+    instructorBio: "Alex Rodriguez is a React expert and open-source contributor with extensive experience in enterprise applications.",
+    instructorRating: "⭐ 4.7/5 (Based on 67 reviews)",
+    teachingAssistants: "Tom Wilson",
+    supportChannel: "#advanced-react-support",
+    officeHours: "Thursdays, 1:00 PM - 3:00 PM EST",
+    format: "Self-Paced",
+    platform: "Udemy",
+    softwareRequirements: "React 18+, TypeScript knowledge recommended",
+    materialsIncluded: ["Video Lectures", "Code Samples", "Cheat Sheets", "Lifetime Access"],
+  },
 ];
 
 // 🎨 Styled Components
-const ScrollContainer = styled.div`
+const ScrollContainer = styled.div<{ isDarkMode: boolean }>`
   max-height: 300px;
   overflow-y: auto;
-  border-radius: 10px;
+  border-radius: 8px;
+  padding: 4px;
 
   &::-webkit-scrollbar {
-    width: 6px;
-    background: transparent;
+    width: 8px;
+    height: 8px;
   }
+  
+  &::-webkit-scrollbar-track {
+    background: ${(props) => (props.isDarkMode ? "#2a2a2a" : "#f1f1f1")};
+    border-radius: 4px;
+  }
+  
   &::-webkit-scrollbar-thumb {
-    background-color: transparent;
-    border-radius: 10px;
+    background: #1890ff;
+    border-radius: 4px;
   }
-  &:hover::-webkit-scrollbar-thumb {
-    background-color: #1890ff;
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #40a9ff;
   }
 
-  scrollbar-width: none;
-  &:hover {
-    scrollbar-width: thin;
-    scrollbar-color: #1890ff transparent;
-  }
+  // Firefox scrollbar
+  scrollbar-width: thin;
+  scrollbar-color: #1890ff ${(props) => (props.isDarkMode ? "#2a2a2a" : "#f1f1f1")};
 `;
 
-const StyledTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-
-  thead th {
-    position: sticky;
-    top: 0;
-    background: #f5f5f5;
-    text-align: left;
-    padding: 12px;
+const StyledTable = styled(Table) <{ isDarkMode: boolean }>`
+  .ant-table-thead > tr > th {
+    background: ${(props) => (props.isDarkMode ? "#2a2a2a" : "#fafafa")};
+    color: ${(props) => (props.isDarkMode ? "#f0f0f0" : "rgba(0, 0, 0, 0.85)")};
+    border-bottom: 1px solid ${(props) => (props.isDarkMode ? "#444" : "#f0f0f0")};
     font-weight: 600;
-    z-index: 1;
   }
 
-  tbody td {
-    padding: 12px;
-    border-bottom: 1px solid #f0f0f0;
-    background: #fff;
+  .ant-table-tbody > tr > td {
+    border-bottom: 1px solid ${(props) => (props.isDarkMode ? "#444" : "#f0f0f0")};
+    background: ${(props) => (props.isDarkMode ? "#1f1f1f" : "#fff")};
+    color: ${(props) => (props.isDarkMode ? "#f0f0f0" : "rgba(0, 0, 0, 0.85)")};
+  }
+
+  .ant-table-tbody > tr:hover > td {
+    background: ${(props) => (props.isDarkMode ? "#2d2d2d" : "#fafafa")};
   }
 `;
 
-const Section = styled.div`
+const Section = styled.div<{ isDarkMode: boolean }>`
   margin-bottom: 20px;
+  
   h4 {
     margin-bottom: 12px;
+    color: ${(props) => (props.isDarkMode ? "#f0f0f0" : "rgba(0, 0, 0, 0.85)")};
   }
+  
   .ant-row {
     margin-bottom: 8px;
   }
@@ -136,15 +213,23 @@ const DescriptionRow = styled(Row)`
   margin-bottom: 16px;
 `;
 
-const DescriptionCard = styled.div`
+const DescriptionCard = styled.div<{ isDarkMode: boolean }>`
   padding: 16px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid ${(props) => (props.isDarkMode ? "#444" : "#f0f0f0")};
   border-radius: 8px;
   height: 100%;
-  background-color: #fafafa;
+  background-color: ${(props) => (props.isDarkMode ? "#2a2a2a" : "#fafafa")};
+  color: ${(props) => (props.isDarkMode ? "#f0f0f0" : "rgba(0, 0, 0, 0.85)")};
 `;
 
-const TrainingPrograms = () => {
+// Styled graduation cap icon for the card header
+const TrainingIcon = styled(GraduationCap)<{ isDarkMode: boolean }>`
+  width: 18px;
+  height: 18px;
+  color: ${props => props.isDarkMode ? '#f0f0f0' : '#000'};
+`;
+
+const TrainingPrograms = ({ isDarkMode }: { isDarkMode: boolean }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedTraining, setSelectedTraining] = useState<ExtendedTrainingProgram | null>(null);
 
@@ -158,52 +243,88 @@ const TrainingPrograms = () => {
     setSelectedTraining(null);
   };
 
+  // Table columns
+  const columns: any = [
+    {
+      title: 'Course',
+      dataIndex: 'course',
+      key: 'course',
+      width: 200,
+    },
+    {
+      title: 'Category',
+      dataIndex: 'category',
+      key: 'category',
+      width: 150,
+    },
+    {
+      title: 'Instructor',
+      dataIndex: 'instructor',
+      key: 'instructor',
+      width: 120,
+    },
+    {
+      title: 'Duration',
+      dataIndex: 'duration',
+      key: 'duration',
+      width: 100,
+    },
+    {
+      title: 'Enrollment',
+      dataIndex: 'enrollment',
+      key: 'enrollment',
+      width: 150,
+    },
+    {
+      title: 'Rating',
+      dataIndex: 'rating',
+      key: 'rating',
+      width: 150,
+      render: (rating: number) => <Rate disabled defaultValue={rating} style={{ fontSize: "14px" }} />,
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      width: 100,
+      render: (status: string) => (
+        <Tag color={status === "Active" ? "green" : "blue"}>{status}</Tag>
+      ),
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      width: 100,
+      render: (_: any, record: any) => (
+        <Button type="link" onClick={() => showModal(record)}>
+          View Details
+        </Button>
+      ),
+    },
+  ];
+
   return (
-    <SectionCard title="Training Programs">
-      <ScrollContainer>
-        <StyledTable>
-          <thead>
-            <tr>
-              <th>Courses</th>
-              <th>Category</th>
-              <th>Instructor</th>
-              <th>Duration</th>
-              <th>Enrollment</th>
-              <th>Rating</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {trainings.slice(0, 5).map((item: any) => (
-              <tr key={item.id}>
-                <td>{item.course}</td>
-                <td>{item.category}</td>
-                <td>{item.instructor}</td>
-                <td>{item.duration}</td>
-                <td>{item.enrollment}</td>
-                <td>
-                  <Rate disabled defaultValue={item.rating} style={{ fontSize: "14px" }} />
-                </td>
-                <td>
-                  <Tag color={item.status === "Active" ? "green" : "blue"}>{item.status}</Tag>
-                </td>
-                <td>
-                  <Button type="link" onClick={() => showModal(item)}>
-                    View Details
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </StyledTable>
+    <StyledCard 
+      title="Training Programs" 
+      $isDarkMode={isDarkMode}
+      extra={<TrainingIcon isDarkMode={isDarkMode} />}
+    >
+      <ScrollContainer isDarkMode={isDarkMode}>
+        <StyledTable
+          isDarkMode={isDarkMode}
+          columns={columns}
+          dataSource={trainings}
+          pagination={false}
+          scroll={{ y: 250 }}
+          size="small"
+        />
       </ScrollContainer>
 
       {/* 🖼️ Enhanced Modal */}
       <Modal
         centered
         width={800}
-        title="Enhanced Program Details & Metadata"
+        title="Training Program Details"
         open={isModalVisible}
         onCancel={handleClose}
         footer={[
@@ -211,32 +332,47 @@ const TrainingPrograms = () => {
             Close
           </Button>,
         ]}
+        styles={{
+          body: {
+            backgroundColor: isDarkMode ? '#1f1f1f' : '#fff',
+            color: isDarkMode ? '#f0f0f0' : 'rgba(0, 0, 0, 0.85)'
+          },
+          header: {
+            backgroundColor: isDarkMode ? '#1f1f1f' : '#fff',
+            borderBottom: `1px solid ${isDarkMode ? '#444' : '#f0f0f0'}`
+          },
+          footer: {
+            backgroundColor: isDarkMode ? '#1f1f1f' : '#fff',
+            borderTop: `1px solid ${isDarkMode ? '#444' : '#f0f0f0'}`
+          },
+          content: { backgroundColor: isDarkMode ? '#1f1f1f' : '#fff' }
+        }}
       >
         {selectedTraining && (
           <>
             {/* Program Metadata */}
-            <Section>
+            <Section isDarkMode={isDarkMode}>
               <Divider orientation="left">Program Metadata</Divider>
               <Row gutter={[16, 8]}>
-                <Col span={12}><Text strong>Course:</Text><Text> {selectedTraining.course}</Text></Col>
-                <Col span={12}><Text strong>Level:</Text><Text> {selectedTraining.courseLevel}</Text></Col>
-                <Col span={12}><Text strong>Prerequisites:</Text><Text> {selectedTraining.prerequisites}</Text></Col>
-                <Col span={12}><Text strong>Version:</Text><Text> {selectedTraining.version}</Text></Col>
-                <Col span={12}><Text strong>Modules/Lessons:</Text><Text> {selectedTraining.totalModules}</Text></Col>
-                <Col span={12}><Text strong>Capstone:</Text><Text> {selectedTraining.capstoneProject}</Text></Col>
+                <Col span={8}><Text strong>Course:</Text><Text> {selectedTraining.course}</Text></Col>
+                <Col span={8}><Text strong>Level:</Text><Text> {selectedTraining.courseLevel}</Text></Col>
+                <Col span={8}><Text strong>Prerequisites:</Text><Text> {selectedTraining.prerequisites}</Text></Col>
+                <Col span={8}><Text strong>Version:</Text><Text> {selectedTraining.version}</Text></Col>
+                <Col span={8}><Text strong>Modules/Lessons:</Text><Text> {selectedTraining.totalModules}</Text></Col>
+                <Col span={8}><Text strong>Capstone:</Text><Text> {selectedTraining.capstoneProject}</Text></Col>
               </Row>
-              
+
               {/* Three Descriptions in One Row */}
               <DescriptionRow gutter={16}>
                 <Col span={8}>
-                  <DescriptionCard>
+                  <DescriptionCard isDarkMode={isDarkMode}>
                     <Text strong>Course Description</Text>
                     <br />
                     <Text>{selectedTraining.description}</Text>
                   </DescriptionCard>
                 </Col>
                 <Col span={8}>
-                  <DescriptionCard>
+                  <DescriptionCard isDarkMode={isDarkMode}>
                     <Text strong>Key Topics</Text>
                     <br />
                     <ul style={{ paddingLeft: 16, margin: 0 }}>
@@ -247,7 +383,7 @@ const TrainingPrograms = () => {
                   </DescriptionCard>
                 </Col>
                 <Col span={8}>
-                  <DescriptionCard>
+                  <DescriptionCard isDarkMode={isDarkMode}>
                     <Text strong>Materials Included</Text>
                     <br />
                     <ul style={{ paddingLeft: 16, margin: 0 }}>
@@ -261,15 +397,15 @@ const TrainingPrograms = () => {
             </Section>
 
             {/* Enrollment Info */}
-            <Section>
+            <Section isDarkMode={isDarkMode}>
               <Divider orientation="left">Enrollment & Progress</Divider>
               <Row gutter={[16, 8]}>
-                <Col span={12}><Text strong>Status:</Text><Text> {selectedTraining.enrollmentStatus}</Text></Col>
-                <Col span={12}><Text strong>Grade:</Text><Text> {selectedTraining.grade}</Text></Col>
-                <Col span={12}><Text strong>Time Spent:</Text><Text> {selectedTraining.timeSpent}</Text></Col>
-                <Col span={12}><Text strong>Last Accessed:</Text><Text> {selectedTraining.lastAccessed}</Text></Col>
-                <Col span={12}><Text strong>Next Lesson:</Text><Text> {selectedTraining.nextLesson}</Text></Col>
-                <Col span={12}>
+                <Col span={8}><Text strong>Status:</Text><Text> {selectedTraining.enrollmentStatus}</Text></Col>
+                <Col span={8}><Text strong>Grade:</Text><Text> {selectedTraining.grade}</Text></Col>
+                <Col span={8}><Text strong>Time Spent:</Text><Text> {selectedTraining.timeSpent}</Text></Col>
+                <Col span={8}><Text strong>Last Accessed:</Text><Text> {selectedTraining.lastAccessed}</Text></Col>
+                <Col span={8}><Text strong>Next Lesson:</Text><Text> {selectedTraining.nextLesson}</Text></Col>
+                <Col span={8}>
                   <Text strong>Certificate Available: </Text>
                   <Text>{selectedTraining.certificateAvailable ? "Yes" : "No"}</Text>
                 </Col>
@@ -277,7 +413,11 @@ const TrainingPrograms = () => {
               <Row style={{ marginTop: 16 }}>
                 <Col span={24}>
                   <Text strong>Progress: </Text>
-                  <Progress percent={selectedTraining.progress} size="small" />
+                  <Progress
+                    percent={selectedTraining.progress}
+                    size="small"
+                    strokeColor={isDarkMode ? '#1890ff' : undefined}
+                  />
                 </Col>
               </Row>
               {selectedTraining.certificateAvailable && (
@@ -286,14 +426,14 @@ const TrainingPrograms = () => {
             </Section>
 
             {/* Instructor Info */}
-            <Section>
+            <Section isDarkMode={isDarkMode}>
               <Divider orientation="left">Instructor & Support</Divider>
               <Row gutter={[16, 8]}>
-                <Col span={12}><Text strong>Instructor:</Text><Text> {selectedTraining.instructor}</Text></Col>
-                <Col span={12}><Text strong>Rating:</Text><Text> {selectedTraining.instructorRating}</Text></Col>
-                <Col span={12}><Text strong>TA(s):</Text><Text> {selectedTraining.teachingAssistants}</Text></Col>
-                <Col span={12}><Text strong>Support:</Text><Text> {selectedTraining.supportChannel}</Text></Col>
-                <Col span={12}><Text strong>Office Hours:</Text><Text> {selectedTraining.officeHours}</Text></Col>
+                <Col span={8}><Text strong>Instructor:</Text><Text> {selectedTraining.instructor}</Text></Col>
+                <Col span={8}><Text strong>Rating:</Text><Text> {selectedTraining.instructorRating}</Text></Col>
+                <Col span={8}><Text strong>TA(s):</Text><Text> {selectedTraining.teachingAssistants}</Text></Col>
+                <Col span={8}><Text strong>Support:</Text><Text> {selectedTraining.supportChannel}</Text></Col>
+                <Col span={8}><Text strong>Office Hours:</Text><Text> {selectedTraining.officeHours}</Text></Col>
               </Row>
               <Row style={{ marginTop: 16 }}>
                 <Col span={24}>
@@ -302,20 +442,10 @@ const TrainingPrograms = () => {
                 </Col>
               </Row>
             </Section>
-
-            {/* Logistics */}
-            <Section>
-              <Divider orientation="left">Logistics & Requirements</Divider>
-              <Row gutter={[16, 8]}>
-                <Col span={12}><Text strong>Format:</Text><Text> {selectedTraining.format}</Text></Col>
-                <Col span={12}><Text strong>Platform:</Text><Text> {selectedTraining.platform}</Text></Col>
-                <Col span={24}><Text strong>Software Requirements:</Text><Text> {selectedTraining.softwareRequirements}</Text></Col>
-              </Row>
-            </Section>
           </>
         )}
       </Modal>
-    </SectionCard>
+    </StyledCard>
   );
 };
 
