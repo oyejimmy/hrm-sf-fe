@@ -79,11 +79,11 @@ const EmployeeDashboard: React.FC = () => {
     <PageContainer isDarkMode={isDarkMode}>
       <WelcomeHeader isDarkMode={isDarkMode} />
       <div style={{ marginBottom: '24px' }}>
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
           marginBottom: '16px',
-          color: currentTheme.colors.textPrimary 
+          color: currentTheme.colors.textPrimary
         }}>
           <BarChart3 size={20} color={currentTheme.colors.primary} style={{ marginRight: '8px' }} />
           <h3 style={{ margin: 0, color: currentTheme.colors.textPrimary }}>My Stats Overview</h3>

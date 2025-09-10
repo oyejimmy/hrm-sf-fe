@@ -74,7 +74,7 @@ const SiderHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  height: 65px;
+  height: 63px;
   border-bottom: 1px solid ${props => props.theme?.themeMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : '#f0f0f0'};
 `;
 
@@ -189,23 +189,16 @@ const StickySider = styled(Sider)`
 background: ${props => props.theme === 'dark' ? '#001529' : '#ffffff'};
 color: ${props => props.theme === 'dark' ? '#001529' : '#ffffff'};
 }
-
 &.ant-layout-sider-dark {
     background: #001529 !important;
-    border-right: 2px solid white;
+    border-right: ${props => props.theme === 'dark' ? '1px solidrgb(5, 46, 84)' : '1px solid #d9d9d9'};
   }
-  
-  &.ant-layout-sider-light {
-    border-right: 1px solidrgb(115, 115, 115);
-  }
-  
   height: 100vh;
   position: fixed !important;
   left: 0;
   top: 0;
   bottom: 0;
   z-index: 9;
-  
   // Adjust content margin when sider is collapsed
   & ~ .ant-layout {
     margin-left: ${props => props.collapsed ? 80 : (props.width || 200)}px !important;

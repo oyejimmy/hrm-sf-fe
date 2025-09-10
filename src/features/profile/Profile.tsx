@@ -153,7 +153,7 @@ const Profile: React.FC = () => {
 
             <Row gutter={24} style={{ marginTop: 24 }}>
               <Col xs={24} md={8}>
-                <S.StyledCard title="Employee Details" isDarkMode={isDarkMode}>
+                <S.StyledCard isDarkMode={isDarkMode}>
                   <S.SideInfoItem isDarkMode={isDarkMode}>
                     <div className="label">
                       <Mail size={16} style={{ marginRight: 8, color: '#52c41a' }} />
@@ -227,18 +227,26 @@ const Profile: React.FC = () => {
                             <div className="value">{employeeData.personalInfo.name}</div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
-                            <div className="label">Email</div>
+                            <div className="label">Personal Email</div>
                             <div className="value">{employeeData.personalInfo.email}</div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Phone</div>
                             <div className="value">{employeeData.personalInfo.phone}</div>
                           </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
+                            <div className="label">Qualification</div>
+                            <div className="value">{employeeData.personalInfo.qualification} --</div>
+                          </S.SideInfoItem>
                         </Col>
                         <Col span={12}>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Location</div>
                             <div className="value">{employeeData.personalInfo.location}</div>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
+                            <div className="label">Blood Group</div>
+                            <div className="value">{employeeData.personalInfo.employeeId}</div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Employee ID</div>
