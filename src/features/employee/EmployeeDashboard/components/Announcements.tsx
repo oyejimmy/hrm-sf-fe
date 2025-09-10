@@ -120,7 +120,7 @@ const SectionCard = styled(
 `;
 
 // 📋 Styled List Item with shadow + smooth hover
-const StyledListItem = styled(List.Item)<{ bg: string; isDarkMode: boolean }>`
+const StyledListItem = styled(List.Item) <{ bg: string; isDarkMode: boolean }>`
   border: 1px solid ${(props) => (props.isDarkMode ? "#444" : "#f0f0f0")};
   border-radius: 10px;
   padding: 16px;
