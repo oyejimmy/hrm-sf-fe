@@ -87,7 +87,7 @@ const MyStatsOverview: React.FC<Props> = ({ stats }) => {
 
     return (
         // Main grid container with consistent spacing between cards
-        <Row gutter={[24, 24]} style={{ margin: 0 }}>
+        <Row gutter={[24, 24]}>
             {stats.map((s, index) => {
                 // Determine background based on theme mode
                 // Use single grey color for dark mode, gradients for light mode
