@@ -1,173 +1,268 @@
 import React from 'react';
-import { Layout, Button, Dropdown, Avatar, Space, Typography, Tag, Divider, Badge } from 'antd';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import {
-  UserOutlined,
-  LogoutOutlined,
-  SettingOutlined,
-  SunOutlined,
-  MoonOutlined,
-  BellOutlined,
-} from '@ant-design/icons';
-import { RootState } from '../../store';
-import { logout } from '../../store/slices/authSlice';
-import { useTheme } from '../../contexts/ThemeContext';
+import { Button, Breadcrumb, Typography, Space, Flex } from 'antd';
+import { Home, ArrowLeft } from 'lucide-react';
 import styled from 'styled-components';
 
-const { Header: AntHeader } = Layout;
+const { Title, Text } = Typography;
 
-interface HeaderProps {
+// Styled Components with dark mode support
+const StyledPageHeader = styled.div<{ isDarkMode?: boolean }>`
+  background-color: ${props => props.isDarkMode ? '#141414' : '#ffffff'};
+  border-bottom: 1px solid ${props => props.isDarkMode ? '#434343' : '#f0f0f0'};
+  padding: 16px 24px;
+  transition: all 0.3s ease;
+  
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px 12px;
+  }
+`;
+
+const BreadcrumbContainer = styled.div<{ isDarkMode?: boolean }>`
+  margin-bottom: 16px;
+  
+  .ant-breadcrumb {
+    color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.65)' : 'rgba(0, 0, 0, 0.45)'};
+    
+    a {
+      color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.65)' : 'rgba(0, 0, 0, 0.45)'};
+      
+      &:hover {
+        color: ${props => props.isDarkMode ? '#1890ff' : '#40a9ff'};
+      }
+    }
+    
+    li:last-child {
+      color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.85)' : 'rgba(0, 0, 0, 0.85)'};
+    }
+  }
+
+  @media (max-width: 768px) {
+    margin-bottom: 12px;
+    
+    .ant-breadcrumb {
+      font-size: 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .ant-breadcrumb {
+      font-size: 11px;
+      
+      /* Hide breadcrumb items except the last one on very small screens */
+      li:not(:last-child) {
+        display: none;
+      }
+      
+      li:nth-last-child(2) {
+        display: list-item;
+        
+        &::before {
+          content: "...";
+          margin: 0 4px;
+        }
+      }
+    }
+  }
+`;
+
+const TitleContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  @media (max-width: 480px) {
+    gap: 2px;
+  }
+`;
+
+const HeaderContent = styled(Flex)`
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 16px;
+    
+    .header-extra {
+      width: 100%;
+      
+      .ant-space {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    gap: 12px;
+  }
+`;
+
+const TitleText = styled(Title) <{ isDarkMode?: boolean }>`
+  margin: 0 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.85)' : 'rgba(0, 0, 0, 0.85)'} !important;
+  
+  @media (max-width: 768px) {
+    font-size: 20px !important;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 18px !important;
+    white-space: normal;
+    line-height: 1.3 !important;
+  }
+`;
+
+const SubtitleText = styled(Text) <{ isDarkMode?: boolean }>`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.45)'} !important;
+  
+  @media (max-width: 480px) {
+    font-size: 13px;
+    white-space: normal;
+  }
+`;
+
+const BackButton = styled(Button) <{ isDarkMode?: boolean }>`
+  flex-shrink: 0;
+  color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.85)' : 'rgba(0, 0, 0, 0.85)'} !important;
+  
+  @media (max-width: 480px) {
+    padding: 4px 8px;
+    height: auto;
+    
+    .ant-btn-icon {
+      font-size: 14px;
+    }
+  }
+`;
+
+const ExtraButtonsContainer = styled(Space)`
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  @media (max-width: 480px) {
+    flex-wrap: wrap;
+    gap: 8px !important;
+    
+    .ant-btn {
+      padding: 4px 8px;
+      height: auto;
+      font-size: 13px;
+    }
+  }
+`;
+
+interface BreadcrumbItem {
   title: string;
+  href?: string;
 }
 
-// Styled Components
-const HeaderContainer = styled(AntHeader)`
-  background: ${props => props.theme?.themeMode === 'dark' ? '#001529' : '#ffffff'} !important;
-  padding: 0 ${props => props.theme?.spacing?.lg || '24px'} !important;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid ${props => props.theme?.themeMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : (props.theme?.colors?.borderLight || '#f0f0f0')} !important;
-  box-shadow: ${props => props.theme?.shadows?.md || '0 4px 6px rgba(0, 0, 0, 0.1)'} !important;
-  transition: all 0.3s ease;
-  z-index: ${props => props.theme?.zIndex?.sticky || 1020};
-  position: sticky;
-  top: 0;
-  height: 64px;
-`;
+interface HeaderComponentProps {
+  title: string;
+  subtitle?: string;
+  breadcrumbItems?: BreadcrumbItem[];
+  extraButtons?: React.ReactNode[];
+  onBack?: () => void;
+  showBackButton?: boolean;
+  isDarkMode?: boolean;
+}
 
-const ThemeToggleButton = styled(Button)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${props => props.theme?.colors?.secondary || '#C49629'};
-  &:hover {
-    color: ${props => props.theme?.colors?.primary || '#2958C4'};
-  }
-`;
-
-const NotificationButton = styled(Button)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${props => props.theme?.colors?.textSecondary || '#8c8c8c'};
-  &:hover {
-    color: ${props => props.theme?.colors?.primary || '#2958C4'};
-  }
-`;
-
-const UserButton = styled(Button)`
-  display: flex;
-  align-items: center;
-  gap: ${props => props.theme?.spacing?.sm || '8px'};
-  color: ${props => props.theme?.colors?.textPrimary || '#262626'};
-  background: transparent;
-  border-radius: 20px;
-  padding: 4px 12px 4px 4px;
-  &:hover {
-    color: ${props => props.theme?.colors?.textPrimary || '#262626'};
-  }
-`;
-
-const UserAvatar = styled(Avatar)`
-  background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#2958C4'} 0%, ${props => props.theme?.colors?.secondary || '#C49629'} 100%);
-`;
-
-const VerticalDivider = styled(Divider)`
-  height: 24px;
-  margin: 0 ${props => props.theme?.spacing?.md || '16px'};
-  border-color: ${props => props.theme?.colors?.border || '#d9d9d9'};
-`;
-
-export const Header: React.FC<HeaderProps> = ({ title }) => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { user } = useSelector((state: RootState) => state.auth);
-  const { isDarkMode, toggleTheme, currentTheme } = useTheme();
-
-  const handleLogout = () => {
-    dispatch(logout() as any);
-    navigate('/login');
-  };
-
-  const handleNotificationsClick = () => {
-    navigate('/notifications');
-  };
-
-  const userMenuItems = [
-    {
-      key: 'profile',
-      icon: <UserOutlined />,
-      label: 'Profile',
-      onClick: () => navigate('/profile'),
-    },
-    {
-      key: 'settings',
-      icon: <SettingOutlined />,
-      label: 'Settings',
-    },
-    {
-      type: 'divider' as const,
-    },
-    {
-      key: 'logout',
-      icon: <LogoutOutlined />,
-      label: 'Logout',
-      onClick: handleLogout,
-    },
-  ];
+const HeaderComponent = ({
+  title,
+  subtitle,
+  breadcrumbItems = [],
+  extraButtons = [],
+  onBack,
+  showBackButton = false,
+  isDarkMode = false
+}: HeaderComponentProps) => {
+  const breadcrumb = breadcrumbItems.length > 0 ? (
+    <BreadcrumbContainer isDarkMode={isDarkMode}>
+      <Breadcrumb>
+        <Breadcrumb.Item href="/">
+          <Home
+            size={14}
+            style={{
+              marginRight: 4,
+              color: isDarkMode ? 'rgba(255, 255, 255, 0.65)' : 'rgba(0, 0, 0, 0.45)'
+            }}
+          />
+          Home
+        </Breadcrumb.Item>
+        {breadcrumbItems.map((item, index) => (
+          <Breadcrumb.Item
+            key={index}
+            href={item.href}
+          >
+            {item.title}
+          </Breadcrumb.Item>
+        ))}
+        <Breadcrumb.Item>{title}</Breadcrumb.Item>
+      </Breadcrumb>
+    </BreadcrumbContainer>
+  ) : null;
 
   return (
-    <HeaderContainer>
-      <div style={{ width: 40 }}>
-        {/* Spacer for balance */}
-      </div>
-
-      <Space size="middle">
-        <Tag
-          icon={<UserOutlined />}
-          color={isDarkMode ? currentTheme?.colors?.secondary : "blue"}>
-          {title}
-        </Tag>
-
-        <ThemeToggleButton
-          icon={isDarkMode ? <MoonOutlined /> : <SunOutlined />}
-          onClick={toggleTheme}
-          type="text"
-        />
-
-        <NotificationButton
-          icon={
-            <Badge dot count={3} size="small">
-              <BellOutlined />
-            </Badge>
-          }
-          onClick={handleNotificationsClick}
-          type="text"
-        />
-
-        <VerticalDivider type="vertical" />
-
-        <Dropdown
-          menu={{ items: userMenuItems }}
-          placement="bottomRight"
-          trigger={['click']}
-        >
-          <UserButton type="text">
-            <UserAvatar
-              size="small"
-              icon={<UserOutlined />}
-              src={user?.profile_picture}
+    <StyledPageHeader isDarkMode={isDarkMode}>
+      {breadcrumb}
+      <HeaderContent justify="space-between" align="flex-start" wrap="wrap">
+        <Flex align="center" gap="middle" style={{ flex: 1, minWidth: 0 }}>
+          {showBackButton && (
+            <BackButton
+              type="text"
+              icon={
+                <ArrowLeft
+                  size={16}
+                  color={isDarkMode ? 'rgba(255, 255, 255, 0.85)' : 'rgba(0, 0, 0, 0.85)'}
+                />
+              }
+              onClick={onBack || (() => window.history.back())}
+              isDarkMode={isDarkMode}
             />
-            <span>
-              {user?.first_name} {user?.last_name}
-            </span>
-          </UserButton>
-        </Dropdown>
-      </Space>
-    </HeaderContainer>
+          )}
+          <TitleContainer style={{ minWidth: 0 }}>
+            <TitleText
+              level={2}
+              isDarkMode={isDarkMode}
+            >
+              {title}
+            </TitleText>
+            {subtitle && (
+              <SubtitleText
+                type={isDarkMode ? "secondary" : "secondary"}
+                isDarkMode={isDarkMode}
+              >
+                {subtitle}
+              </SubtitleText>
+            )}
+          </TitleContainer>
+        </Flex>
+
+        {extraButtons && extraButtons.length > 0 && (
+          <div className="header-extra" style={{ flexShrink: 0 }}>
+            <ExtraButtonsContainer size="middle" wrap>
+              {extraButtons.map((button, index) => (
+                <React.Fragment key={index}>
+                  {button}
+                </React.Fragment>
+              ))}
+            </ExtraButtonsContainer>
+          </div>
+        )}
+      </HeaderContent>
+    </StyledPageHeader>
   );
 };
 
-export default Header;
+export default HeaderComponent;
