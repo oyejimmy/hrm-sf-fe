@@ -332,6 +332,16 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             icon: <UserOutlined />,
             label: 'Profile',
           },
+          {
+            key: '/employee/complain',
+            icon: <FileTextOutlined />,
+            label: 'Complaints',
+          },
+          {
+            key: '/employee/request',
+            icon: <FileTextOutlined />,
+            label: 'Requests',
+          },
         ];
       default:
         return [];
