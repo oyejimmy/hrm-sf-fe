@@ -26,6 +26,8 @@ export const ROUTES = {
     PAYSLIP: '/employee/payslip',
     ASSETS: '/employee/assets',
     DOCUMENTS: '/employee/documents',
+    COMPLAIN: '/employee/complain',
+    REQUEST: '/employee/request',
   },
   
   // Team Lead Routes
@@ -62,6 +64,8 @@ export const ROUTE_PERMISSIONS = {
   [ROUTES.EMPLOYEE.PAYSLIP]: ['employee'],
   [ROUTES.EMPLOYEE.ASSETS]: ['employee'],
   [ROUTES.EMPLOYEE.DOCUMENTS]: ['employee'],
+  [ROUTES.EMPLOYEE.COMPLAIN]: ['employee'],
+  [ROUTES.EMPLOYEE.REQUEST]: ['employee'],
   
   [ROUTES.TEAM_LEAD.DASHBOARD]: ['team_lead'],
   [ROUTES.TEAM_LEAD.ATTENDANCE]: ['team_lead'],
