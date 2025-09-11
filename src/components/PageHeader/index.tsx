@@ -1,16 +1,19 @@
 import React from 'react';
 import { Button, Breadcrumb, Typography, Space, Flex } from 'antd';
-import { HomeOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 
 const { Title, Text } = Typography;
 
 // Styled Components
-const StyledPageHeader = styled.div`
-  background-color: #ffffff;
-  border-bottom: 1px solid #f0f0f0;
+const StyledPageHeader = styled.div<{ isDarkMode: boolean }>`
+  background-color: ${({ isDarkMode }) => (isDarkMode ? '#141414' : '#ffffff')};
+  color: ${({ isDarkMode }) => (isDarkMode ? 'rgba(255, 255, 255, 0.85)' : 'rgba(0, 0, 0, 0.85)')};
+  border-bottom: 1px solid ${({ isDarkMode }) => (isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#f0f0f0')};
   padding: 16px 24px;
-  
+  margin-bottom: 16px;
+  border-radius: 8px;
+
   @media (max-width: 768px) {
     padding: 12px 16px;
     
@@ -48,20 +51,22 @@ interface HeaderComponentProps {
   extraButtons?: React.ReactNode[];
   onBack?: () => void;
   showBackButton?: boolean;
+  isDarkMode?: boolean;
 }
 
-const HeaderComponent: React.FC<HeaderComponentProps> = ({
+const HeaderComponent = ({
   title,
   subtitle,
   breadcrumbItems = [],
   extraButtons = [],
   onBack,
-  showBackButton = false
-}) => {
+  showBackButton = false,
+  isDarkMode = false
+}: HeaderComponentProps) => {
   const breadcrumb = breadcrumbItems.length > 0 ? (
     <BreadcrumbContainer>
       <Breadcrumb>
-        {breadcrumbItems.map((item, index) => (
+        {breadcrumbItems.map((item: BreadcrumbItem, index: number) => (
           <Breadcrumb.Item
             key={index}
             href={item.href}
@@ -75,7 +80,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
   ) : null;
 
   return (
-    <StyledPageHeader>
+    <StyledPageHeader isDarkMode={isDarkMode}>
       {breadcrumb}
       <Flex justify="space-between" align="flex-start" wrap="wrap">
         <Flex align="center" gap="middle">
