@@ -38,6 +38,8 @@ import {
 } from '@ant-design/icons';
 import styled from 'styled-components';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { Wrapper } from '../../../components/Wrapper';
+import HeaderComponent from '../../../components/PageHeader';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -50,18 +52,18 @@ const PageContainer = styled.div<{ isDarkMode: boolean }>`
   min-height: 100vh;
 `;
 
-const StyledCard = styled(Card)<{ isDarkMode: boolean }>`
+const StyledCard = styled(Card) <{ isDarkMode: boolean }>`
   border-radius: 12px;
-  box-shadow: ${props => props.isDarkMode 
-    ? '0 4px 12px rgba(0, 0, 0, 0.4)' 
+  box-shadow: ${props => props.isDarkMode
+    ? '0 4px 12px rgba(0, 0, 0, 0.4)'
     : '0 4px 12px rgba(0, 0, 0, 0.05)'};
   transition: all 0.3s ease;
   border: 1px solid ${props => props.isDarkMode ? '#434343' : '#f0f0f0'};
   
   &:hover {
-    box-shadow: ${props => props.isDarkMode 
-      ? '0 6px 16px rgba(0, 0, 0, 0.5)' 
-      : '0 6px 16px rgba(0, 0, 0, 0.1)'};
+    box-shadow: ${props => props.isDarkMode
+    ? '0 6px 16px rgba(0, 0, 0, 0.5)'
+    : '0 6px 16px rgba(0, 0, 0, 0.1)'};
   }
   
   .ant-card-head {
@@ -96,7 +98,7 @@ const PrimaryButton = styled(Button)`
   }
 `;
 
-const SecondaryButton = styled(Button)<{ isDarkMode: boolean }>`    
+const SecondaryButton = styled(Button) <{ isDarkMode: boolean }>`    
   border-radius: 8px;
   font-weight: 500;
   height: auto;
@@ -114,7 +116,7 @@ const SecondaryButton = styled(Button)<{ isDarkMode: boolean }>`
   }
 `;
 
-const StyledModal = styled(Modal)<{ isDarkMode: boolean }>`
+const StyledModal = styled(Modal) <{ isDarkMode: boolean }>`
   .ant-modal-content {
     border-radius: 12px;
     overflow: hidden;
@@ -139,8 +141,8 @@ const FormContainer = styled.div<{ isDarkMode: boolean }>`
   background: ${props => props.isDarkMode ? '#1f1f1f' : 'white'};
   padding: 24px;
   border-radius: 12px;
-  box-shadow: ${props => props.isDarkMode 
-    ? '0 4px 12px rgba(0, 0, 0, 0.4)' 
+  box-shadow: ${props => props.isDarkMode
+    ? '0 4px 12px rgba(0, 0, 0, 0.4)'
     : '0 4px 12px rgba(0, 0, 0, 0.05)'};
   .ant-form-item {
     margin-bottom: 16px;
@@ -221,8 +223,8 @@ const ComplaintForm: React.FC<{ onSubmit: (values: ComplaintFormData) => void; i
           label="Subject"
           rules={[{ required: true, message: 'Please enter the subject of your complaint' }]}
         >
-          <Input 
-            placeholder="e.g., Workplace Harassment, Policy Violation" 
+          <Input
+            placeholder="e.g., Workplace Harassment, Policy Violation"
             size="large"
           />
         </Form.Item>
@@ -247,9 +249,9 @@ const ComplaintForm: React.FC<{ onSubmit: (values: ComplaintFormData) => void; i
           label="Description"
           rules={[{ required: true, message: 'Please describe your complaint' }]}
         >
-          <TextArea 
-            rows={6} 
-            placeholder="Provide a detailed description of your complaint including relevant details, people involved, and any other important information." 
+          <TextArea
+            rows={6}
+            placeholder="Provide a detailed description of your complaint including relevant details, people involved, and any other important information."
             size="large"
           />
         </Form.Item>
@@ -302,7 +304,7 @@ const ComplaintHistoryTable: React.FC<{ complaints: Complaint[]; onViewDetails: 
   const getStatusTag = (status: string) => {
     let color = 'default';
     let icon = <ClockCircleOutlined />;
-    
+
     if (status === 'Pending') {
       color = 'gold';
       icon = <ClockCircleOutlined />;
@@ -316,14 +318,14 @@ const ComplaintHistoryTable: React.FC<{ complaints: Complaint[]; onViewDetails: 
       color = 'red';
       icon = <CloseCircleOutlined />;
     }
-    
+
     return (
-      <Tag 
-        color={color} 
+      <Tag
+        color={color}
         icon={icon}
-        style={{ 
-          borderRadius: 12, 
-          padding: '4px 8px', 
+        style={{
+          borderRadius: 12,
+          padding: '4px 8px',
           fontWeight: 500,
           display: 'flex',
           alignItems: 'center',
@@ -338,7 +340,7 @@ const ComplaintHistoryTable: React.FC<{ complaints: Complaint[]; onViewDetails: 
   const getPriorityTag = (priority: string) => {
     let color = 'blue';
     let text = 'MEDIUM';
-    
+
     if (priority === 'high') {
       color = 'red';
       text = 'HIGH';
@@ -346,7 +348,7 @@ const ComplaintHistoryTable: React.FC<{ complaints: Complaint[]; onViewDetails: 
       color = 'green';
       text = 'LOW';
     }
-    
+
     return (
       <Tag color={color} style={{ borderRadius: 12, margin: 0 }}>
         {text}
@@ -389,8 +391,8 @@ const ComplaintHistoryTable: React.FC<{ complaints: Complaint[]; onViewDetails: 
       key: 'action',
       render: (text: any, record: Complaint) => (
         <Space size="middle">
-          <Button 
-            type="link" 
+          <Button
+            type="link"
             onClick={() => onViewDetails(record.id)}
             icon={<EyeOutlined />}
           >
@@ -402,10 +404,10 @@ const ComplaintHistoryTable: React.FC<{ complaints: Complaint[]; onViewDetails: 
   ];
 
   return (
-    <Table 
-      columns={columns} 
-      dataSource={complaints} 
-      rowKey="id" 
+    <Table
+      columns={columns}
+      dataSource={complaints}
+      rowKey="id"
       style={{ marginTop: 16 }}
       scroll={{ x: true }}
       locale={{
@@ -434,7 +436,7 @@ const ComplaintDetailsModal: React.FC<{
   const getStatusTag = (status: string) => {
     let color = 'default';
     let icon = <ClockCircleOutlined />;
-    
+
     if (status === 'Pending') {
       color = 'gold';
       icon = <ClockCircleOutlined />;
@@ -448,14 +450,14 @@ const ComplaintDetailsModal: React.FC<{
       color = 'red';
       icon = <CloseCircleOutlined />;
     }
-    
+
     return (
-      <Tag 
-        color={color} 
+      <Tag
+        color={color}
         icon={icon}
-        style={{ 
-          borderRadius: 12, 
-          padding: '4px 8px', 
+        style={{
+          borderRadius: 12,
+          padding: '4px 8px',
           fontWeight: 500,
           display: 'flex',
           alignItems: 'center',
@@ -470,7 +472,7 @@ const ComplaintDetailsModal: React.FC<{
   const getPriorityTag = (priority: string) => {
     let color = 'blue';
     let text = 'MEDIUM';
-    
+
     if (priority === 'high') {
       color = 'red';
       text = 'HIGH';
@@ -478,7 +480,7 @@ const ComplaintDetailsModal: React.FC<{
       color = 'green';
       text = 'LOW';
     }
-    
+
     return (
       <Tag color={color} style={{ borderRadius: 12, margin: 0 }}>
         {text}
@@ -535,9 +537,9 @@ const ComplaintDetailsModal: React.FC<{
           <Descriptions.Item label="Attachments">
             <Space direction="vertical">
               {complaint.attachments.map((attachment, index) => (
-                <Button 
-                  key={index} 
-                  icon={<DownloadOutlined />} 
+                <Button
+                  key={index}
+                  icon={<DownloadOutlined />}
                   type="link"
                 >
                   Attachment {index + 1}
@@ -624,7 +626,7 @@ const EmployeeComplain = () => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    
+
     setComplaints([...complaints, newComplaint]);
     message.success('Complaint submitted successfully!');
     setIsComplaintFormModalVisible(false);
@@ -653,19 +655,27 @@ const EmployeeComplain = () => {
   };
 
   return (
-    <PageContainer isDarkMode={isDarkMode}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0, color: isDarkMode ? 'rgba(255, 255, 255, 0.85)' : 'rgba(0, 0, 0, 0.85)' }}>
-          Complaint Management
-        </Title>
-        <PrimaryButton 
-          icon={<PlusOutlined />} 
-          onClick={() => setIsComplaintFormModalVisible(true)}
-        >
-          Submit New Complaint
-        </PrimaryButton>
-      </div>
-
+    <Wrapper isDarkMode={isDarkMode}>
+      <HeaderComponent
+        isDarkMode={isDarkMode}
+        title="Complaint Management"
+        subtitle="Manage your complaints"
+        breadcrumbItems={[
+          {
+            title: 'Home',
+            href: '/'
+          },
+        ]}
+        extraButtons={[
+          <PrimaryButton
+            key="new-complaint"
+            icon={<PlusOutlined />}
+             onClick={() => setIsComplaintFormModalVisible(true)}
+          >
+             New Complaint
+          </PrimaryButton>,
+        ]}
+      />
       {/* Statistics Row */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={6}>
@@ -710,12 +720,12 @@ const EmployeeComplain = () => {
         </Col>
       </Row>
 
-      <StyledCard 
+      <StyledCard
         title={<span><FileTextOutlined style={{ marginRight: 8 }} /> Complaint History</span>}
         isDarkMode={isDarkMode}
       >
-        <ComplaintHistoryTable 
-          complaints={complaints} 
+        <ComplaintHistoryTable
+          complaints={complaints}
           onViewDetails={handleViewDetails}
           isDarkMode={isDarkMode}
         />
@@ -739,7 +749,9 @@ const EmployeeComplain = () => {
         complaint={selectedComplaint}
         isDarkMode={isDarkMode}
       />
-    </PageContainer>
+
+    </Wrapper>
+
   );
 };
 
