@@ -16,12 +16,38 @@ interface Props {
     stats: StatCardType[];
 }
 
+// Responsive constants
+const RESPONSIVE_SIZES = {
+    mobile: {
+        titleFontSize: '4px',
+        valueFontSize: '6px',
+        iconSize: 4,
+        iconContainerSize: '10px',
+        cardHeight: '80px',
+        cardPadding: '4px',
+        bottomFontSize: '4px',
+        minHeight: '3px'
+    },
+    desktop: {
+        titleFontSize: '14px',
+        valueFontSize: '24px',
+        iconSize: 18,
+        iconContainerSize: '40px',
+        cardHeight: '160px',
+        cardPadding: '16px',
+        bottomFontSize: '12px',
+        minHeight: '20px'
+    }
+};
+
 // MyStatsOverview Component
 // Displays a grid of statistic cards with icons and additional information
 // Responsive design that works on mobile, tablet, and desktop
 const MyStatsOverview: React.FC<Props> = ({ stats }) => {
     // Get theme context to determine if dark mode is enabled
     const { isDarkMode } = useTheme();
+    const isMobile = window.innerWidth < 768;
+    const sizes = isMobile ? RESPONSIVE_SIZES.mobile : RESPONSIVE_SIZES.desktop;
 
     // Gradient colors for light mode - different colors for visual distinction
     const lightModeGradients = [
@@ -88,14 +114,14 @@ const MyStatsOverview: React.FC<Props> = ({ stats }) => {
 
                 return (
                     <Col
-                        xs={24}
+                        xs={6}
                         sm={12}
                         md={8}
                         lg={6}
                         key={s.id}
                         style={{
                             marginBottom: '16px',
-                            padding: '0 8px'
+                            padding: '0 4px'
                         }}
                     >
                         <Card
@@ -103,15 +129,15 @@ const MyStatsOverview: React.FC<Props> = ({ stats }) => {
                             style={{
                                 background,
                                 borderRadius: '8px',
-                                boxShadow: shadow, // ✅ applied here
-                                height: '160px',
+                                boxShadow: shadow,
+                                height: sizes.cardHeight,
                                 display: 'flex',
                                 flexDirection: 'column',
                                 justifyContent: 'space-between',
                                 margin: 0
                             }}
                             bodyStyle={{
-                                padding: '16px',
+                                padding: sizes.cardPadding,
                                 height: '100%',
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -131,7 +157,7 @@ const MyStatsOverview: React.FC<Props> = ({ stats }) => {
                                         <span style={{
                                             color: '#fff',
                                             opacity: 0.9,
-                                            fontSize: '14px',
+                                            fontSize: sizes.titleFontSize,
                                             lineHeight: '1.3'
                                         }}>
                                             {s.title}
@@ -150,25 +176,25 @@ const MyStatsOverview: React.FC<Props> = ({ stats }) => {
                                     valueStyle={{
                                         color: '#fff',
                                         fontWeight: 'bold',
-                                        fontSize: '24px',
+                                        fontSize: sizes.valueFontSize,
                                         lineHeight: '1.2'
                                     }}
                                 />
                                 <div style={{
                                     background: 'rgba(255, 255, 255, 0.2)',
                                     borderRadius: '50%',
-                                    width: '40px',
-                                    height: '40px',
+                                    width: sizes.iconContainerSize,
+                                    height: sizes.iconContainerSize,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     flexShrink: 0,
                                     marginLeft: '8px',
                                 }}>
-                                    {iconElement}
+                                    {React.cloneElement(iconElement as React.ReactElement, { size: sizes.iconSize })}
                                 </div>
                             </div>
-                            <div style={{ marginTop: 'auto', minHeight: '20px' }}>
+                            <div style={{ marginTop: 'auto', minHeight: sizes.minHeight, fontSize: sizes.bottomFontSize }}>
                                 {getCardContent(s.title)}
                             </div>
                         </Card>
