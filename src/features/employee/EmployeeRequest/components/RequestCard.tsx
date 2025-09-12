@@ -1,4 +1,4 @@
-import { Modal, Input, Typography, Tag, Space } from 'antd';
+import { Modal, Input, Typography, Tag, Space, Row, Col, Card } from 'antd';
 import {
     FileText,
     Calendar,
@@ -100,6 +100,14 @@ const RequestCard = ({
         );
     };
 
+    // Get border color based on status
+    const getBorderColor = (status: string) => {
+        if (status === 'pending') return '#faad14'; // Yellow
+        if (status === 'approved') return '#52c41a'; // Green
+        if (status === 'rejected') return '#f5222d'; // Red
+        return '#d9d9d9'; // Default
+    };
+
     return (
         <StyledRequestCard
             isDarkMode={isDarkMode}
@@ -108,7 +116,7 @@ const RequestCard = ({
                 display: 'flex',
                 flexDirection: 'column',
                 transition: 'all 0.3s ease',
-                border: isDarkMode ? '1px solid #434343' : '1px solid #f0f0f0',
+                border: `2px solid ${getBorderColor(request.status)}`,
                 borderRadius: '12px',
                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
             }}
@@ -244,4 +252,122 @@ const RequestCard = ({
     );
 };
 
-export default RequestCard;
+// New component to display requests in columns by status
+interface RequestColumnViewProps {
+    requests: any[];
+    onApprove: (requestId: string) => void;
+    onReject: (requestId: string, comments: string) => void;
+    userRole: string;
+    isDarkMode: boolean;
+}
+
+const RequestColumnView = ({
+    requests,
+    onApprove,
+    onReject,
+    userRole,
+    isDarkMode
+}: RequestColumnViewProps) => {
+    // Filter requests by status
+    const pendingRequests = requests.filter(req => req.status === 'pending');
+    const approvedRequests = requests.filter(req => req.status === 'approved');
+    const rejectedRequests = requests.filter(req => req.status === 'rejected');
+
+    return (
+        <Row gutter={[24, 24]}>
+            {/* Pending Requests Column */}
+            <Col xs={24} md={8} lg={8} xl={8} span={8}>
+                <Card
+                    title="Pending Requests"
+                    size="small"
+                >
+                    {pendingRequests.length > 0 ? (
+                        pendingRequests.map(request => (
+                            <div key={request.id} style={{ marginBottom: '16px' }}>
+                                <RequestCard
+                                    request={request}
+                                    onApprove={onApprove}
+                                    onReject={onReject}
+                                    userRole={userRole}
+                                    isDarkMode={isDarkMode}
+                                />
+                            </div>
+                        ))
+                    ) : (
+                        <div style={{ textAlign: 'center', padding: '20px', color: '#bfbfbf' }}>
+                            No pending requests
+                        </div>
+                    )}
+                </Card>
+            </Col>
+
+            {/* Approved Requests Column */}
+            <Col xs={24} md={8} lg={8} xl={8} span={8} >
+                <Card
+                    title="Approved Requests"
+                    size="small"
+                    headStyle={{
+                        backgroundColor: '#f6ffed',
+                        borderBottom: '2px solid #52c41a',
+                        fontSize: '16px',
+                        fontWeight: 'bold'
+                    }}
+                    bodyStyle={{ padding: '8px' }}
+                >
+                    {approvedRequests.length > 0 ? (
+                        approvedRequests.map(request => (
+                            <div key={request.id} style={{ marginBottom: '16px' }}>
+                                <RequestCard
+                                    request={request}
+                                    onApprove={onApprove}
+                                    onReject={onReject}
+                                    userRole={userRole}
+                                    isDarkMode={isDarkMode}
+                                />
+                            </div>
+                        ))
+                    ) : (
+                        <div style={{ textAlign: 'center', padding: '20px', color: '#bfbfbf' }}>
+                            No approved requests
+                        </div>
+                    )}
+                </Card>
+            </Col>
+
+            {/* Rejected Requests Column */}
+            <Col xs={24} md={8} lg={8} xl={8} span={8}>
+                <Card
+                    title="Rejected Requests"
+                    size="small"
+                    headStyle={{
+                        backgroundColor: '#fff2f0',
+                        borderBottom: '2px solid #f5222d',
+                        fontSize: '16px',
+                        fontWeight: 'bold'
+                    }}
+                    bodyStyle={{ padding: '8px' }}
+                >
+                    {rejectedRequests.length > 0 ? (
+                        rejectedRequests.map(request => (
+                            <div key={request.id} style={{ marginBottom: '16px' }}>
+                                <RequestCard
+                                    request={request}
+                                    onApprove={onApprove}
+                                    onReject={onReject}
+                                    userRole={userRole}
+                                    isDarkMode={isDarkMode}
+                                />
+                            </div>
+                        ))
+                    ) : (
+                        <div style={{ textAlign: 'center', padding: '20px', color: '#bfbfbf' }}>
+                            No rejected requests
+                        </div>
+                    )}
+                </Card>
+            </Col>
+        </Row>
+    );
+};
+
+export { RequestCard, RequestColumnView };
