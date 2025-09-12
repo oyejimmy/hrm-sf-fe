@@ -12,6 +12,11 @@ import {
   User,
   BarChart3
 } from 'lucide-react';
+import {
+  BookOutlined,
+  LaptopOutlined,
+  FileTextOutlined
+} from '@ant-design/icons';
 import { PageContainer } from './components/styles';
 import WelcomeHeader from './components/WelcomeHeader';
 import MyStatsOverview from './components/MyStatsOverview';
@@ -20,15 +25,18 @@ import RecentActivities from './components/RecentActivities';
 import UpcomingHolidays from './components/UpcomingHolidays';
 import TrainingPrograms from './components/TrainingRoadmap';
 import QuickActions from './components/QuickActions';
+import AttendanceTracker from './components/AttendanceTracker';
 import type {
   StatCard,
 } from './types';
 import MySchedule from './components/MySchedule';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { theme } from '../../../styles/theme';
+import { useNavigate } from 'react-router-dom';
 
 const EmployeeDashboard: React.FC = () => {
   const { isDarkMode } = useTheme();
+  const navigate = useNavigate();
   const currentTheme = theme[isDarkMode ? 'dark' : 'light'];
 
   const stats: StatCard[] = [
@@ -66,9 +74,14 @@ const EmployeeDashboard: React.FC = () => {
   ];
 
   const quickActions: any = [
-    { id: "q1", label: "Apply Leave", icon: <Calendar size={16} color={currentTheme.colors.primary} />, onClick: () => alert("Leave request") },
-    { id: "q2", label: "View Payslip", icon: <FileText size={16} color={currentTheme.colors.primary} />, onClick: () => alert("Payslip view") },
-    { id: "q3", label: "Update Profile", icon: <User size={16} color={currentTheme.colors.primary} />, onClick: () => alert("Profile update") },
+    { id: "q1", label: "Apply Leave", icon: <Calendar size={16} color={currentTheme.colors.primary} />, onClick: () => navigate('/employee/leave') },
+    { id: "q2", label: "View Payslip", icon: <FileText size={16} color={currentTheme.colors.primary} />, onClick: () => navigate('/employee/payslip') },
+    { id: "q3", label: "Update Profile", icon: <User size={16} color={currentTheme.colors.primary} />, onClick: () => navigate('/employee/profile/edit') },
+    { id: "q4", label: "View Documents", icon: <FileText size={16} color={currentTheme.colors.primary} />, onClick: () => navigate('/employee/documents') },
+    { id: "q5", label: "Training", icon: <BookOutlined style={{ color: currentTheme.colors.primary }} />, onClick: () => navigate('/employee/training') },
+    { id: "q6", label: "Submit Request", icon: <AlertCircle size={16} color={currentTheme.colors.primary} />, onClick: () => navigate('/employee/request') },
+    { id: "q7", label: "View Assets", icon: <LaptopOutlined style={{ color: currentTheme.colors.primary }} />, onClick: () => navigate('/employee/assets') },
+    { id: "q8", label: "File Complaint", icon: <FileTextOutlined style={{ color: currentTheme.colors.primary }} />, onClick: () => navigate('/employee/complain') },
   ];
   const events: any = [
     { id: "e1", date: "2025-09-10", title: "Team Meeting", type: "Meeting" },
@@ -90,27 +103,32 @@ const EmployeeDashboard: React.FC = () => {
         </div>
         <MyStatsOverview stats={stats} />
       </div>
-      <Row gutter={[24, 24]}>
-        <Col span={8}>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
           <Announcements isDarkMode={isDarkMode} />
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
           <RecentActivities isDarkMode={isDarkMode} />
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
           <UpcomingHolidays isDarkMode={isDarkMode} />
         </Col>
       </Row>
-      <Row gutter={[24, 24]}>
-        <Col xs={24} lg={24}>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+          <AttendanceTracker isDarkMode={isDarkMode} />
+        </Col>
+        <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+          <QuickActions actions={quickActions} />
+        </Col>
+      </Row>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={24} md={24} lg={24} xl={24}>
           <TrainingPrograms isDarkMode={isDarkMode} />
         </Col>
       </Row>
-      <Row gutter={[24, 24]}>
-        <Col span={12}>
-          <QuickActions actions={quickActions} />
-        </Col>
-        <Col span={12}>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={24} md={24} lg={24} xl={24}>
           <MySchedule events={events} />
         </Col>
       </Row>
