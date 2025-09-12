@@ -3,7 +3,6 @@ import { Card } from "antd";
 import { css } from "styled-components";
 
 export const PageContainer = styled.div<{ isDarkMode?: boolean }>`
-  padding: 24px;
   margin: auto;
   background: ${(props) => (props.isDarkMode ? "#001529" : "#fff")};
   min-height: 100vh;
