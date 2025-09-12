@@ -243,61 +243,50 @@ const TrainingPrograms = ({ isDarkMode }: { isDarkMode: boolean }) => {
     setSelectedTraining(null);
   };
 
-  // Table columns
+  // Table columns with responsive design
   const columns: any = [
     {
       title: 'Course',
       dataIndex: 'course',
       key: 'course',
       width: 200,
+      ellipsis: true,
     },
     {
       title: 'Category',
       dataIndex: 'category',
       key: 'category',
-      width: 150,
+      width: 120,
+      responsive: ['md'],
     },
     {
       title: 'Instructor',
       dataIndex: 'instructor',
       key: 'instructor',
-      width: 120,
+      width: 100,
+      responsive: ['lg'],
     },
     {
       title: 'Duration',
       dataIndex: 'duration',
       key: 'duration',
-      width: 100,
-    },
-    {
-      title: 'Enrollment',
-      dataIndex: 'enrollment',
-      key: 'enrollment',
-      width: 150,
+      width: 80,
+      responsive: ['sm'],
     },
     {
       title: 'Rating',
       dataIndex: 'rating',
       key: 'rating',
-      width: 150,
-      render: (rating: number) => <Rate disabled defaultValue={rating} style={{ fontSize: "14px" }} />,
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      width: 100,
-      render: (status: string) => (
-        <Tag color={status === "Active" ? "green" : "blue"}>{status}</Tag>
-      ),
+      width: 120,
+      render: (rating: number) => <Rate disabled defaultValue={rating} style={{ fontSize: "12px" }} />,
     },
     {
       title: 'Actions',
       key: 'actions',
-      width: 100,
+      width: 80,
       render: (_: any, record: any) => (
-        <Button type="link" onClick={() => showModal(record)}>
-          View Details
+        <Button type="link" size="small" onClick={() => showModal(record)}>
+          View
         </Button>
       ),
     },
@@ -320,10 +309,11 @@ const TrainingPrograms = ({ isDarkMode }: { isDarkMode: boolean }) => {
         />
       </ScrollContainer>
 
-      {/* 🖼️ Enhanced Modal */}
+      {/* 🖼️ Enhanced Responsive Modal */}
       <Modal
         centered
-        width={800}
+        width="90%"
+        style={{ maxWidth: '800px' }}
         title="Training Program Details"
         open={isModalVisible}
         onCancel={handleClose}
@@ -335,7 +325,9 @@ const TrainingPrograms = ({ isDarkMode }: { isDarkMode: boolean }) => {
         styles={{
           body: {
             backgroundColor: isDarkMode ? '#1f1f1f' : '#fff',
-            color: isDarkMode ? '#f0f0f0' : 'rgba(0, 0, 0, 0.85)'
+            color: isDarkMode ? '#f0f0f0' : 'rgba(0, 0, 0, 0.85)',
+            maxHeight: '70vh',
+            overflowY: 'auto'
           },
           header: {
             backgroundColor: isDarkMode ? '#1f1f1f' : '#fff',
@@ -354,24 +346,24 @@ const TrainingPrograms = ({ isDarkMode }: { isDarkMode: boolean }) => {
             <Section isDarkMode={isDarkMode}>
               <Divider orientation="left">Program Metadata</Divider>
               <Row gutter={[16, 8]}>
-                <Col span={8}><Text strong>Course:</Text><Text> {selectedTraining.course}</Text></Col>
-                <Col span={8}><Text strong>Level:</Text><Text> {selectedTraining.courseLevel}</Text></Col>
-                <Col span={8}><Text strong>Prerequisites:</Text><Text> {selectedTraining.prerequisites}</Text></Col>
-                <Col span={8}><Text strong>Version:</Text><Text> {selectedTraining.version}</Text></Col>
-                <Col span={8}><Text strong>Modules/Lessons:</Text><Text> {selectedTraining.totalModules}</Text></Col>
-                <Col span={8}><Text strong>Capstone:</Text><Text> {selectedTraining.capstoneProject}</Text></Col>
+                <Col xs={24} sm={12} md={8}><Text strong>Course:</Text><Text> {selectedTraining.course}</Text></Col>
+                <Col xs={24} sm={12} md={8}><Text strong>Level:</Text><Text> {selectedTraining.courseLevel}</Text></Col>
+                <Col xs={24} sm={12} md={8}><Text strong>Prerequisites:</Text><Text> {selectedTraining.prerequisites}</Text></Col>
+                <Col xs={24} sm={12} md={8}><Text strong>Version:</Text><Text> {selectedTraining.version}</Text></Col>
+                <Col xs={24} sm={12} md={8}><Text strong>Modules/Lessons:</Text><Text> {selectedTraining.totalModules}</Text></Col>
+                <Col xs={24} sm={12} md={8}><Text strong>Capstone:</Text><Text> {selectedTraining.capstoneProject}</Text></Col>
               </Row>
 
-              {/* Three Descriptions in One Row */}
+              {/* Responsive Description Cards */}
               <DescriptionRow gutter={16}>
-                <Col span={8}>
+                <Col xs={24} sm={24} md={8}>
                   <DescriptionCard isDarkMode={isDarkMode}>
                     <Text strong>Course Description</Text>
                     <br />
                     <Text>{selectedTraining.description}</Text>
                   </DescriptionCard>
                 </Col>
-                <Col span={8}>
+                <Col xs={24} sm={12} md={8}>
                   <DescriptionCard isDarkMode={isDarkMode}>
                     <Text strong>Key Topics</Text>
                     <br />
@@ -382,7 +374,7 @@ const TrainingPrograms = ({ isDarkMode }: { isDarkMode: boolean }) => {
                     </ul>
                   </DescriptionCard>
                 </Col>
-                <Col span={8}>
+                <Col xs={24} sm={12} md={8}>
                   <DescriptionCard isDarkMode={isDarkMode}>
                     <Text strong>Materials Included</Text>
                     <br />
@@ -400,12 +392,12 @@ const TrainingPrograms = ({ isDarkMode }: { isDarkMode: boolean }) => {
             <Section isDarkMode={isDarkMode}>
               <Divider orientation="left">Enrollment & Progress</Divider>
               <Row gutter={[16, 8]}>
-                <Col span={8}><Text strong>Status:</Text><Text> {selectedTraining.enrollmentStatus}</Text></Col>
-                <Col span={8}><Text strong>Grade:</Text><Text> {selectedTraining.grade}</Text></Col>
-                <Col span={8}><Text strong>Time Spent:</Text><Text> {selectedTraining.timeSpent}</Text></Col>
-                <Col span={8}><Text strong>Last Accessed:</Text><Text> {selectedTraining.lastAccessed}</Text></Col>
-                <Col span={8}><Text strong>Next Lesson:</Text><Text> {selectedTraining.nextLesson}</Text></Col>
-                <Col span={8}>
+                <Col xs={24} sm={12} md={8}><Text strong>Status:</Text><Text> {selectedTraining.enrollmentStatus}</Text></Col>
+                <Col xs={24} sm={12} md={8}><Text strong>Grade:</Text><Text> {selectedTraining.grade}</Text></Col>
+                <Col xs={24} sm={12} md={8}><Text strong>Time Spent:</Text><Text> {selectedTraining.timeSpent}</Text></Col>
+                <Col xs={24} sm={12} md={8}><Text strong>Last Accessed:</Text><Text> {selectedTraining.lastAccessed}</Text></Col>
+                <Col xs={24} sm={12} md={8}><Text strong>Next Lesson:</Text><Text> {selectedTraining.nextLesson}</Text></Col>
+                <Col xs={24} sm={12} md={8}>
                   <Text strong>Certificate Available: </Text>
                   <Text>{selectedTraining.certificateAvailable ? "Yes" : "No"}</Text>
                 </Col>
@@ -429,11 +421,11 @@ const TrainingPrograms = ({ isDarkMode }: { isDarkMode: boolean }) => {
             <Section isDarkMode={isDarkMode}>
               <Divider orientation="left">Instructor & Support</Divider>
               <Row gutter={[16, 8]}>
-                <Col span={8}><Text strong>Instructor:</Text><Text> {selectedTraining.instructor}</Text></Col>
-                <Col span={8}><Text strong>Rating:</Text><Text> {selectedTraining.instructorRating}</Text></Col>
-                <Col span={8}><Text strong>TA(s):</Text><Text> {selectedTraining.teachingAssistants}</Text></Col>
-                <Col span={8}><Text strong>Support:</Text><Text> {selectedTraining.supportChannel}</Text></Col>
-                <Col span={8}><Text strong>Office Hours:</Text><Text> {selectedTraining.officeHours}</Text></Col>
+                <Col xs={24} sm={12} md={8}><Text strong>Instructor:</Text><Text> {selectedTraining.instructor}</Text></Col>
+                <Col xs={24} sm={12} md={8}><Text strong>Rating:</Text><Text> {selectedTraining.instructorRating}</Text></Col>
+                <Col xs={24} sm={12} md={8}><Text strong>TA(s):</Text><Text> {selectedTraining.teachingAssistants}</Text></Col>
+                <Col xs={24} sm={12} md={8}><Text strong>Support:</Text><Text> {selectedTraining.supportChannel}</Text></Col>
+                <Col xs={24} sm={12} md={8}><Text strong>Office Hours:</Text><Text> {selectedTraining.officeHours}</Text></Col>
               </Row>
               <Row style={{ marginTop: 16 }}>
                 <Col span={24}>
