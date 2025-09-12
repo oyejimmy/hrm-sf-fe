@@ -17,14 +17,6 @@ export const StyledCard = styled(Card)<{ isDarkMode?: boolean }>`
   }
 `;
 
-// export const RequestCard = styled(StyledCard)`
-//   margin-bottom: 16px;
-  
-//   .ant-card-body {
-//     padding: 20px;
-//   }
-// `;
-
 export const StatCard = styled(StyledCard)`
   text-align: center;
   
@@ -67,6 +59,7 @@ export const StyledTabs = styled(Tabs)<{ isDarkMode?: boolean }>`
   .ant-tabs-ink-bar {
     background: #1890ff;
   }
+  display: inline-flex;
 `;
 
 export const StyledButton = styled(Button)<{ isDarkMode?: boolean }>`
@@ -93,8 +86,8 @@ export const PrimaryButton = styled(StyledButton)`
 
 export const SecondaryButton = styled(StyledButton)`
   background: ${props => props.isDarkMode ? '#1f1f1f' : 'white'};
-  border-color: #d9d9d9;
   color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.85)' : '#333'};
+  border-color: #d9d9d9;
   
   &:hover {
     border-color: #1890ff;
