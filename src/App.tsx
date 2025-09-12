@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { store } from './store';
 import { GlobalStyles } from './styles/global-styles';
 import { ThemeProvider } from './contexts/ThemeContext';
+import './styles/responsive.css';
 import { AuthProvider } from './features/auth/AuthProvider';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
 import RoleBasedRedirect from './features/auth/RoleBasedRedirect';
