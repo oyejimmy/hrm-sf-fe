@@ -154,9 +154,7 @@ const MenuContainer = styled.div`
 
 const StyledContent = styled(Content)`
   margin: 0;
-  padding: 24px;
   min-height: calc(100vh - 64px);
-  background: ${props => props.theme?.colors?.background || '#f5f5f5'};
   overflow: auto;
   margin-top: 64px;
   
@@ -693,11 +691,7 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
         $siderWidth={siderWidth} 
         $collapsed={siderCollapsed}
       >
-        <StyledContent
-          style={{
-            background: colorBgContainer,
-          }}
-        >
+        <StyledContent>
           <Outlet />
         </StyledContent>
       </ResponsiveLayout>
