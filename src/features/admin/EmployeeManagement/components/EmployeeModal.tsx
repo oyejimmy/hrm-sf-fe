@@ -1,30 +1,59 @@
-import React from 'react';
-import { Modal, Form, Input, Select, DatePicker, Button } from 'antd';
-
-const { Option } = Select;
+import React, { useEffect } from 'react';
+import {
+  Modal,
+  Form,
+  Input,
+  Select,
+  DatePicker,
+  Button,
+} from 'antd';
+import { Employee, EmployeeFormData } from '../types/types';
+import dayjs from 'dayjs';
 
 interface EmployeeModalProps {
   visible: boolean;
   onCancel: () => void;
-  onSave: (employee: Partial<any>) => void;
-  employee?: any | null;
+  onSave: (values: EmployeeFormData) => void;
+  employee?: Employee;
   isEditing: boolean;
 }
 
-const EmployeeModal: React.FC<EmployeeModalProps> = ({
+const { Option } = Select;
+
+ const EmployeeModal = ({
   visible,
   onCancel,
   onSave,
   employee,
-  isEditing
-}) => {
+  isEditing,
+}: any) => {
   const [form] = Form.useForm();
 
-  const handleSubmit = () => {
-    form.validateFields().then(values => {
-      onSave(values);
-      form.resetFields();
-    });
+  useEffect(() => {
+    if (visible) {
+      if (employee) {
+        form.setFieldsValue({
+          ...employee,
+          joinDate: employee.joinDate ? dayjs(employee.joinDate) : null,
+          leaveDate: employee.leaveDate ? dayjs(employee.leaveDate) : null,
+        });
+      } else {
+        form.resetFields();
+      }
+    }
+  }, [visible, employee, form]);
+
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      onSave({
+        ...values,
+        joinDate: values.joinDate ? values.joinDate.format('YYYY-MM-DD') : '',
+        leaveDate: values.leaveDate ? values.leaveDate.format('YYYY-MM-DD') : undefined,
+      });
+    } catch (error) {
+      console.error('Validation failed:', error);
+    }
   };
 
   const handleCancel = () => {
@@ -42,7 +71,7 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({
           Cancel
         </Button>,
         <Button key="submit" type="primary" onClick={handleSubmit}>
-          {isEditing ? 'Update' : 'Add'} Employee
+          {isEditing ? 'Update Employee' : 'Add Employee'}
         </Button>,
       ]}
       width={600}
@@ -50,12 +79,12 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({
       <Form
         form={form}
         layout="vertical"
-        initialValues={employee || {}}
+        name="employeeForm"
       >
         <Form.Item
-          name={['employee', 'name']}
+          name="name"
           label="Full Name"
-          rules={[{ required: true, message: 'Please enter employee name' }]}
+          rules={[{ required: true, message: 'Please enter the full name' }]}
         >
           <Input placeholder="Enter full name" />
         </Form.Item>
@@ -64,8 +93,8 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({
           name="email"
           label="Email"
           rules={[
-            { required: true, message: 'Please enter email' },
-            { type: 'email', message: 'Please enter a valid email' }
+            { required: true, message: 'Please enter the email' },
+            { type: 'email', message: 'Please enter a valid email' },
           ]}
         >
           <Input placeholder="Enter email address" />
@@ -74,52 +103,54 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({
         <Form.Item
           name="position"
           label="Position"
-          rules={[{ required: true, message: 'Please select position' }]}
+          rules={[{ required: true, message: 'Please select a position' }]}
         >
           <Select placeholder="Select position">
-            <Option value="Frontend Developer">Frontend Developer</Option>
-            <Option value="Backend Developer">Backend Developer</Option>
-            <Option value="HR Manager">HR Manager</Option>
-            <Option value="Project Manager">Project Manager</Option>
+            <Option value="Software Engineer">Software Engineer</Option>
+            <Option value="Product Manager">Product Manager</Option>
+            <Option value="UX Designer">UX Designer</Option>
             <Option value="QA Engineer">QA Engineer</Option>
+            <Option value="DevOps Engineer">DevOps Engineer</Option>
           </Select>
         </Form.Item>
 
         <Form.Item
           name="department"
           label="Department"
-          rules={[{ required: true, message: 'Please select department' }]}
+          rules={[{ required: true, message: 'Please select a department' }]}
         >
           <Select placeholder="Select department">
             <Option value="Engineering">Engineering</Option>
-            <Option value="Human Resources">Human Resources</Option>
+            <Option value="Product">Product</Option>
+            <Option value="Design">Design</Option>
             <Option value="Marketing">Marketing</Option>
-            <Option value="Operations">Operations</Option>
-            <Option value="Quality Assurance">Quality Assurance</Option>
+            <Option value="Sales">Sales</Option>
+            <Option value="HR">Human Resources</Option>
           </Select>
         </Form.Item>
 
         <Form.Item
           name="status"
           label="Status"
-          rules={[{ required: true, message: 'Please select status' }]}
+          rules={[{ required: true, message: 'Please select a status' }]}
         >
           <Select placeholder="Select status">
-            <Option value="Active">Active</Option>
-            <Option value="On Leave">On Leave</Option>
+            <Option value="active">Active</Option>
+            <Option value="on_leave">On Leave</Option>
+            <Option value="inactive">Inactive</Option>
           </Select>
         </Form.Item>
 
         <Form.Item
           name="joinDate"
           label="Join Date"
-          rules={[{ required: true, message: 'Please select join date' }]}
+          rules={[{ required: true, message: 'Please select a join date' }]}
         >
           <DatePicker style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item
-          name="dateOfLeave"
+          name="leaveDate"
           label="Date of Leave"
         >
           <DatePicker style={{ width: '100%' }} />
