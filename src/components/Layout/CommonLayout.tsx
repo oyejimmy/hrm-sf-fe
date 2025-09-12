@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Layout, Menu, Tag, Avatar, theme, Dropdown, Button, Space, Badge } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Layout, Menu, Tag, Avatar, theme, Dropdown, Button, Space, Badge, Drawer } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   DashboardOutlined,
@@ -18,6 +18,7 @@ import {
   SettingOutlined,
   SunOutlined,
   MoonOutlined,
+  MenuOutlined,
 } from '@ant-design/icons';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import type { MenuProps } from 'antd';
@@ -25,6 +26,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { logout } from '../../store/slices/authSlice';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useResponsive } from '../../hooks';
 import styled from 'styled-components';
 
 const { Header: AntHeader, Content, Sider } = Layout;
@@ -36,17 +38,23 @@ const StyledLayout = styled(Layout)`
 
 const StyledHeader = styled(AntHeader)`
   background: ${props => props.theme?.themeMode === 'dark' ? '#001529' : '#ffffff'} !important;
-  padding: 0 ${props => props.theme?.spacing?.lg || '24px'} !important;
+  padding: 0 24px !important;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid ${props => props.theme?.themeMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : (props.theme?.colors?.borderLight || '#f0f0f0')} !important;
-  box-shadow: ${props => props.theme?.shadows?.md || '0 4px 6px rgba(0, 0, 0, 0.1)'} !important;
-  transition: all 0.3s ease;
-  position: sticky;
+  border-bottom: 1px solid ${props => props.theme?.themeMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : '#f0f0f0'} !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  position: fixed;
   top: 0;
-  height: 64px;
-  z-index: 10; /* Lower z-index to prevent overlapping modals */
+  left: 0;
+  right: 0;
+  height: 64px !important;
+  line-height: 64px !important;
+  z-index: 1000;
+  
+  @media (max-width: 768px) {
+    padding: 0 16px !important;
+  }
 `;
 
 const LogoContainer = styled.div`
@@ -56,6 +64,7 @@ const LogoContainer = styled.div`
   color: ${props => props.theme?.themeMode === 'dark' ? 'white' : '#001529'};
   font-weight: bold;
   font-size: 18px;
+  height: 64px;
   
   .logo-icon {
     background: ${props => props.theme?.colors?.primary || '#2958C4'};
@@ -66,6 +75,23 @@ const LogoContainer = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 12px;
+    gap: 4px;
+    
+    .logo-icon {
+      width: 24px;
+      height: 24px;
+      font-size: 10px;
+    }
+    
+    span {
+      font-size: 10px;
+    }
   }
 `;
 
@@ -128,9 +154,15 @@ const MenuContainer = styled.div`
 
 const StyledContent = styled(Content)`
   margin: 0;
-  min-height: 280px;
+  padding: 24px;
+  min-height: calc(100vh - 64px);
   background: ${props => props.theme?.colors?.background || '#f5f5f5'};
   overflow: auto;
+  margin-top: 64px;
+  
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
 `;
 
 const ThemeToggleButton = styled(Button)`
@@ -193,21 +225,56 @@ color: ${props => props.theme === 'dark' ? '#001529' : '#ffffff'};
     background: #001529 !important;
     border-right: ${props => props.theme === 'dark' ? '1px solidrgb(5, 46, 84)' : '1px solid #d9d9d9'};
   }
-  height: 100vh;
+  height: calc(100vh - 64px);
   position: fixed !important;
   left: 0;
-  top: 0;
+  top: 64px;
   bottom: 0;
   z-index: 9;
-  // Adjust content margin when sider is collapsed
-  & ~ .ant-layout {
-    margin-left: ${props => props.collapsed ? 80 : (props.width || 200)}px !important;
-    transition: margin-left 0.2s;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const MobileMenuButton = styled(Button)`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    color: ${props => props.theme?.colors?.textPrimary || '#262626'};
+    background: transparent;
+    border: none;
+    padding: 4px;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .anticon {
+      font-size: 16px;
+    }
+  }
+`;
+
+const ResponsiveLayout = styled(Layout)<{ $isMobile: boolean; $siderWidth: number; $collapsed: boolean }>`
+  margin-left: ${props => 
+    props.$isMobile ? '0' : 
+    props.$collapsed ? '80px' : 
+    `${props.$siderWidth}px`
+  };
+  transition: margin-left 0.2s;
+  min-height: 100vh;
+  
+  @media (max-width: 768px) {
+    margin-left: 0;
   }
 `;
 
 interface CommonLayoutProps {
-  userRole: 'admin' | 'hr' | 'employee';
+  userRole: 'admin' | 'hr' | 'employee' | 'team_lead';
 }
 
 export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
@@ -216,10 +283,20 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
   const { isDarkMode, toggleTheme, currentTheme } = useTheme();
+  const { isMobile, isDesktop } = useResponsive();
   const [siderCollapsed, setSiderCollapsed] = useState(false);
+  const [mobileDrawerVisible, setMobileDrawerVisible] = useState(false);
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+
+  const siderWidth = userRole === 'employee' ? 300 : 250;
+
+  useEffect(() => {
+    if (isMobile) {
+      setSiderCollapsed(false);
+    }
+  }, [isMobile]);
 
   const handleLogout = () => {
     dispatch(logout() as any);
@@ -231,7 +308,22 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
   };
 
   const toggleSider = () => {
-    setSiderCollapsed(!siderCollapsed);
+    if (isMobile) {
+      setMobileDrawerVisible(!mobileDrawerVisible);
+    } else {
+      setSiderCollapsed(!siderCollapsed);
+    }
+  };
+
+  const closeMobileDrawer = () => {
+    setMobileDrawerVisible(false);
+  };
+
+  const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
+    navigate(key);
+    if (isMobile) {
+      closeMobileDrawer();
+    }
   };
 
   const getMenuItems = (): MenuProps['items'] => {
@@ -286,6 +378,39 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
           },
           {
             key: '/admin/profile',
+            icon: <UserOutlined />,
+            label: 'Profile',
+          },
+        ];
+      case 'team_lead':
+        return [
+          {
+            key: '/team-lead/dashboard',
+            icon: <DashboardOutlined />,
+            label: 'Dashboard',
+          },
+          {
+            key: '/team-lead/attendance',
+            icon: <CalendarOutlined />,
+            label: 'Team Attendance',
+          },
+          {
+            key: '/team-lead/leave-requests',
+            icon: <FileTextOutlined />,
+            label: 'Leave Requests',
+          },
+          {
+            key: '/team-lead/performance',
+            icon: <TrophyOutlined />,
+            label: 'Performance',
+          },
+          {
+            key: '/team-lead/training',
+            icon: <BookOutlined />,
+            label: 'Training',
+          },
+          {
+            key: '/team-lead/profile',
             icon: <UserOutlined />,
             label: 'Profile',
           },
@@ -354,6 +479,8 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
         return 'HRM Admin';
       case 'hr':
         return 'HRM HR';
+      case 'team_lead':
+        return 'HRM Team Lead';
       case 'employee':
         return 'HRM Employee';
       default:
@@ -367,6 +494,8 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
         return 'Admin Panel';
       case 'hr':
         return 'HR Panel';
+      case 'team_lead':
+        return 'Team Lead Panel';
       case 'employee':
         return 'Employee Portal';
       default:
@@ -374,9 +503,7 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
     }
   };
 
-  const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
-    navigate(key);
-  };
+
 
   const userMenuItems: MenuProps['items'] = [
     {
@@ -384,7 +511,12 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
       icon: <UserOutlined />,
       label: 'Profile',
       onClick: () => {
-        const profilePath = userRole === 'admin' || userRole === 'hr' ? '/admin/profile' : '/employee/profile';
+        let profilePath = '/employee/profile';
+        if (userRole === 'admin' || userRole === 'hr') {
+          profilePath = '/admin/profile';
+        } else if (userRole === 'team_lead') {
+          profilePath = '/team-lead/profile';
+        }
         navigate(profilePath);
       },
     },
@@ -409,39 +541,99 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
     <Menu items={userMenuItems} />
   );
 
+  const renderSiderContent = () => (
+    <>
+      {!siderCollapsed && (
+        <SiderHeader>
+          <SiderTitle>{getTitle()}</SiderTitle>
+        </SiderHeader>
+      )}
+
+      {siderCollapsed && !isMobile && (
+        <div style={{ 
+          padding: '16px', 
+          textAlign: 'center', 
+          borderBottom: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#f0f0f0'}`,
+          marginTop: '0'
+        }}>
+          <CollapseButton
+            onClick={toggleSider}
+            type="text"
+            style={{ position: 'static', margin: '0 auto', top: 'auto', right: 'auto' }}
+          >
+            <PanelLeftOpen size={16} />
+          </CollapseButton>
+        </div>
+      )}
+
+      {!siderCollapsed && (
+        <UserProfile>
+          {!isMobile && (
+            <CollapseButton
+              onClick={toggleSider}
+              type="text"
+            >
+              <PanelLeftClose size={16} />
+            </CollapseButton>
+          )}
+          <UserAvatar size={64} icon={<UserOutlined />} src={user?.profile_picture} />
+          <UserName>{user?.first_name || 'User'}</UserName>
+          <Tag color={isDarkMode ? currentTheme?.colors?.secondary : "purple"}>Welcome Back</Tag>
+        </UserProfile>
+      )}
+
+      <MenuContainer>
+        <Menu
+          theme={isDarkMode ? 'dark' : 'light'}
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          items={getMenuItems()}
+          onClick={handleMenuClick}
+        />
+      </MenuContainer>
+    </>
+  );
+
   return (
     <StyledLayout>
       <StyledHeader>
-        {/* Logo on the left */}
         <LogoContainer>
+          <MobileMenuButton
+            icon={<MenuOutlined />}
+            onClick={toggleSider}
+            type="text"
+          />
           <div className="logo-icon">HR</div>
           <span>{getTitle()}</span>
         </LogoContainer>
 
-        <Space size="middle">
+        <Space size={isMobile ? "small" : "middle"}>
           <Tag
             icon={<UserOutlined />}
-            color={isDarkMode ? currentTheme?.colors?.secondary : "blue"}>
-            {getHeaderTitle()}
+            color={isDarkMode ? currentTheme?.colors?.secondary : "blue"}
+            style={{ fontSize: isMobile ? '10px' : '14px', padding: isMobile ? '0 4px' : '4px 8px' }}>
+            {isMobile ? getHeaderTitle().split(' ')[0] : getHeaderTitle()}
           </Tag>
 
           <ThemeToggleButton
             icon={isDarkMode ? <MoonOutlined /> : <SunOutlined />}
             onClick={toggleTheme}
             type="text"
+            size={isMobile ? "small" : "middle"}
           />
 
           <NotificationButton
             icon={
               <Badge dot count={3} size="small">
-                <BellOutlined />
+                <BellOutlined style={{ fontSize: isMobile ? '14px' : '16px' }} />
               </Badge>
             }
             onClick={handleNotificationsClick}
             type="text"
+            size={isMobile ? "small" : "middle"}
           />
 
-          <VerticalDivider />
+          {!isMobile && <VerticalDivider />}
 
           {/* User dropdown */}
           <Dropdown
@@ -451,85 +643,64 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
           >
             <UserDropdownButton type="text">
               <Avatar
-                size="small"
+                size={isMobile ? 24 : "small"}
                 icon={<UserOutlined />}
                 src={user?.profile_picture}
               />
-              <span>
-                {user?.first_name} {user?.last_name}
-              </span>
+              {!isMobile && (
+                <span>
+                  {user?.first_name} {user?.last_name}
+                </span>
+              )}
             </UserDropdownButton>
           </Dropdown>
         </Space>
       </StyledHeader>
 
-      <Layout>
+      {/* Desktop Sidebar */}
+      {isDesktop && (
         <StickySider
-          width={userRole === 'employee' ? 300 : 250}
+          width={siderWidth}
           theme={isDarkMode ? 'dark' : 'light'}
           collapsed={siderCollapsed}
           collapsible
           trigger={null}
         >
-          {/* Sider header with title */}
-          {!siderCollapsed && (
-            <SiderHeader>
-              <SiderTitle>{getTitle()}</SiderTitle>
-            </SiderHeader>
-          )}
-
-          {siderCollapsed && (
-            <div style={{ 
-              padding: '16px', 
-              textAlign: 'center', 
-              borderBottom: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#f0f0f0'}`,
-              marginTop: '65px'
-            }}>
-              <CollapseButton
-                onClick={toggleSider}
-                type="text"
-                style={{ position: 'static', margin: '0 auto', top: 'auto', right: 'auto' }}
-              >
-                <PanelLeftOpen size={16} />
-              </CollapseButton>
-            </div>
-          )}
-
-          {!siderCollapsed && (
-            <UserProfile>
-              <CollapseButton
-                onClick={toggleSider}
-                type="text"
-              >
-                {siderCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
-              </CollapseButton>
-              <UserAvatar size={64} icon={<UserOutlined />} src={user?.profile_picture} />
-              <UserName>{user?.first_name || 'User'}</UserName>
-              <Tag color={isDarkMode ? currentTheme?.colors?.secondary : "purple"}>Welcome Back</Tag>
-            </UserProfile>
-          )}
-
-          <MenuContainer>
-            <Menu
-              theme={isDarkMode ? 'dark' : 'light'}
-              mode="inline"
-              selectedKeys={[location.pathname]}
-              items={getMenuItems()}
-              onClick={handleMenuClick}
-            />
-          </MenuContainer>
+          {renderSiderContent()}
         </StickySider>
+      )}
 
-        <Layout style={{ background: '#f5f5f5', minHeight: 'calc(100vh - 64px)' }}>
-          <StyledContent
-            style={{
-              background: colorBgContainer,
-            }}
-          >
-            <Outlet />
-          </StyledContent>
-        </Layout>
-      </Layout>
+      {/* Mobile Drawer */}
+      <Drawer
+        title={getTitle()}
+        placement="left"
+        onClose={closeMobileDrawer}
+        open={mobileDrawerVisible}
+        bodyStyle={{ padding: 0 }}
+        headerStyle={{ 
+          background: isDarkMode ? '#001529' : '#ffffff',
+          color: isDarkMode ? 'white' : '#001529'
+        }}
+        width={siderWidth}
+      >
+        <div style={{ background: isDarkMode ? '#001529' : '#ffffff', height: '100%' }}>
+          {renderSiderContent()}
+        </div>
+      </Drawer>
+
+      <ResponsiveLayout 
+        $isMobile={isMobile} 
+        $siderWidth={siderWidth} 
+        $collapsed={siderCollapsed}
+      >
+        <StyledContent
+          style={{
+            background: colorBgContainer,
+          }}
+        >
+          <Outlet />
+        </StyledContent>
+      </ResponsiveLayout>
     </StyledLayout>
   );
 };
