@@ -1,7 +1,7 @@
 // components/RequestList.tsx
 import { Empty } from 'antd';
 import { StyledCard } from './styles';
-import RequestCard from './RequestCard';
+import { RequestCard } from './RequestCard';
 
 interface RequestListProps {
   title: string;
