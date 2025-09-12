@@ -1,6 +1,6 @@
 import React from "react";
-import { Button } from "antd";
-import { StyledCard, GridRow } from "./styles";
+import { Button, Row, Col } from "antd";
+import { StyledCard } from "./styles";
 import type { QuickAction } from "../types";
 import { useTheme } from "../../../../contexts/ThemeContext";
 import { Zap } from "lucide-react";
@@ -26,13 +26,21 @@ const QuickActions: React.FC<Props> = ({ actions }) => {
     $isDarkMode={isDarkMode}
     extra={<QuickActionsIcon isDarkMode={isDarkMode} />}
   >
-    <GridRow minWidth={140}>
+    <Row gutter={[8, 8]}>
       {actions.map((a) => (
-        <Button key={a.id} icon={a.icon} onClick={a.onClick} block>
-          {a.label}
-        </Button>
+        <Col xs={12} sm={8} md={6} key={a.id}>
+          <Button 
+            icon={a.icon} 
+            onClick={a.onClick} 
+            block
+            size="small"
+            style={{ height: '40px', fontSize: '11px' }}
+          >
+            {a.label}
+          </Button>
+        </Col>
       ))}
-    </GridRow>
+    </Row>
   </StyledCard>
   );
 };
