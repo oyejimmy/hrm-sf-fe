@@ -15,6 +15,7 @@ export const ROUTES = {
     TRAINING: '/admin/training',
     DOCUMENTS: '/admin/documents',
     COMMUNICATION: '/admin/communication',
+    NOTIFICATIONS: '/admin/notifications',
   },
   
   // Employee Routes
