@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { store } from './store';
 import { GlobalStyles } from './styles/global-styles';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { LoadingProvider, useLoading } from './contexts/LoadingContext';
+import { PageLoader } from './components/common/PageLoader';
 import './styles/responsive.css';
 import { AuthProvider } from './features/auth/AuthProvider';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
@@ -62,14 +64,14 @@ const queryClient = new QueryClient({
   },
 });
 
-function App() {
+const AppContent: React.FC = () => {
+  const { isLoading } = useLoading();
+
   return (
-    <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <GlobalStyles />
-          <Router>
-            <AuthProvider>
+    <>
+      {isLoading && <PageLoader />}
+      <Router>
+        <AuthProvider>
               <Routes>
                 {/* Public Routes */}
                 <Route path="/login" element={<Login />} />
@@ -158,8 +160,21 @@ function App() {
                 {/* Default Route */}
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
-            </AuthProvider>
-          </Router>
+        </AuthProvider>
+      </Router>
+    </>
+  );
+};
+
+function App() {
+  return (
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <LoadingProvider>
+            <GlobalStyles />
+            <AppContent />
+          </LoadingProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </Provider>
