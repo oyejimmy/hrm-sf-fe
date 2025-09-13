@@ -1,80 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
-  Layout,
-  Card,
-  Row,
-  Col,
-  Statistic,
-  List,
-  Avatar,
-  Tag,
-  Button,
-  Typography,
-  Progress,
-  Badge,
-  Divider
+  Layout, Card, Row, Col, Statistic, Progress, List, Avatar,
+  Tag, Button, Badge, Dropdown, Menu, Space
 } from 'antd';
 import {
-  UserOutlined,
-  CalendarOutlined,
-  TeamOutlined,
-  DashboardOutlined,
-  BellOutlined,
-  PlusOutlined,
-  ScheduleOutlined,
-  BookOutlined,
-  FileTextOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined
+  UserOutlined, TeamOutlined, CalendarOutlined,
+  FileTextOutlined, IdcardOutlined, BarChartOutlined,
+  BookOutlined, BellOutlined
 } from '@ant-design/icons';
+import Chart from 'react-apexcharts';
 import styled from 'styled-components';
 import HeaderComponent from '../../../components/PageHeader';
+import { useTheme } from '../../../contexts/ThemeContext';
+import { Wrapper } from '../../../components/Wrapper';
 
-const { Header, Content } = Layout;
-const { Title, Text } = Typography;
-
-// Styled Components
-const StyledLayout = styled(Layout)`
-  min-height: 100vh;
-  background-color: #f5f7fa;
-`;
-
-const StyledHeader = styled(Header)`
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  z-index: 1;
-`;
-
-const PageTitle = styled(Title)`
-  margin: 0 !important;
-  color: #262626 !important;
-`;
-
-const DashboardContent = styled(Content)`
-  padding: 24px;
-`;
-
-const StatisticCard = styled(Card)`
+const StatsCard = styled(Card)`
   border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: none;
+  
   .ant-card-body {
     padding: 20px;
   }
 `;
 
-const SectionCard = styled(Card)`
+const ChartContainer = styled(Card)`
   border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: none;
   margin-bottom: 24px;
-  .ant-card-head {
-    border-bottom: 1px solid #f0f0f0;
+  
+  .ant-card-body {
+    padding: 20px;
   }
-  .ant-card-head-title {
-    font-weight: 600;
-    color: #262626;
+`;
+
+const NotificationItem = styled(List.Item)`
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0 !important;
+  
+  &:last-child {
+    border-bottom: none !important;
   }
 `;
 
@@ -84,214 +50,297 @@ const QuickActionButton = styled(Button)`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  border: 1px solid #f0f0f0;
-  background-color: #fff;
-  transition: all 0.3s;
-  &:hover {
-    border-color: #1890ff;
-    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+  
+  .anticon {
+    font-size: 24px;
+    margin-bottom: 8px;
   }
 `;
 
-const PendingApprovalItem = styled.div`
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
-  &:last-child {
-    border-bottom: none;
-  }
-`;
+// Dashboard Component
+const AdminDashboard = () => {
+  const { isDarkMode } = useTheme();
+  // Mock data for charts
+  const departmentData: any = {
+    options: {
+      labels: ['Engineering', 'Marketing', 'Sales', 'HR', 'Support'],
+      colors: ['#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1'],
+      legend: {
+        position: 'bottom' as const,
+      },
+    },
+    series: [44, 55, 41, 17, 15],
+  };
 
-const AnnouncementItem = styled.div`
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
-  &:last-child {
-    border-bottom: none;
-  }
-`;
+  const attendanceData = {
+    options: {
+      chart: {
+        id: 'attendance-chart',
+      },
+      xaxis: {
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      },
+      colors: ['#1890ff'],
+    },
+    series: [
+      {
+        name: 'Attendance Rate',
+        data: [95, 92, 90, 88, 96, 94, 93, 97, 96, 98, 97, 99],
+      },
+    ],
+  };
 
-const HolidayItem = styled.div`
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const ActivityItem = styled.div`
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-// Main Dashboard Component
-const AdminDashboard: React.FC = () => {
-  // Sample data
-  const pendingApprovals = [
-    { name: 'John Ben', department: 'Engineering', time: 'Now 12-18' },
-    { name: 'Wact Ben', department: 'Designer', time: 'Now 09-18' },
-    { name: 'Sheils', department: 'QA', time: 'Now 17-18' },
+  // Notifications data
+  const notifications = [
+    {
+      title: 'New employee onboarding',
+      description: 'John Doe joined Engineering team',
+      time: '2 hours ago',
+      icon: <TeamOutlined />,
+      color: '#1890ff',
+    },
+    {
+      title: 'Leave request',
+      description: 'Sarah Connor requested sick leave',
+      time: '5 hours ago',
+      icon: <CalendarOutlined />,
+      color: '#52c41a',
+    },
+    {
+      title: 'Performance review',
+      description: 'Quarterly reviews are due next week',
+      time: '1 day ago',
+      icon: <BarChartOutlined />,
+      color: '#faad14',
+    },
+    {
+      title: 'System update',
+      description: 'New HR system update available',
+      time: '2 days ago',
+      icon: <BellOutlined />,
+      color: '#f5222d',
+    },
   ];
 
-  const announcements = [
-    { title: 'Holiday Notice', content: 'Company will be closed on December 25th for Christmas' },
-    { title: 'Policy Update', content: 'New Work-from-home policy effective January 1st' },
-    { title: 'Holiday Notice', content: 'Schedule maintenance on Sunday 2AM–4AM' },
-  ];
-
-  const holidays = [
-    { name: 'Labour Day', date: 'November 1, 2025 Tuesday' },
-    { name: 'Independence Day', date: 'March 04, 2025 Friday' },
-    { name: 'Eid Ul Fitr', date: 'April 23, 2025 Monday' },
-  ];
-
-  const activities = [
-    { action: 'Sarah Johnson submitted a leave request', time: '2 hours ago' },
-    { action: 'New candidate applied for Frontend Developer Position', time: '5 hours ago' },
-    { action: 'React.js Training Module completed by 15 employees', time: '1 day ago' },
-  ];
-
+  // Quick actions data
   const quickActions = [
-    { icon: <PlusOutlined />, label: 'Add Employee' },
-    { icon: <ScheduleOutlined />, label: 'Schedule Interview' },
-    { icon: <BookOutlined />, label: 'Create Training' },
-    { icon: <FileTextOutlined />, label: 'Generate Report' },
+    {
+      title: 'Add Employee',
+      icon: <UserOutlined />,
+      color: '#1890ff',
+    },
+    {
+      title: 'Process Payroll',
+      icon: <FileTextOutlined />,
+      color: '#52c41a',
+    },
+    {
+      title: 'Manage Leaves',
+      icon: <CalendarOutlined />,
+      color: '#faad14',
+    },
+    {
+      title: 'Generate Reports',
+      icon: <BarChartOutlined />,
+      color: '#f5222d',
+    },
   ];
+
+  // Create notification dropdown menu
+  const notificationMenu = (
+    <Menu>
+      {notifications.map((item, index) => (
+        <Menu.Item key={index}>
+          <List.Item.Meta
+            avatar={<Avatar style={{ backgroundColor: item.color }} icon={item.icon} />}
+            title={item.title}
+            description={item.description}
+          />
+          <div style={{ fontSize: '12px', color: '#8c8c8c' }}>{item.time}</div>
+        </Menu.Item>
+      ))}
+    </Menu>
+  );
 
   return (
-    <StyledLayout>
+    <Wrapper isDarkMode={isDarkMode}>
       <HeaderComponent
+        isDarkMode={isDarkMode}
         title="Dashboard"
-        subtitle="Welcome back! Here's what's happening at our company today."
+        subtitle="Welcome back, Admin! Here's what's happening with your team today."
       />
 
+      {/* Stats Overview */}
+      <Row gutter={[24, 24]}>
+        <Col xs={24} sm={12} lg={6}>
+          <StatsCard>
+            <Statistic
+              title="Total Employees"
+              value={158}
+              valueStyle={{ color: '#1890ff' }}
+              prefix={<TeamOutlined />}
+            />
+            <Progress percent={100} showInfo={false} status="active" />
+            <div style={{ color: '#8c8c8c', fontSize: '12px' }}>+5 from last week</div>
+          </StatsCard>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <StatsCard>
+            <Statistic
+              title="Present Today"
+              value={142}
+              valueStyle={{ color: '#52c41a' }}
+              prefix={<UserOutlined />}
+            />
+            <Progress percent={90} showInfo={false} status="active" strokeColor="#52c41a" />
+            <div style={{ color: '#8c8c8c', fontSize: '12px' }}>16 on leave</div>
+          </StatsCard>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <StatsCard>
+            <Statistic
+              title="Open Positions"
+              value={12}
+              valueStyle={{ color: '#faad14' }}
+              prefix={<IdcardOutlined />}
+            />
+            <Progress percent={60} showInfo={false} status="active" strokeColor="#faad14" />
+            <div style={{ color: '#8c8c8c', fontSize: '12px' }}>4 new this week</div>
+          </StatsCard>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <StatsCard>
+            <Statistic
+              title="Training Courses"
+              value={8}
+              valueStyle={{ color: '#722ed1' }}
+              prefix={<BookOutlined />}
+            />
+            <Progress percent={80} showInfo={false} status="active" strokeColor="#722ed1" />
+            <div style={{ color: '#8c8c8c', fontSize: '12px' }}>2 completed this month</div>
+          </StatsCard>
+        </Col>
+      </Row>
 
-      <DashboardContent>
-        <Row gutter={[24, 24]}>
-          {/* Statistics Cards */}
-          <Col xs={24} sm={12} lg={6}>
-            <StatisticCard>
-              <Statistic
-                title="Total Employees"
-                value={248}
-                prefix={<TeamOutlined />}
-                valueStyle={{ color: '#1890ff' }}
-              />
-            </StatisticCard>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <StatisticCard>
-              <Statistic
-                title="Active Today"
-                value={235}
-                prefix={<UserOutlined />}
-                valueStyle={{ color: '#52c41a' }}
-              />
-            </StatisticCard>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <StatisticCard>
-              <Statistic
-                title="On Leave"
-                value={13}
-                prefix={<CalendarOutlined />}
-                valueStyle={{ color: '#faad14' }}
-              />
-            </StatisticCard>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <StatisticCard>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <Text>Performance Score</Text>
-                <div style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
-                  <Progress
-                    type="circle"
-                    percent={84}
-                    width={50}
-                    format={percent => `8.4/10`}
-                    strokeColor="#722ed1"
+      {/* Charts */}
+      <Row gutter={[24, 24]} style={{ marginTop: '24px' }}>
+        <Col xs={24} lg={12}>
+          <ChartContainer title="Department Distribution">
+            <Chart
+              options={departmentData.options}
+              series={departmentData.series}
+              type="pie"
+              height={350}
+            />
+          </ChartContainer>
+        </Col>
+        <Col xs={24} lg={12}>
+          <ChartContainer title="Monthly Attendance Rate">
+            <Chart
+              options={attendanceData.options}
+              series={attendanceData.series}
+              type="bar"
+              height={350}
+            />
+          </ChartContainer>
+        </Col>
+      </Row>
+
+      {/* Quick Actions and Notifications */}
+      <Row gutter={[24, 24]} style={{ marginTop: '24px' }}>
+        <Col xs={24} lg={12}>
+          <ChartContainer title="Quick Actions">
+            <Row gutter={[16, 16]}>
+              {quickActions.map((action, index) => (
+                <Col xs={12} key={index}>
+                  <QuickActionButton
+                    type="primary"
+                    style={{ backgroundColor: action.color, borderColor: action.color }}
+                    icon={action.icon}
+                  >
+                    {action.title}
+                  </QuickActionButton>
+                </Col>
+              ))}
+            </Row>
+          </ChartContainer>
+        </Col>
+        <Col xs={24} lg={12}>
+          <ChartContainer
+            title="Recent Notifications"
+            extra={<Button type="link">View All</Button>}
+          >
+            <List
+              dataSource={notifications}
+              renderItem={(item) => (
+                <NotificationItem>
+                  <List.Item.Meta
+                    avatar={<Avatar style={{ backgroundColor: item.color }} icon={item.icon} />}
+                    title={item.title}
+                    description={item.description}
                   />
-                </div>
-              </div>
-            </StatisticCard>
-          </Col>
+                  <div style={{ fontSize: '12px', color: '#8c8c8c' }}>{item.time}</div>
+                </NotificationItem>
+              )}
+            />
+          </ChartContainer>
+        </Col>
+      </Row>
 
-          {/* Left Column */}
-          <Col xs={24} lg={16}>
-            {/* Announcements */}
-            <SectionCard title="Announcements" extra={<BellOutlined />}>
-              {announcements.map((announcement, index) => (
-                <AnnouncementItem key={index}>
-                  <Text strong>{announcement.title}</Text>
-                  <br />
-                  <Text type="secondary">{announcement.content}</Text>
-                </AnnouncementItem>
-              ))}
-            </SectionCard>
-
-            {/* Recent Activities */}
-            <SectionCard title="Recent Activities">
-              {activities.map((activity, index) => (
-                <ActivityItem key={index}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Text>{activity.action}</Text>
-                    <Text type="secondary">{activity.time}</Text>
-                  </div>
-                </ActivityItem>
-              ))}
-            </SectionCard>
-          </Col>
-
-          {/* Right Column */}
-          <Col xs={24} lg={8}>
-            {/* Upcoming Holidays */}
-            <SectionCard title="Upcoming Holidays">
-              {holidays.map((holiday, index) => (
-                <HolidayItem key={index}>
-                  <Text strong>{holiday.name}</Text>
-                  <br />
-                  <Text type="secondary">{holiday.date}</Text>
-                </HolidayItem>
-              ))}
-            </SectionCard>
-
-            {/* Quick Actions */}
-            <SectionCard title="Quick Action">
-              <Row gutter={[16, 16]}>
-                {quickActions.map((action, index) => (
-                  <Col xs={12} key={index}>
-                    <QuickActionButton>
-                      <div style={{ fontSize: '20px', marginBottom: '8px' }}>
-                        {action.icon}
-                      </div>
-                      <Text>{action.label}</Text>
-                    </QuickActionButton>
-                  </Col>
-                ))}
-              </Row>
-            </SectionCard>
-
-            {/* Pending Approvals */}
-            <SectionCard title="Pending Approvals">
-              {pendingApprovals.map((approval, index) => (
-                <PendingApprovalItem key={index}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <Text strong>{approval.name}</Text>
-                      <br />
-                      <Text type="secondary">{approval.department}</Text>
-                    </div>
-                    <Tag color="orange">{approval.time}</Tag>
-                  </div>
-                </PendingApprovalItem>
-              ))}
-            </SectionCard>
-          </Col>
-        </Row>
-      </DashboardContent>
-    </StyledLayout>
+      {/* Recent Activity */}
+      <ChartContainer title="Recent Activity" style={{ marginTop: '24px' }}>
+        <List
+          dataSource={[
+            {
+              title: 'Performance review completed',
+              description: 'John Doe received a performance review',
+              time: 'Today, 10:30 AM',
+              status: 'completed',
+            },
+            {
+              title: 'New hire processed',
+              description: 'Sarah Connor joined the Engineering team',
+              time: 'Yesterday, 3:45 PM',
+              status: 'completed',
+            },
+            {
+              title: 'Leave request pending',
+              description: 'Mike Johnson requested vacation leave',
+              time: 'Oct 12, 2023',
+              status: 'pending',
+            },
+            {
+              title: 'Training session scheduled',
+              description: 'Leadership training scheduled for Nov 15',
+              time: 'Oct 10, 2023',
+              status: 'upcoming',
+            },
+          ]}
+          renderItem={(item) => (
+            <NotificationItem>
+              <List.Item.Meta
+                title={item.title}
+                description={item.description}
+              />
+              <Space>
+                <Tag
+                  color={
+                    item.status === 'completed'
+                      ? 'green'
+                      : item.status === 'pending'
+                        ? 'orange'
+                        : 'blue'
+                  }
+                >
+                  {item.status}
+                </Tag>
+                <div style={{ fontSize: '12px', color: '#8c8c8c' }}>{item.time}</div>
+              </Space>
+            </NotificationItem>
+          )}
+        />
+      </ChartContainer>
+    </Wrapper>
   );
 };
 
