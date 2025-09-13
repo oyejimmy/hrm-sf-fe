@@ -24,10 +24,10 @@ import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import type { MenuProps } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import { logout } from '../../store/slices/authSlice';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useResponsive } from '../../hooks';
 import styled from 'styled-components';
+import { logout } from '../../store/slices/authSlice';
 
 const { Header: AntHeader, Content, Sider } = Layout;
 
@@ -373,6 +373,11 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             key: '/admin/communication',
             icon: <BellOutlined />,
             label: 'Communication',
+          },
+          {
+            key: '/admin/notifications',
+            icon: <BellOutlined />,
+            label: 'Notification Management',
           },
           {
             key: '/admin/profile',
