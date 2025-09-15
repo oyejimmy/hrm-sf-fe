@@ -1,13 +1,11 @@
-import React from 'react';
 import {
   Avatar,
   Button,
   Typography,
   Badge,
   Flex,
-  Switch,
 } from 'antd';
-import { Bell, User, MapPin, Briefcase, Moon, Sun } from 'lucide-react';
+import { User, MapPin, Briefcase, Bell, Smile } from 'lucide-react';
 import styled from 'styled-components';
 
 const { Title, Text } = Typography;
@@ -130,6 +128,14 @@ const InfoItem = styled(Flex) <{ isDarkMode: boolean }>`
   gap: 4px;
 `;
 
+const StyledIconWrapper = styled.span<{ color: string }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: ${props => props.color};
+  margin-right: 6px;
+`;
+
 const CenterMessage = styled.div<{ isDarkMode: boolean }>`
   position: absolute;
   top: 50%;
@@ -170,17 +176,6 @@ const StyledButton = styled(Button) <{ isDarkMode: boolean }>`
   font-weight: 500;
 `;
 
-const NotificationButton = styled(StyledButton) <{ isDarkMode: boolean }>`
-  background-color: ${props => props.isDarkMode ? '#1f1f1f' : 'white'};
-  border-color: ${props => props.isDarkMode ? '#434343' : '#d9d9d9'};
-  color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.85)' : '#333'};
-
-  &:hover {
-    border-color: #1890ff;
-    color: #1890ff;
-  }
-`;
-
 const ProfileButton = styled(StyledButton) <{ isDarkMode: boolean }>`
   background-color: #1890ff;
   border-color: #1890ff;
@@ -189,6 +184,17 @@ const ProfileButton = styled(StyledButton) <{ isDarkMode: boolean }>`
   &:hover {
     background-color: #40a9ff;
     border-color: #40a9ff;
+  }
+`;
+
+const NotificationButton = styled(StyledButton) <{ isDarkMode: boolean }>`
+  background-color: ${props => props.isDarkMode ? '#2a2a2a' : '#f5f5f5'};
+  border-color: ${props => props.isDarkMode ? '#434343' : '#d9d9d9'};
+  color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.85)' : 'rgba(0, 0, 0, 0.85)'};
+
+  &:hover {
+    background-color: ${props => props.isDarkMode ? '#373737' : '#e6e6e6'};
+    border-color: ${props => props.isDarkMode ? '#434343' : '#d9d9d9'};
   }
 `;
 
@@ -210,13 +216,13 @@ const ProfileInfoContainer = styled.div`
 
 // Mock user data
 const userData = {
-  name: "Sarah Johnson",
+  name: "Jami Ur Rahman",
   role: "COO",
   location: "London",
-  welcomeMessage: "Welcome back, Sarah Johnson!",
-  position: "Senior UX Designer — Product Development",
+  welcomeMessage: "Welcome back, Jamil Ur Rahman!",
+  position: "Senior UX Designer",
   avatarUrl:
-    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=1887&q=80",
+    "https://images.unsplash.com/photo-1623170909888-4e97ff277186?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fEJveXxlbnwwfHwwfHx8MA%3D%3D",
 };
 
 const WelcomeHeader = ({ isDarkMode }: { isDarkMode: boolean }) => {
@@ -241,11 +247,15 @@ const WelcomeHeader = ({ isDarkMode }: { isDarkMode: boolean }) => {
           </UserName>
           <UserSubInfo isDarkMode={isDarkMode}>
             <InfoItem isDarkMode={isDarkMode}>
-              <Briefcase size={14} />
+              <StyledIconWrapper color="#1890ff">
+                <Briefcase size={14} />
+              </StyledIconWrapper>
               <Text>{userData.role}</Text>
             </InfoItem>
             <InfoItem isDarkMode={isDarkMode}>
-              <MapPin size={14} />
+              <StyledIconWrapper color="#f5222d">
+                <MapPin size={14} />
+              </StyledIconWrapper>
               <Text>{userData.location}</Text>
             </InfoItem>
           </UserSubInfo>
@@ -267,11 +277,6 @@ const WelcomeHeader = ({ isDarkMode }: { isDarkMode: boolean }) => {
           </UserProfileSection>
 
           <ActionButtons isDarkMode={isDarkMode}>
-            <Badge count={3} size="small" color={isDarkMode ? '#1890ff' : undefined}>
-              <NotificationButton isDarkMode={isDarkMode} icon={<Bell size={16} />}>
-                Notification
-              </NotificationButton>
-            </Badge>
             <ProfileButton isDarkMode={isDarkMode} icon={<User size={16} />}>
               Profile
             </ProfileButton>

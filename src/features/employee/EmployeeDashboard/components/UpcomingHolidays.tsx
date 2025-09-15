@@ -1,155 +1,300 @@
-import React from "react";
-import { List, Flex } from "antd";
-import { StyledCard } from "./styles";
-import type { Holiday } from "../types";
+import React, { useState, useEffect, useCallback } from "react";
+import { Card, Button } from "antd";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import styled from "styled-components";
-import { Calendar } from "lucide-react";
 import { useTheme } from "../../../../contexts/ThemeContext";
 
+// Fireworks component with 10-second animation
+const Fireworks = () => {
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(false), 10000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <div style={{
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      pointerEvents: "none",
+      zIndex: 10,
+      overflow: "hidden"
+    }}>
+      {[...Array(30)].map((_, i) => (
+        <div
+          key={i}
+          className="firework"
+          style={{
+            position: "absolute",
+            top: `${20 + Math.random() * 60}%`,
+            left: `${Math.random() * 100}%`,
+            animationDelay: `${i * 0.3}s`,
+            animationDuration: "1.5s"
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes firework {
+          0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+          50% { opacity: 1; }
+          100% { transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) scale(2); opacity: 0; }
+        }
+        .firework {
+          width: 5px;
+          height: 5px;
+          background: hsl(${Math.random() * 360}, 100%, 60%);
+          border-radius: 50%;
+          box-shadow: 0 0 8px 2px currentColor;
+          animation: firework ease-out infinite;
+          opacity: 0;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+interface Holiday {
+  id: string;
+  name: string;
+  date: string;
+  day: string;
+  description: string;
+}
+
 const holidays: Holiday[] = [
-  { id: "h1", name: "Labour Day", date: "November 1, 2025", day: "Tuesday" },
-  { id: "h2", name: "Independence Day", date: "March 4, 2025", day: "Friday" },
-  { id: "h3", name: "Eid Ul Fitr", date: "April 23, 2025", day: "Monday" },
-  { id: "h4", name: "Eid Ul Adha", date: "June 28, 2025", day: "Saturday" },
-  { id: "h5", name: "Christmas Day", date: "December 25, 2025", day: "Thursday" },
-  { id: "h6", name: "New Year's Day", date: "January 1, 2026", day: "Wednesday" },
+  { id: "h1", name: "New Year's Day", date: "January 1, 2025", day: "Wednesday", description: "Celebration of the new year" },
+  { id: "h2", name: "Valentine's Day", date: "February 14, 2025", day: "Friday", description: "Day of love and romance" },
+  { id: "h3", name: "Eid Ul Fitr", date: "April 23, 2025", day: "Monday", description: "Islamic festival marking the end of Ramadan" },
+  { id: "h4", name: "Eid Ul Adha", date: "June 28, 2025", day: "Saturday", description: "Islamic festival of sacrifice" },
+  { id: "h5", name: "Independence Day", date: "July 4, 2025", day: "Friday", description: "Celebration of national independence" },
+  { id: "h6", name: "Labor Day", date: "September 1, 2025", day: "Monday", description: "Celebration of workers' rights" },
+  { id: "h7", name: "Thanksgiving", date: "November 27, 2025", day: "Thursday", description: "Day of gratitude and feasting" },
+  { id: "h8", name: "Christmas Day", date: "December 25, 2025", day: "Thursday", description: "Celebration of Christmas" }
 ];
 
-// 🎨 Scroll container with blue scrollbar
-const ScrollContainer = styled.div<{ isDarkMode: boolean }>`
-  max-height: 250px;
-  overflow-y: auto;
-  padding: 8px;
-  border-radius: 12px;
-
-  /* Blue scrollbar */
-  &::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: ${props => props.isDarkMode ? "#2a2a2a" : "#f1f1f1"};
-    border-radius: 4px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: #1890ff;
-    border-radius: 4px;
-  }
-  
-  &::-webkit-scrollbar-thumb:hover {
-    background: #40a9ff;
-  }
-
-  /* Firefox scrollbar */
-  scrollbar-width: thin;
-  scrollbar-color: #1890ff ${props => props.isDarkMode ? "#2a2a2a" : "#f1f1f1"};
-
-  // Mobile responsiveness
-  @media (max-width: 768px) {
-    max-height: 200px;
-    padding: 6px;
-  }
-`;
-
-// 📋 Styled List Item
-const StyledListItem = styled(List.Item)<{ isDarkMode: boolean }>`
-  border: 1px solid ${props => props.isDarkMode ? "#444" : "#d9d9d9"};
-  border-radius: 10px;
-  padding: 14px 20px;
-  margin-bottom: 10px;
-  background: ${props => props.isDarkMode ? "#2a2a2a" : "#fff"};
-  box-shadow: ${props => 
-    props.isDarkMode 
-      ? "0 2px 6px rgba(0, 0, 0, 0.3)" 
-      : "0 2px 6px rgba(0, 0, 0, 0.08)"};
+const StyledCard = styled(Card) <{ isDarkMode: boolean }>`
+  border-radius: 16px;
+  box-shadow: ${({ isDarkMode }) =>
+    isDarkMode ? "0 8px 24px rgba(0, 0, 0, 0.4)" : "0 8px 24px rgba(0, 0, 0, 0.1)"};
+  background: ${({ isDarkMode }) => (isDarkMode ? "#1f1f1f" : "#ffffff")};
+  border: ${({ isDarkMode }) => (isDarkMode ? "1px solid #444" : "1px solid #eaeaea")};
+  width: 90%;
+  max-width: 500px;
+  margin: 0 auto;
+  overflow: hidden;
+  position: relative;
   transition: all 0.3s ease;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: ${props => 
-      props.isDarkMode 
-        ? "0 6px 14px rgba(0, 0, 0, 0.4)" 
-        : "0 6px 14px rgba(0, 0, 0, 0.12)"};
-  }
-
-  // Mobile responsiveness
-  @media (max-width: 768px) {
-    padding: 12px 16px;
-    margin-bottom: 8px;
-  }
-`;
-
-// 🖌️ Holiday name styling
-const Title = styled.span<{ isDarkMode: boolean }>`
-  color: ${props => props.isDarkMode ? "#69c0ff" : "#1890ff"};
-  font-weight: 600;
-  font-size: 25px;
-  padding-left: 20px;
-
-  // Mobile responsiveness
-  @media (max-width: 768px) {
-    font-size: 18px;
-    padding-left: 10px;
-  }
-`;
-
-// 📐 Right-side text (date + day)
-const RightText = styled.div<{ isDarkMode: boolean }>`
-  text-align: right;
-  font-size: 13px;
-  color: ${props => props.isDarkMode ? "#f0f0f0" : "#333"};
-  padding-right: 20px;
-
-  span {
-    display: block;
-    color: ${props => props.isDarkMode ? "#bfbfbf" : "#999"};
-    font-size: 11px;
-  }
-
-  // Mobile responsiveness
-  @media (max-width: 768px) {
-    padding-right: 10px;
-    font-size: 12px;
+  .ant-card-head {
+    border-bottom: ${({ isDarkMode }) => (isDarkMode ? "1px solid #444" : "1px solid #f0f0f0")};
+    color: ${({ isDarkMode }) => (isDarkMode ? "#e6f7ff" : "#333")};
+    font-size: 1.1rem;
+    padding: 14px 16px;
+    font-weight: 600;
     
-    span {
-      font-size: 10px;
+    @media (max-width: 480px) {
+      padding: 12px;
+    }
+  }
+
+  .ant-card-body {
+    padding: 20px;
+    
+    @media (max-width: 480px) {
+      padding: 16px;
     }
   }
 `;
 
-// Styled calendar icon for the card header
-const CalendarIcon = styled(Calendar)<{ isDarkMode: boolean }>`
-  width: 18px;
-  height: 18px;
-  color: ${props => props.isDarkMode ? '#69c0ff' : '#1890ff'};
+const HolidayTitle = styled.h3<{ isDarkMode: boolean }>`
+  color: ${({ isDarkMode }) => (isDarkMode ? "#fff" : "#1890ff")};
+  font-size: 1.6rem;
+  text-align: center;
+  margin-bottom: 12px;
+  font-weight: 700;
+
+  @media (max-width: 768px) {
+    font-size: 1.4rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.2rem;
+  }
+`;
+
+const DateText = styled.p<{ isDarkMode: boolean }>`
+  color: ${({ isDarkMode }) => (isDarkMode ? "#d9d9d9" : "#555")};
+  font-size: 1.1rem;
+  text-align: center;
+  margin-bottom: 6px;
+  font-weight: 500;
+
+  @media (max-width: 480px) {
+    font-size: 1rem;
+  }
+`;
+
+const DayText = styled.p<{ isDarkMode: boolean }>`
+  color: ${({ isDarkMode }) => (isDarkMode ? "#bfbfbf" : "#888")};
+  text-align: center;
+  font-size: 1rem;
+  margin-bottom: 16px;
+
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+  }
+`;
+
+const NavButton = styled(Button) <{ isDarkMode: boolean }>`
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  background: ${({ isDarkMode }) => (isDarkMode ? "#333" : "#f5f5f5")};
+  border: ${({ isDarkMode }) => (isDarkMode ? "1px solid #555" : "1px solid #d9d9d9")};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: ${({ isDarkMode }) => (isDarkMode ? "#444" : "#e6f7ff")};
+    border-color: #1890ff;
+  }
+
+  @media (max-width: 480px) {
+    width: 40px;
+    height: 40px;
+  }
+`;
+
+const ContentWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+`;
+
+const ContentCenter = styled.div`
+  flex: 1;
+  margin: 0 16px;
+  min-width: 0;
+`;
+
+const HolidayCounter = styled.div<{ isDarkMode: boolean }>`
+  text-align: center;
+  color: ${({ isDarkMode }) => (isDarkMode ? "#bfbfbf" : "#888")};
+  margin-top: 12px;
+  font-size: 0.9rem;
+`;
+
+const HolidayDescription = styled.div<{ isDarkMode: boolean }>`
+  padding: 14px;
+  margin-top: 16px;
+  border-radius: 8px;
+  background: ${({ isDarkMode }) => (isDarkMode ? "rgba(255, 255, 255, 0.05)" : "rgba(24, 144, 255, 0.05)")};
+  color: ${({ isDarkMode }) => (isDarkMode ? "#d9d9d9" : "#555")};
+  font-size: 0.9rem;
+  line-height: 1.5;
+  
+  @media (max-width: 480px) {
+    padding: 12px;
+    font-size: 0.85rem;
+  }
+`;
+
+const ThemeToggle = styled.div<{ isDarkMode: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 24px;
+  padding: 10px 16px;
+  background: ${({ isDarkMode }) => isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(24, 144, 255, 0.1)"};
+  border-radius: 8px;
+  gap: 10px;
+  cursor: pointer;
+  
+  span {
+    color: ${({ isDarkMode }) => isDarkMode ? "#69c0ff" : "#1890ff"};
+    font-weight: 500;
+  }
 `;
 
 const UpcomingHolidays = ({ isDarkMode }: { isDarkMode: boolean }) => {
-  
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [showFireworks, setShowFireworks] = useState(false);
+
+  const currentHoliday = holidays[currentIndex];
+
+  // Check if current holiday is today
+  useEffect(() => {
+    const today = new Date();
+    const holidayDate = new Date(currentHoliday.date);
+    const isToday =
+      today.getDate() === holidayDate.getDate() &&
+      today.getMonth() === holidayDate.getMonth() &&
+      today.getFullYear() === holidayDate.getFullYear();
+
+    if (isToday) {
+      setShowFireworks(true);
+      const timer = setTimeout(() => setShowFireworks(false), 10000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowFireworks(false);
+    }
+  }, [currentHoliday]);
+
+  const goNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % holidays.length);
+  }, []);
+
+  const goPrev = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + holidays.length) % holidays.length);
+  }, []);
+
   return (
     <StyledCard
-      title="Upcoming Holidays"
-      $isDarkMode={isDarkMode}
-      extra={<CalendarIcon isDarkMode={isDarkMode} />}
+      title="Holiday Calendar"
+      isDarkMode={isDarkMode}
+      extra={<CalendarIcon color={isDarkMode ? "#69c0ff" : "#1890ff"} size={18} />}
     >
-      <ScrollContainer isDarkMode={isDarkMode}>
-        <List
-          dataSource={holidays}
-          renderItem={(item: Holiday) => (
-            <StyledListItem key={item.id} isDarkMode={isDarkMode}>
-              <Flex justify="space-between" align="center" style={{ width: "100%" }}>
-                <Title isDarkMode={isDarkMode}>{item.name}</Title>
-                <RightText isDarkMode={isDarkMode}>
-                  {item.date}
-                  <span>{item.day}</span>
-                </RightText>
-              </Flex>
-            </StyledListItem>
-          )}
-        />
-      </ScrollContainer>
+      {showFireworks && <Fireworks />}
+
+      <ContentWrapper>
+        <NavButton
+          isDarkMode={isDarkMode}
+          onClick={goPrev}
+          aria-label="Previous holiday"
+        >
+          <ChevronLeft color={isDarkMode ? "#69c0ff" : "#1890ff"} size={20} />
+        </NavButton>
+
+        <ContentCenter>
+          <HolidayTitle isDarkMode={isDarkMode}>{currentHoliday.name}</HolidayTitle>
+          <DateText isDarkMode={isDarkMode}>{currentHoliday.date}</DateText>
+          <DayText isDarkMode={isDarkMode}>{currentHoliday.day}</DayText>
+        </ContentCenter>
+
+        <NavButton
+          isDarkMode={isDarkMode}
+          onClick={goNext}
+          aria-label="Next holiday"
+        >
+          <ChevronRight color={isDarkMode ? "#69c0ff" : "#1890ff"} size={20} />
+        </NavButton>
+      </ContentWrapper>
+
+      <HolidayCounter isDarkMode={isDarkMode}>
+        {currentIndex + 1} of {holidays.length}
+      </HolidayCounter>
+
+      <HolidayDescription isDarkMode={isDarkMode}>
+        {currentHoliday.description}
+      </HolidayDescription>
     </StyledCard>
   );
 };

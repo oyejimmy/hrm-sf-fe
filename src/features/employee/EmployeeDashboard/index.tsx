@@ -33,6 +33,7 @@ import MySchedule from './components/MySchedule';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { theme } from '../../../styles/theme';
 import { useNavigate } from 'react-router-dom';
+import { Wrapper } from '../../../components/Wrapper';
 
 const EmployeeDashboard: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -89,50 +90,41 @@ const EmployeeDashboard: React.FC = () => {
   ];
 
   return (
-    <PageContainer isDarkMode={isDarkMode}>
-      <WelcomeHeader isDarkMode={isDarkMode} />
-      <div style={{ marginBottom: '24px' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          marginBottom: '16px',
-          color: currentTheme.colors.textPrimary
-        }}>
-          <BarChart3 size={20} color={currentTheme.colors.primary} style={{ marginRight: '8px' }} />
-          <h3 style={{ margin: 0, color: currentTheme.colors.textPrimary }}>My Stats Overview</h3>
+    <Wrapper isDarkMode={isDarkMode}>
+      <PageContainer isDarkMode={isDarkMode}>
+        <WelcomeHeader isDarkMode={isDarkMode} />
+        <div style={{ marginBottom: '24px' }}>
+          <MyStatsOverview stats={stats} />
         </div>
-        <MyStatsOverview stats={stats} />
-      </div>
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-          <Announcements isDarkMode={isDarkMode} />
-        </Col>
-        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-          <RecentActivities isDarkMode={isDarkMode} />
-        </Col>
-        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-          <UpcomingHolidays isDarkMode={isDarkMode} />
-        </Col>
-      </Row>
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-          <AttendanceTracker isDarkMode={isDarkMode} />
-        </Col>
-        <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-          <QuickActions actions={quickActions} />
-        </Col>
-      </Row>
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-          <TrainingPrograms isDarkMode={isDarkMode} />
-        </Col>
-      </Row>
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-          <MySchedule events={events} />
-        </Col>
-      </Row>
-    </PageContainer>
+        <Row gutter={[24, 24]}>
+          <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+            <AttendanceTracker isDarkMode={isDarkMode} />
+          </Col>
+          <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+            <Announcements isDarkMode={isDarkMode} />
+          </Col>
+          <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+            <UpcomingHolidays isDarkMode={isDarkMode} />
+          </Col>
+        </Row>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+            <RecentActivities isDarkMode={isDarkMode} />
+          </Col>
+          <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+            <QuickActions actions={quickActions} isDarkMode={isDarkMode} />
+          </Col>
+          <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+            <MySchedule events={events} />
+          </Col>
+        </Row>
+        <Row gutter={[24, 24]}>
+          <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+            <TrainingPrograms isDarkMode={isDarkMode} />
+          </Col>
+        </Row>
+      </PageContainer>
+    </Wrapper>
   );
 };
 

@@ -4,7 +4,6 @@ import { css } from "styled-components";
 
 export const PageContainer = styled.div<{ isDarkMode?: boolean }>`
   margin: auto;
-  background: ${(props) => (props.isDarkMode ? "#001529" : "#fff")};
   min-height: 100vh;
   
   @media (max-width: 768px) {
