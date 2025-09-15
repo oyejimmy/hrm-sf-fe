@@ -1,14 +1,6 @@
-import React from "react";
 import { Modal, Descriptions, Tag, Button } from "antd";
-import { Candidate } from "../types";
 
-interface Props {
-  candidate?: Candidate | null;
-  open: boolean;
-  onClose: () => void;
-}
-
-const CandidateProfileModal: React.FC<Props> = ({ candidate, open, onClose }) => {
+const CandidateProfileModal = ({ candidate, open, onClose }: any) => {
   if (!candidate) return null;
 
   return (
@@ -24,7 +16,7 @@ const CandidateProfileModal: React.FC<Props> = ({ candidate, open, onClose }) =>
         <Descriptions.Item label="Email">{candidate.email}</Descriptions.Item>
         <Descriptions.Item label="Phone">{candidate.phone}</Descriptions.Item>
         <Descriptions.Item label="Skills">
-          {candidate.skills.map((s) => (
+          {candidate.skills.map((s: any) => (
             <Tag key={s}>{s}</Tag>
           ))}
         </Descriptions.Item>

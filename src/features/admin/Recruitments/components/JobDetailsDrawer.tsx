@@ -1,15 +1,8 @@
 import React from "react";
 import { Drawer, Descriptions, Tag } from "antd";
-import { Job } from "../types";
 import { StatusTag } from "./styles";
 
-interface Props {
-  job?: Job;
-  open: boolean;
-  onClose: () => void;
-}
-
-const JobDetailsDrawer: React.FC<Props> = ({ job, open, onClose }) => {
+const JobDetailsDrawer = ({ job, open, onClose }: any) => {
   if (!job) return null;
 
   return (
@@ -31,7 +24,7 @@ const JobDetailsDrawer: React.FC<Props> = ({ job, open, onClose }) => {
           <StatusTag status={job.status}>{job.status}</StatusTag>
         </Descriptions.Item>
         <Descriptions.Item label="Skills">
-          {job.skills.map((s) => (
+          {job.skills.map((s: any) => (
             <Tag key={s}>{s}</Tag>
           ))}
         </Descriptions.Item>

@@ -1,18 +1,10 @@
 import React from "react";
 import { Modal, Form, Input, Select, DatePicker } from "antd";
-import { Job } from "../types";
 import { FormGrid } from "./styles";
 
 const { Option } = Select;
 
-interface Props {
-  open: boolean;
-  onClose: () => void;
-  onSave: (job: Partial<Job>) => void;
-  initialValues?: Partial<Job>;
-}
-
-const JobModal: React.FC<Props> = ({ open, onClose, onSave, initialValues }) => {
+const JobModal = ({ open, onClose, onSave, initialValues }: any) => {
   const [form] = Form.useForm();
 
   return (

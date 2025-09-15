@@ -1,14 +1,10 @@
 import React, { useState } from "react";
 import { Table, Button, Space, Tag } from "antd";
-import { Candidate } from "../types";
+// import { Candidate } from "../types";
 import CandidateProfileModal from "./CandidateProfileModal";
 
-interface Props {
-  candidates: Candidate[];
-}
-
-const CandidateTable: React.FC<Props> = ({ candidates }) => {
-  const [selected, setSelected] = useState<Candidate | null>(null);
+const CandidateTable = ({ candidates }: any) => {
+  const [selected, setSelected] = useState<any | null>(null);
 
   const columns = [
     { title: "Name", dataIndex: "name" },
@@ -17,7 +13,7 @@ const CandidateTable: React.FC<Props> = ({ candidates }) => {
     {
       title: "Status",
       dataIndex: "status",
-      render: (status: Candidate["status"]) => (
+      render: (status: any["status"]) => (
         <Tag color={status === "Hired" ? "green" : status === "Rejected" ? "red" : "blue"}>
           {status}
         </Tag>
@@ -25,7 +21,7 @@ const CandidateTable: React.FC<Props> = ({ candidates }) => {
     },
     {
       title: "Action",
-      render: (_: unknown, record: Candidate) => (
+      render: (_: unknown, record: any) => (
         <Space>
           <Button type="link" onClick={() => setSelected(record)}>
             View
