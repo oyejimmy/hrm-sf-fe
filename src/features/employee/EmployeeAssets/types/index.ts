@@ -1,21 +1,45 @@
 export interface Asset {
-  id: string;
+  id: number;
   name: string;
-  category: string;
-  status: "Assigned" | "Returned" | "Overdue" | "Damaged";
-  assignedDate: string;
-  returnDate?: string;
-  image?: string;
-  serialNumber?: string;
-  condition?: "New" | "Good" | "Needs Repair" | "Damaged";
+  type: string;
+  serialNumber: string;
+  assignmentDate: string | null;
+  status: string;
+  specifications: string;
+  custodian: string | null;
+  department: string | null;
 }
 
-export interface AssetRequest {
-  id: string;
-  employeeId: string;
-  category: string;
-  justification: string;
-  urgency?: "Low" | "Medium" | "High";
-  duration?: string;
-  status: "Pending" | "Approved" | "Rejected";
+export interface Request {
+  id: number;
+  assetName: string;
+  type: string;
+  requestDate: string;
+  status: string;
+}
+
+export interface ModalProps {
+  asset: Asset | null;
+  detailsModalVisible: boolean;
+  requestModalVisible: boolean;
+  returnModalVisible: boolean;
+  onCloseDetails: () => void;
+  onCloseRequest: () => void;
+  onCloseReturn: () => void;
+  onRequest: (requestData: any) => void;
+  onReturn: (returnData: any) => void;
+}
+
+export interface TableProps {
+  assetsData: Asset[];
+  onViewDetails: (asset: Asset) => void;
+  onRequestAsset: (asset: Asset | null) => void;
+  onReturnAsset: (asset: Asset) => void;
+}
+
+export interface DashboardStatsProps {
+  totalAssets: number;
+  assignedAssets: number;
+  availableAssets: number;
+  pendingRequests: number;
 }

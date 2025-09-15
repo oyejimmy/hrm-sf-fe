@@ -107,7 +107,7 @@ const EmployeeDashboard: React.FC = () => {
             <UpcomingHolidays isDarkMode={isDarkMode} />
           </Col>
         </Row>
-        <Row gutter={[16, 16]}>
+        <Row gutter={[24, 24]}>
           <Col xs={24} sm={24} md={8} lg={8} xl={8}>
             <RecentActivities isDarkMode={isDarkMode} />
           </Col>

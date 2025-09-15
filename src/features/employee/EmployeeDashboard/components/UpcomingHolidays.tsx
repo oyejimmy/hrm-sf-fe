@@ -84,8 +84,7 @@ const StyledCard = styled(Card) <{ isDarkMode: boolean }>`
     isDarkMode ? "0 8px 24px rgba(0, 0, 0, 0.4)" : "0 8px 24px rgba(0, 0, 0, 0.1)"};
   background: ${({ isDarkMode }) => (isDarkMode ? "#1f1f1f" : "#ffffff")};
   border: ${({ isDarkMode }) => (isDarkMode ? "1px solid #444" : "1px solid #eaeaea")};
-  width: 90%;
-  max-width: 500px;
+  width: 100%;
   margin: 0 auto;
   overflow: hidden;
   position: relative;
