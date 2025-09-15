@@ -1,9 +1,10 @@
 // features/employee/Assets/components/ReturnAssetModal.tsx
-import React, { useState } from "react";
+import dayjs from 'dayjs';
 import { Modal, Form, DatePicker, Select, Input, Upload, Button, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import type { UploadFile } from "antd/es/upload/interface";
 import type { Asset } from "../types";
+import { useState } from 'react';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -30,7 +31,7 @@ interface Props {
  */
 const ReturnAssetModal: React.FC<Props> = ({ visible, asset, onClose, onSubmit }) => {
   const [form] = Form.useForm();
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [fileList, setFileList] = useState<any>([]);
 
   const handleFinish = (values: any) => {
     if (!asset) {
@@ -42,7 +43,7 @@ const ReturnAssetModal: React.FC<Props> = ({ visible, asset, onClose, onSubmit }
     const returnDate = values.returnDate ? values.returnDate.toISOString() : undefined;
 
     const photos: File[] = (fileList || [])
-      .map((f) => (f.originFileObj instanceof File ? (f.originFileObj as File) : undefined))
+      .map((f: any) => (f.originFileObj instanceof File ? (f.originFileObj as File) : undefined))
       .filter(Boolean) as File[];
 
     const payload: ReturnPayload = {
