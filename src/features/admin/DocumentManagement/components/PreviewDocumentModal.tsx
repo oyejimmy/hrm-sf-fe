@@ -1,15 +1,15 @@
 import React from "react";
 import { Modal, Button } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
-import { EmployeeDocument } from "../types";
+// import { EmployeeDocument } from "../types";
 
 interface Props {
     visible: boolean;
     onClose: () => void;
-    record: EmployeeDocument | null;
+    record: any | null;
 }
 
-const PreviewDocumentModal: React.FC<Props> = ({ visible, onClose, record }) => {
+const PreviewDocumentModal = ({ visible, onClose, record }: any) => {
     if (!record) return null;
 
     const handleDownload = () => {
