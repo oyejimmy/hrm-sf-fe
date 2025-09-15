@@ -91,6 +91,18 @@ const HRDashboard: React.FC<HRDashboardProps> = ({
                 Export
               </Button>
             </Dropdown>
+            <Dropdown
+              menu={{
+                items: [
+                  { key: 'pdf', icon: <FilePdfOutlined />, onClick: exportToPDF, label: 'Export to PDF' },
+                  { key: 'excel', icon: <FileExcelOutlined />, onClick: exportToExcel, label: 'Export to Excel' },
+                ],
+              }}
+            >
+              <Button icon={<DownloadOutlined />}>
+                Export
+              </Button>
+            </Dropdown>
             <Button 
               type="primary" 
               icon={<Filter size={16} />}
