@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import {
-    Layout,
     Card,
     Table,
     Button,
@@ -24,47 +23,18 @@ import {
     Trash2,
     Upload
 } from 'lucide-react';
-import styled from 'styled-components';
 import { Employee, EmployeeFormData } from './types/types';
 import EmployeeModal from './components/EmployeeModal';
 import { ImportCSVModal } from './components/ImportCSVModal';
 import { Wrapper } from '../../../components/Wrapper';
 import { useTheme } from '../../../contexts/ThemeContext';
 import HeaderComponent from '../../../components/PageHeader';
+import { Container, StatCard, DirectoryHeader } from './styles';
 
-const { Content } = Layout;
 const { Title } = Typography;
 const { Search: SearchInput } = Input;
 
-// Styled components
-const StyledLayout = styled(Layout)`
-  padding: 24px;
-  background: #f5f5f5;
-  min-height: 100vh;
-`;
-
-const DashboardContent = styled(Content)`
-  max-width: 1200px;
-  margin: 0 auto;
-`;
-
-const StatCard = styled(Card)`
-  border-radius: 8px;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
-  
-  .ant-card-body {
-    padding: 20px;
-  }
-`;
-
-const DirectoryHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  gap: 16px;
-`;
+// Mock data
 
 const initialData: Employee[] = [
     {
@@ -244,7 +214,7 @@ const EmployeeManagement = () => {
     ];
 
     return (
-        <Wrapper isDarkMode={isDarkMode}>
+        <Container>
             <HeaderComponent
                 isDarkMode={isDarkMode}
                 title="Employee Management"
@@ -346,7 +316,7 @@ const EmployeeManagement = () => {
                 onCancel={() => setIsImportModalVisible(false)}
                 onImport={handleImport}
             />
-        </Wrapper>
+        </Container>
     );
 };
 
