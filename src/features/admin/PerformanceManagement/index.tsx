@@ -434,6 +434,12 @@ const PerformanceManagement: React.FC = () => {
       <HeaderComponent
         title="Performance Management"
         subtitle="Manage employee performance reviews and evaluations"
+        breadcrumbItems={[
+          {
+            title: 'Home',
+            href: '/'
+          },
+        ]}
         extraButtons={[
           <Button
             key="new-review"
@@ -447,8 +453,8 @@ const PerformanceManagement: React.FC = () => {
       />
 
       {/* Statistics Cards */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={6}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
               title="Total Reviews"
@@ -458,7 +464,7 @@ const PerformanceManagement: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
               title="Completed"
@@ -468,7 +474,7 @@ const PerformanceManagement: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
               title="In Progress"
@@ -478,7 +484,7 @@ const PerformanceManagement: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
               title="Average Rating"
@@ -493,15 +499,15 @@ const PerformanceManagement: React.FC = () => {
 
       {/* Filters and Actions */}
       <Card style={{ marginBottom: 24 }}>
-        <Row gutter={16} align="middle">
-          <Col span={6}>
+        <Row gutter={[16, 16]} align="middle">
+          <Col xs={24} sm={12} md={6}>
             <Input
               placeholder="Search employees, reviewers..."
               prefix={<SearchOutlined />}
               onChange={e => handleSearch(e.target.value)}
             />
           </Col>
-          <Col span={4}>
+          <Col xs={24} sm={12} md={6}>
             <Select
               placeholder="Department"
               style={{ width: '100%' }}
@@ -513,7 +519,7 @@ const PerformanceManagement: React.FC = () => {
               ))}
             </Select>
           </Col>
-          <Col span={4}>
+          <Col xs={24} sm={12} md={6}>
             <Select
               placeholder="Review Period"
               style={{ width: '100%' }}
@@ -525,21 +531,12 @@ const PerformanceManagement: React.FC = () => {
               ))}
             </Select>
           </Col>
-          <Col span={4}>
-            <Dropdown overlay={statusMenu} trigger={['click']}>
-              <Button>
-                Status: {selectedStatus} <MoreOutlined />
+          <Col xs={24} sm={12} md={6}>
+            <Dropdown overlay={statusMenu} trigger={['click']} >
+              <Button style={{ width: '100%' }}>
+                {selectedStatus}
               </Button>
             </Dropdown>
-          </Col>
-          <Col span={6} style={{ textAlign: 'right' }}>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleAddReview}
-            >
-              New Review
-            </Button>
           </Col>
         </Row>
       </Card>
