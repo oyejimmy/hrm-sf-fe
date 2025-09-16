@@ -44,10 +44,33 @@ export interface PerformanceReview {
 }
 
 export interface FilterOptions {
-  employee: string;
-  department: string;
-  reviewer: string;
-  reviewPeriod: string;
-  status: string;
-  dateRange: [any, any] | null;
+  employee?: string;
+  department?: string;
+  reviewer?: string;
+  reviewPeriod?: string;
+  status?: string;
+  dateRange?: any | null;
+}
+
+export interface PerformanceStats {
+  total: number;
+  completed: number;
+  inProgress: number;
+  averageRating: number;
+}
+
+export interface PerformanceTableProps {
+  reviews: PerformanceReview[];
+  onViewReview: (review: PerformanceReview) => void;
+  onEditReview: (review: PerformanceReview) => void;
+  onDeleteReview: (id: string) => void;
+}
+
+export interface PerformanceModalProps {
+  visible: boolean;
+  editingReview: PerformanceReview | null;
+  onCancel: () => void;
+  onSubmit: (values: any) => void;
+  employees: Employee[];
+  reviewers: Reviewer[];
 }
