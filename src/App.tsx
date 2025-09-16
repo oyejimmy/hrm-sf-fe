@@ -32,6 +32,7 @@ import PerformanceManagement from './features/admin/PerformanceManagement';
 import DocumentManagement from './features/admin/DocumentManagement';
 import CommunicationAndNotification from './features/admin/CommunicationAndNotification';
 import TrainingManagement from './features/admin/TrainingManagement';
+import NotificationManagement from './features/admin/NotificationManagement';
 
 // Employee Components
 import EmployeeDashboard from './features/employee/EmployeeDashboard';
@@ -99,6 +100,7 @@ const AppContent: React.FC = () => {
                   <Route path="training" element={<TrainingManagement />} />
                   <Route path="documents" element={<DocumentManagement />} />
                   <Route path="communication" element={<CommunicationAndNotification />} />
+                  <Route path="notifications" element={<NotificationManagement />} />
                   <Route path="profile" element={<EmployeeProfile />} />
                   <Route path="profile/edit" element={<EditProfile />} />
                 </Route>
