@@ -43,6 +43,7 @@ import JobPreviewModal from './components/JobPreviewModal';
 import { JobPosting, Department, FilterOptions, RecruitmentStats } from './types';
 import { Container, StatsCard, FilterCard, JobsCard } from './styles';
 import dayjs from 'dayjs';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -208,6 +209,7 @@ const employmentIcons: Record<string, React.ReactNode> = {
 
 // Main Component
 const Recruitments: React.FC = () => {
+  const {isDarkMode} = useTheme()
   const [jobPostings, setJobPostings] = useState<JobPosting[]>(mockJobPostings);
   const [filteredJobs, setFilteredJobs] = useState<JobPosting[]>(mockJobPostings);
   const [filters, setFilters] = useState<Partial<FilterOptions>>({});
@@ -232,7 +234,7 @@ const Recruitments: React.FC = () => {
     const active = jobPostings.filter(job => job.status === 'Active').length;
     const inactive = jobPostings.filter(job => job.status === 'Inactive').length;
     const totalApplications = jobPostings.reduce((sum, job) => sum + job.applications, 0);
-    
+
     setStats({
       total,
       active,
@@ -244,57 +246,57 @@ const Recruitments: React.FC = () => {
   // Apply filters and search
   useEffect(() => {
     let result = jobPostings;
-    
+
     // Apply filters
     if (filters.department) {
       result = result.filter(job => job.department === filters.department);
     }
-    
+
     if (filters.employmentType) {
       result = result.filter(job => job.employmentType === filters.employmentType);
     }
-    
+
     if (filters.experienceLevel) {
       result = result.filter(job => job.experienceLevel === filters.experienceLevel);
     }
-    
+
     if (filters.status) {
       result = result.filter(job => job.status === filters.status);
     }
-    
+
     if (filters.location) {
       result = result.filter(job => job.location === filters.location);
     }
-    
+
     if (filters.dateRange && filters.dateRange[0] && filters.dateRange[1]) {
       result = result.filter(job => {
         const jobDate = new Date(job.createdAt);
-        return jobDate >= filters.dateRange![0].toDate() && 
-               jobDate <= filters.dateRange![1].toDate();
+        return jobDate >= filters.dateRange![0].toDate() &&
+          jobDate <= filters.dateRange![1].toDate();
       });
     }
-    
+
     // Apply search
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(job => 
+      result = result.filter(job =>
         job.title.toLowerCase().includes(query) ||
         job.department.toLowerCase().includes(query) ||
         job.location.toLowerCase().includes(query) ||
         job.requiredSkills.some(skill => skill.toLowerCase().includes(query))
       );
     }
-    
+
     // Apply department filter from dropdown
     if (selectedDepartment !== 'All') {
       result = result.filter(job => job.department === selectedDepartment);
     }
-    
+
     // Apply status filter from dropdown
     if (selectedStatus !== 'All') {
       result = result.filter(job => job.status === selectedStatus);
     }
-    
+
     setFilteredJobs(result);
   }, [filters, searchQuery, jobPostings, selectedDepartment, selectedStatus]);
 
@@ -348,7 +350,7 @@ const Recruitments: React.FC = () => {
 
     if (editingJob) {
       // Update existing job
-      setJobPostings(prev => prev.map(job => job.id === editingJob.id ? 
+      setJobPostings(prev => prev.map(job => job.id === editingJob.id ?
         { ...job, ...jobData } : job));
       message.success('Job posting updated successfully');
     } else {
@@ -360,7 +362,7 @@ const Recruitments: React.FC = () => {
       setJobPostings(prev => [...prev, newJob]);
       message.success('Job posting created successfully');
     }
-    
+
     setIsModalVisible(false);
     form.resetFields();
   };
@@ -513,21 +515,21 @@ const Recruitments: React.FC = () => {
       key: 'actions',
       render: (_: any, record: JobPosting) => (
         <Space size="middle">
-          <Button 
-            icon={<Eye size={16} />} 
+          <Button
+            icon={<Eye size={16} />}
             onClick={() => handlePreview(record)}
           >
             View
           </Button>
-          <Button 
-            icon={<Edit3 size={16} />} 
+          <Button
+            icon={<Edit3 size={16} />}
             onClick={() => handleEditJob(record)}
           >
             Edit
           </Button>
-          <Button 
-            icon={<Trash2 size={16} />} 
-            danger 
+          <Button
+            icon={<Trash2 size={16} />}
+            danger
             onClick={() => handleDeleteJob(record.id)}
           >
             Delete
@@ -540,12 +542,19 @@ const Recruitments: React.FC = () => {
   return (
     <Container>
       <PageHeader
+      isDarkMode={isDarkMode}
         title="Recruitment Management"
         subtitle="Manage job postings and recruitment process"
+        breadcrumbItems={[
+          {
+            title: 'Home',
+            href: '/'
+          },
+        ]}
         extraButtons={[
-          <Button 
+          <Button
             key="new-job"
-            type="primary" 
+            type="primary"
             icon={<Plus size={16} />}
             onClick={handleAddJob}
           >
@@ -553,7 +562,7 @@ const Recruitments: React.FC = () => {
           </Button>
         ]}
       />
-      
+
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={6}>
           <StatsCard>
@@ -596,31 +605,31 @@ const Recruitments: React.FC = () => {
           </StatsCard>
         </Col>
       </Row>
-      
+
       <FilterCard>
-        <Row gutter={16} align="middle">
-          <Col span={6}>
+        <Row gutter={[16, 16]} align="middle">
+          <Col xs={24} sm={12} md={6}>
             <Input
               placeholder="Search jobs, departments, skills..."
               prefix={<Search size={16} />}
               onChange={e => handleSearch(e.target.value)}
             />
           </Col>
-          <Col span={4}>
+          <Col xs={24} sm={12} md={4}>
             <Dropdown overlay={departmentMenu} trigger={['click']}>
-              <Button>
+              <Button style={{ width: '100%' }}>
                 Department: {selectedDepartment} <ChevronDown size={14} />
               </Button>
             </Dropdown>
           </Col>
-          <Col span={4}>
+          <Col xs={24} sm={12} md={4}>
             <Dropdown overlay={statusMenu} trigger={['click']}>
-              <Button>
+              <Button style={{ width: '100%' }}>
                 Status: {selectedStatus} <ChevronDown size={14} />
               </Button>
             </Dropdown>
           </Col>
-          <Col span={4}>
+          <Col xs={24} sm={12} md={4}>
             <Select
               placeholder="Employment Type"
               style={{ width: '100%' }}
@@ -632,51 +641,44 @@ const Recruitments: React.FC = () => {
               <Option value="Contract">Contract</Option>
             </Select>
           </Col>
-          <Col span={6} style={{ textAlign: 'right' }}>
-            <Space>
+          <Col xs={24} sm={24} md={6} style={{ textAlign: 'right' }}>
+            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
               <Dropdown overlay={exportMenu} trigger={['click']}>
                 <Button icon={<Download size={16} />}>
                   Export
                 </Button>
               </Dropdown>
               {selectedRowKeys.length > 0 && (
-                <Button 
-                  icon={<Trash2 size={16} />} 
-                  danger 
+                <Button
+                  icon={<Trash2 size={16} />}
+                  danger
                   onClick={handleBulkDelete}
                 >
                   Delete Selected ({selectedRowKeys.length})
                 </Button>
               )}
-              <Button 
-                type="primary" 
-                icon={<Plus size={16} />}
-                onClick={handleAddJob}
-              >
-                New Job
-              </Button>
             </Space>
           </Col>
         </Row>
       </FilterCard>
-      
-      <JobsCard 
-        title="Job Postings" 
+
+      <JobsCard
+        title="Job Postings"
         extra={
           <Text>
             Showing {filteredJobs.length} of {jobPostings.length} jobs
           </Text>
         }
       >
-        <Table 
-          columns={columns} 
-          dataSource={filteredJobs} 
+        <Table
+          columns={columns}
+          dataSource={filteredJobs}
           rowKey="id"
           rowSelection={rowSelection}
           pagination={{ pageSize: 5 }}
         />
       </JobsCard>
-      
+
       <JobFormModal
         visible={isModalVisible}
         editingJob={editingJob}
@@ -684,7 +686,7 @@ const Recruitments: React.FC = () => {
         onSubmit={handleFormSubmit}
         form={form}
       />
-      
+
       <JobPreviewModal
         visible={isPreviewVisible}
         job={editingJob}
