@@ -42,8 +42,10 @@ import {
   Edit2Icon
 } from 'lucide-react';
 import HeaderComponent from '../../../components/PageHeader';
-import { Container, StatsCard, FilterCard, NotificationCard } from './styles';
+import { Container, StatsCard, FilterCard, NotificationCard } from './components/styles';
 import { Notification, User, NotificationFormValues } from './types';
+import { Wrapper } from '../../../components/Wrapper';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -163,6 +165,7 @@ const categoryIcons: Record<string, React.ReactNode> = {
 
 // Main Component
 const NotificationManagement: React.FC = () => {
+  const { isDarkMode } = useTheme();
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
   const [filteredNotifications, setFilteredNotifications] = useState<Notification[]>(mockNotifications);
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
@@ -462,10 +465,17 @@ const NotificationManagement: React.FC = () => {
   ];
 
   return (
-    <Container>
+    <Wrapper isDarkMode={isDarkMode}>
       <HeaderComponent
+        isDarkMode={isDarkMode}
         title="Notification Management"
         subtitle="Manage system notifications and announcements"
+        breadcrumbItems={[
+          {
+            title: 'Home',
+            href: '/'
+          },
+        ]}
         extraButtons={[
           canCreateNotification() && (
             <Button
@@ -481,8 +491,8 @@ const NotificationManagement: React.FC = () => {
       />
 
       {/* Stats Card */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={6}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={12} md={6}>
           <Card>
             <Space>
               <Bell size={24} />
@@ -493,7 +503,7 @@ const NotificationManagement: React.FC = () => {
             </Space>
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <Card>
             <Space>
               <Clock size={24} />
@@ -506,7 +516,7 @@ const NotificationManagement: React.FC = () => {
             </Space>
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <Card>
             <Space>
               <AlertCircle size={24} />
@@ -519,7 +529,7 @@ const NotificationManagement: React.FC = () => {
             </Space>
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <Card>
             <Space>
               <Mail size={24} />
@@ -603,15 +613,6 @@ const NotificationManagement: React.FC = () => {
                     Delete ({selectedRowKeys.length})
                   </Button>
                 </>
-              )}
-              {canCreateNotification() && (
-                <Button
-                  type="primary"
-                  icon={<PlusCircle />}
-                  onClick={handleAddNotification}
-                >
-                  Add Notification
-                </Button>
               )}
             </Space>
           </Col>
@@ -814,7 +815,7 @@ const NotificationManagement: React.FC = () => {
           </div>
         )}
       </Modal>
-    </Container>
+    </Wrapper>
   );
 };
 
