@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Table,
   Card,
   Button,
   Modal,
-  Form,
   Input,
   Select,
   Rate,
   Tag,
-  Space,
   Row,
   Col,
   Divider,
   Statistic,
-  Progress,
   DatePicker,
   Dropdown,
   Menu,
@@ -23,94 +19,33 @@ import {
 } from 'antd';
 import {
   SearchOutlined,
-  FilterOutlined,
   PlusOutlined,
-  EditOutlined,
-  EyeOutlined,
-  DeleteOutlined,
   MoreOutlined,
   FileTextOutlined,
-  UserOutlined,
-  TeamOutlined,
-  CalendarOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined,
-  SendOutlined,
-  BarChartOutlined
+  ClockCircleOutlined
 } from '@ant-design/icons';
 import {
   Star,
-  TrendingUp,
-  TrendingDown,
-  Target,
-  Award,
-  ClipboardCheck,
-  FileSpreadsheet,
   PlusCircle
 } from 'lucide-react';
 import HeaderComponent from '../../../components/PageHeader';
-import dayjs, { Dayjs } from 'dayjs';
-import { Container } from './styles';
+import PerformanceTable from './components/PerformanceTable';
+import PerformanceModal from './components/PerformanceModal';
+import {
+  Employee,
+  Reviewer,
+  PerformanceReview,
+  FilterOptions,
+  PerformanceStats
+} from './types';
+import { Wrapper } from '../../../components/Wrapper';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;
-
-// Types
-interface Employee {
-  id: string;
-  name: string;
-  department: string;
-  position: string;
-  avatar?: string;
-}
-
-interface Reviewer {
-  id: string;
-  name: string;
-  role: string;
-}
-
-interface Assessment {
-  communication: number;
-  teamwork: number;
-  problemSolving: number;
-  technicalSkills: number;
-  initiative: number;
-  attendance: number;
-  goalAchievement: number;
-}
-
-interface PerformanceReview {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  department: string;
-  reviewerId: string;
-  reviewerName: string;
-  reviewPeriod: string;
-  status: 'Draft' | 'Submitted' | 'Approved' | 'Completed';
-  assessment: Assessment;
-  overallRating: number;
-  comments: string;
-  goals: string;
-  strengths: string;
-  areasForImprovement: string;
-  createdAt: string;
-  updatedAt: string;
-  employeeSignature?: string;
-  reviewerSignature?: string;
-}
-
-interface FilterOptions {
-  employee?: string;
-  department?: string;
-  reviewer?: string;
-  reviewPeriod?: string;
-  status?: string;
-  dateRange?: any | [Dayjs, Dayjs] | null;
-}
 
 // Mock data
 const mockEmployees: Employee[] = [
@@ -269,33 +204,17 @@ const departments = Array.from(new Set(mockEmployees.map(emp => emp.department))
 // Review periods for filter
 const reviewPeriods = Array.from(new Set(mockReviews.map(review => review.reviewPeriod)));
 
-// Status colors
-const statusColors: Record<string, string> = {
-  Draft: 'default',
-  Submitted: 'blue',
-  Approved: 'green',
-  Completed: 'purple'
-};
-
-// Status icons
-const statusIcons: Record<string, React.ReactNode> = {
-  Draft: <ClockCircleOutlined />,
-  Submitted: <SendOutlined />,
-  Approved: <CheckCircleOutlined />,
-  Completed: <CheckCircleOutlined />
-};
-
 // Main Component
 const PerformanceManagement: React.FC = () => {
+  const { isDarkMode } = useTheme();
   const [reviews, setReviews] = useState<PerformanceReview[]>(mockReviews);
   const [filteredReviews, setFilteredReviews] = useState<PerformanceReview[]>(mockReviews);
   const [filters, setFilters] = useState<Partial<FilterOptions>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingReview, setEditingReview] = useState<PerformanceReview | null>(null);
-  const [form] = Form.useForm();
   const [selectedStatus, setSelectedStatus] = useState<string>('All');
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<PerformanceStats>({
     total: 0,
     completed: 0,
     inProgress: 0,
@@ -343,7 +262,7 @@ const PerformanceManagement: React.FC = () => {
     }
 
     if (filters.dateRange && filters.dateRange[0] && filters.dateRange[1]) {
-      result = result.filter((review: any) => {
+      result = result.filter((review) => {
         const reviewDate = new Date(review.createdAt);
         return reviewDate >= filters.dateRange![0]!.toDate() &&
           reviewDate <= filters.dateRange![1]!.toDate();
@@ -379,13 +298,11 @@ const PerformanceManagement: React.FC = () => {
   const handleAddReview = () => {
     setEditingReview(null);
     setIsModalVisible(true);
-    form.resetFields();
   };
 
   const handleEditReview = (review: PerformanceReview) => {
     setEditingReview(review);
     setIsModalVisible(true);
-    form.setFieldsValue(review);
   };
 
   const handleDeleteReview = (id: string) => {
@@ -430,104 +347,16 @@ const PerformanceManagement: React.FC = () => {
     }
 
     setIsModalVisible(false);
-    form.resetFields();
   };
 
-  const calculateOverallRating = (assessment: Assessment): number => {
-    const values = Object.values(assessment);
-    return Number((values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(1));
+  const calculateOverallRating = (assessment: any) => {
+    const values: any = Object.values(assessment);
+    return Number((values.reduce((sum: any, value: any) => sum + value, 0) / values.length).toFixed(1));
   };
 
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
   };
-
-  const columns = [
-    {
-      title: 'Employee',
-      dataIndex: 'employeeName',
-      key: 'employeeName',
-      render: (text: string, record: PerformanceReview) => (
-        <Space>
-          <UserOutlined style={{ color: '#3b82f6' }} />
-          <div>
-            <div>{text}</div>
-            <Text type="secondary">{record.department}</Text>
-          </div>
-        </Space>
-      ),
-    },
-    {
-      title: 'Reviewer',
-      dataIndex: 'reviewerName',
-      key: 'reviewerName',
-      render: (text: string) => (
-        <Space>
-          <UserOutlined style={{ color: '#8b5cf6' }} />
-          {text}
-        </Space>
-      ),
-    },
-    {
-      title: 'Review Period',
-      dataIndex: 'reviewPeriod',
-      key: 'reviewPeriod',
-      render: (text: string) => (
-        <Space>
-          <CalendarOutlined style={{ color: '#10b981' }} />
-          {text}
-        </Space>
-      ),
-    },
-    {
-      title: 'Overall Rating',
-      dataIndex: 'overallRating',
-      key: 'overallRating',
-      render: (rating: number) => (
-        <Space>
-          <Star size={16} fill="#f59e0b" color="#f59e0b" />
-          <Text strong>{rating}</Text>
-        </Space>
-      ),
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => (
-        <Tag icon={statusIcons[status]} color={statusColors[status]}>
-          {status}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_: any, record: PerformanceReview) => (
-        <Space size="middle">
-          <Button
-            icon={<EyeOutlined />}
-            onClick={() => handleViewReview(record)}
-          >
-            View
-          </Button>
-          <Button
-            icon={<EditOutlined />}
-            onClick={() => handleEditReview(record)}
-          >
-            Edit
-          </Button>
-          <Button
-            icon={<DeleteOutlined />}
-            danger
-            onClick={() => handleDeleteReview(record.id)}
-          >
-            Delete
-          </Button>
-        </Space>
-      ),
-    },
-  ];
 
   const handleViewReview = (review: PerformanceReview) => {
     Modal.info({
@@ -592,8 +421,16 @@ const PerformanceManagement: React.FC = () => {
     </Menu>
   );
 
+  // Status colors
+  const statusColors: Record<string, string> = {
+    Draft: 'default',
+    Submitted: 'blue',
+    Approved: 'green',
+    Completed: 'purple'
+  };
+
   return (
-    <Container>
+    <Wrapper isDarkMode={isDarkMode}>
       <HeaderComponent
         title="Performance Management"
         subtitle="Manage employee performance reviews and evaluations"
@@ -716,194 +553,24 @@ const PerformanceManagement: React.FC = () => {
           </Text>
         }
       >
-        <Table
-          columns={columns}
-          dataSource={filteredReviews}
-          rowKey="id"
-          pagination={{ pageSize: 5 }}
+        <PerformanceTable
+          reviews={filteredReviews}
+          onViewReview={handleViewReview}
+          onEditReview={handleEditReview}
+          onDeleteReview={handleDeleteReview}
         />
       </Card>
 
       {/* Evaluation Form Modal */}
-      <Modal
-        title={editingReview ? 'Edit Performance Review' : 'Create Performance Review'}
+      <PerformanceModal
         visible={isModalVisible}
-        width={800}
+        editingReview={editingReview}
         onCancel={() => setIsModalVisible(false)}
-        footer={null}
-        style={{ top: 20 }}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleFormSubmit}
-        >
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="employeeId"
-                label="Employee"
-                rules={[{ required: true, message: 'Please select an employee' }]}
-              >
-                <Select placeholder="Select employee">
-                  {mockEmployees.map(emp => (
-                    <Option key={emp.id} value={emp.id}>
-                      {emp.name} ({emp.department})
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="reviewerId"
-                label="Reviewer"
-                rules={[{ required: true, message: 'Please select a reviewer' }]}
-              >
-                <Select placeholder="Select reviewer">
-                  {mockReviewers.map(reviewer => (
-                    <Option key={reviewer.id} value={reviewer.id}>
-                      {reviewer.name}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="reviewPeriod"
-                label="Review Period"
-                rules={[{ required: true, message: 'Please select a review period' }]}
-              >
-                <Select placeholder="Select review period">
-                  <Option value="Q1 2023">Q1 2023</Option>
-                  <Option value="Q2 2023">Q2 2023</Option>
-                  <Option value="Q3 2023">Q3 2023</Option>
-                  <Option value="Q4 2023">Q4 2023</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="status"
-                label="Status"
-                initialValue="Draft"
-              >
-                <Select>
-                  <Option value="Draft">Draft</Option>
-                  <Option value="Submitted">Submitted</Option>
-                  <Option value="Approved">Approved</Option>
-                  <Option value="Completed">Completed</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Divider orientation="left">Assessment Criteria</Divider>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name={['assessment', 'communication']}
-                label="Communication Skills"
-                rules={[{ required: true, message: 'Please rate communication skills' }]}
-              >
-                <Rate allowHalf />
-              </Form.Item>
-
-              <Form.Item
-                name={['assessment', 'teamwork']}
-                label="Teamwork"
-                rules={[{ required: true, message: 'Please rate teamwork' }]}
-              >
-                <Rate allowHalf />
-              </Form.Item>
-
-              <Form.Item
-                name={['assessment', 'problemSolving']}
-                label="Problem-solving Ability"
-                rules={[{ required: true, message: 'Please rate problem-solving ability' }]}
-              >
-                <Rate allowHalf />
-              </Form.Item>
-
-              <Form.Item
-                name={['assessment', 'technicalSkills']}
-                label="Technical Skills"
-                rules={[{ required: true, message: 'Please rate technical skills' }]}
-              >
-                <Rate allowHalf />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name={['assessment', 'initiative']}
-                label="Initiative"
-                rules={[{ required: true, message: 'Please rate initiative' }]}
-              >
-                <Rate allowHalf />
-              </Form.Item>
-
-              <Form.Item
-                name={['assessment', 'attendance']}
-                label="Attendance Record"
-                rules={[{ required: true, message: 'Please rate attendance record' }]}
-              >
-                <Rate allowHalf />
-              </Form.Item>
-
-              <Form.Item
-                name={['assessment', 'goalAchievement']}
-                label="Goal Achievement"
-                rules={[{ required: true, message: 'Please rate goal achievement' }]}
-              >
-                <Rate allowHalf />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Form.Item
-            name="comments"
-            label="Qualitative Feedback"
-          >
-            <TextArea rows={4} placeholder="Provide detailed feedback on employee performance" />
-          </Form.Item>
-
-          <Form.Item
-            name="goals"
-            label="Goals for Next Period"
-          >
-            <TextArea rows={2} placeholder="Set goals for the next review period" />
-          </Form.Item>
-
-          <Form.Item
-            name="strengths"
-            label="Strengths"
-          >
-            <TextArea rows={2} placeholder="List employee strengths" />
-          </Form.Item>
-
-          <Form.Item
-            name="areasForImprovement"
-            label="Areas for Improvement"
-          >
-            <TextArea rows={2} placeholder="List areas where employee can improve" />
-          </Form.Item>
-
-          <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
-            <Button style={{ marginRight: 8 }} onClick={() => setIsModalVisible(false)}>
-              Cancel
-            </Button>
-            <Button type="primary" htmlType="submit">
-              {editingReview ? 'Update Review' : 'Create Review'}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-    </Container>
+        onSubmit={handleFormSubmit}
+        employees={mockEmployees}
+        reviewers={mockReviewers}
+      />
+    </Wrapper>
   );
 };
 
