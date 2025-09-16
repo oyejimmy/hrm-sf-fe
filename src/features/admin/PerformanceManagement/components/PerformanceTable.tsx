@@ -126,6 +126,7 @@ const PerformanceTable: React.FC<PerformanceTableProps> = ({
       dataSource={reviews}
       rowKey="id"
       pagination={{ pageSize: 5 }}
+      scroll={{ x: 'max-content' }} // Enable horizontal scrolling for smaller screens
     />
   );
 };
