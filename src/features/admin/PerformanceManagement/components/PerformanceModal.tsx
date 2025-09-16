@@ -39,7 +39,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
     <Modal
       title={editingReview ? 'Edit Performance Review' : 'Create Performance Review'}
       open={visible}
-      width={800}
+      width={window.innerWidth < 768 ? '90%' : 800} // Adjust width for smaller screens
       onCancel={handleCancel}
       footer={null}
       style={{ top: 20 }}
@@ -61,8 +61,8 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
           }
         }}
       >
-        <Row gutter={16}>
-          <Col span={12}>
+        <Row gutter={[16, 16]}> {/* Add vertical gutter for small screens */}
+          <Col xs={24} md={12}> {/* Make columns stack on small screens */}
             <Form.Item
               name="employeeId"
               label="Employee"
@@ -126,8 +126,8 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
 
         <Divider orientation="left">Assessment Criteria</Divider>
 
-        <Row gutter={16}>
-          <Col span={12}>
+        <Row gutter={[16, 16]}> {/* Add vertical gutter for small screens */}
+          <Col xs={24} sm={12} md={6}> {/* Make columns stack on small screens, 2 per row on small, 4 per row on medium */}
             <Form.Item
               name={['assessment', 'communication']}
               label="Communication Skills"
@@ -135,7 +135,8 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             >
               <Rate allowHalf />
             </Form.Item>
-
+          </Col>
+          <Col xs={24} sm={12} md={6}> {/* Make columns stack on small screens, 2 per row on small, 4 per row on medium */}
             <Form.Item
               name={['assessment', 'teamwork']}
               label="Teamwork"
@@ -143,7 +144,8 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             >
               <Rate allowHalf />
             </Form.Item>
-
+          </Col>
+          <Col xs={24} sm={12} md={6}> {/* Make columns stack on small screens, 2 per row on small, 4 per row on medium */}
             <Form.Item
               name={['assessment', 'problemSolving']}
               label="Problem-solving Ability"
@@ -151,7 +153,8 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             >
               <Rate allowHalf />
             </Form.Item>
-
+          </Col>
+          <Col xs={24} sm={12} md={6}> {/* Make columns stack on small screens, 2 per row on small, 4 per row on medium */}
             <Form.Item
               name={['assessment', 'technicalSkills']}
               label="Technical Skills"
@@ -160,7 +163,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
               <Rate allowHalf />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col xs={24} sm={12} md={6}> {/* Make columns stack on small screens, 2 per row on small, 4 per row on medium */}
             <Form.Item
               name={['assessment', 'initiative']}
               label="Initiative"
@@ -168,7 +171,8 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             >
               <Rate allowHalf />
             </Form.Item>
-
+          </Col>
+          <Col xs={24} sm={12} md={6}> {/* Make columns stack on small screens, 2 per row on small, 4 per row on medium */}
             <Form.Item
               name={['assessment', 'attendance']}
               label="Attendance Record"
@@ -176,7 +180,8 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             >
               <Rate allowHalf />
             </Form.Item>
-
+          </Col>
+          <Col xs={24} sm={12} md={6}> {/* Make columns stack on small screens, 2 per row on small, 4 per row on medium */}
             <Form.Item
               name={['assessment', 'goalAchievement']}
               label="Goal Achievement"
@@ -187,33 +192,43 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
           </Col>
         </Row>
 
-        <Form.Item
-          name="comments"
-          label="Qualitative Feedback"
-        >
-          <TextArea rows={4} placeholder="Provide detailed feedback on employee performance" />
-        </Form.Item>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="comments"
+              label="Qualitative Feedback"
+            >
+              <TextArea rows={4} placeholder="Provide detailed feedback on employee performance" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="goals"
+              label="Goals for Next Period"
+            >
+              <TextArea rows={2} placeholder="Set goals for the next review period" />
+            </Form.Item>
+          </Col>
+        </Row>
 
-        <Form.Item
-          name="goals"
-          label="Goals for Next Period"
-        >
-          <TextArea rows={2} placeholder="Set goals for the next review period" />
-        </Form.Item>
-
-        <Form.Item
-          name="strengths"
-          label="Strengths"
-        >
-          <TextArea rows={2} placeholder="List employee strengths" />
-        </Form.Item>
-
-        <Form.Item
-          name="areasForImprovement"
-          label="Areas for Improvement"
-        >
-          <TextArea rows={2} placeholder="List areas where employee can improve" />
-        </Form.Item>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="strengths"
+              label="Strengths"
+            >
+              <TextArea rows={2} placeholder="List employee strengths" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="areasForImprovement"
+              label="Areas for Improvement"
+            >
+              <TextArea rows={2} placeholder="List areas where employee can improve" />
+            </Form.Item>
+          </Col>
+        </Row>
 
         <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
           <Button style={{ marginRight: 8 }} onClick={handleCancel}>
