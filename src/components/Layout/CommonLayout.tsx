@@ -379,11 +379,6 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             icon: <BellOutlined />,
             label: 'Notification Management',
           },
-          {
-            key: '/admin/profile',
-            icon: <UserOutlined />,
-            label: 'Profile',
-          },
         ];
       case 'team_lead':
         return [
@@ -411,11 +406,6 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             key: '/team-lead/training',
             icon: <BookOutlined />,
             label: 'Training',
-          },
-          {
-            key: '/team-lead/profile',
-            icon: <UserOutlined />,
-            label: 'Profile',
           },
         ];
       case 'employee':
@@ -454,11 +444,6 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             key: '/employee/documents',
             icon: <FileOutlined />,
             label: 'Documents',
-          },
-          {
-            key: '/employee/profile',
-            icon: <UserOutlined />,
-            label: 'Profile',
           },
           {
             key: '/employee/complain',
