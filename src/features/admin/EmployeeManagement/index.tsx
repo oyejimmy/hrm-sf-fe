@@ -21,7 +21,12 @@ import {
     UserX,
     Edit,
     Trash2,
-    Upload
+    Upload,
+    Badge,
+    UserCog,
+    DollarSign,
+    MapPin,
+    Briefcase
 } from 'lucide-react';
 import { Employee, EmployeeFormData } from './types/types';
 import EmployeeModal from './components/EmployeeModal';
@@ -39,28 +44,46 @@ const { Search: SearchInput } = Input;
 const initialData: Employee[] = [
     {
         id: '1',
+        employeeId: 'EMP001',
         name: 'John Doe',
         email: 'john.doe@company.com',
         position: 'Software Engineer',
         department: 'Engineering',
+        role: 'Employee',
+        supervisor: 'Sarah Wilson',
+        salary: 85000,
+        workLocation: 'Head Office',
+        employmentType: 'Full-time',
         status: 'active',
         joinDate: '2022-01-15'
     },
     {
         id: '2',
+        employeeId: 'EMP002',
         name: 'Jane Smith',
         email: 'jane.smith@company.com',
         position: 'Product Manager',
         department: 'Product',
+        role: 'Team Lead',
+        supervisor: 'Michael Chen',
+        salary: 105000,
+        workLocation: 'Remote',
+        employmentType: 'Full-time',
         status: 'active',
         joinDate: '2021-08-23'
     },
     {
         id: '3',
+        employeeId: 'EMP003',
         name: 'Robert Johnson',
         email: 'robert.j@company.com',
         position: 'UX Designer',
         department: 'Design',
+        role: 'Admin',
+        supervisor: 'Lisa Rodriguez',
+        salary: 78000,
+        workLocation: 'Branch Office',
+        employmentType: 'Contract',
         status: 'on_leave',
         joinDate: '2020-05-10',
         leaveDate: '2023-10-15'
@@ -143,6 +166,16 @@ const EmployeeManagement = () => {
 
     const columns: any = [
         {
+            title: 'Employee ID',
+            dataIndex: 'employeeId',
+            key: 'employeeId',
+            render: (employeeId: string) => (
+                <Space>
+                    <Badge size={16} color="#1890ff" /> {employeeId}
+                </Space>
+            ),
+        },
+        {
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
@@ -161,6 +194,56 @@ const EmployeeManagement = () => {
             title: 'Department',
             dataIndex: 'department',
             key: 'department',
+        },
+        {
+            title: 'Role',
+            dataIndex: 'role',
+            key: 'role',
+            render: (role: string) => (
+                <Space>
+                    <UserCog size={16} color="#722ed1" /> {role}
+                </Space>
+            ),
+        },
+        {
+            title: 'Supervisor',
+            dataIndex: 'supervisor',
+            key: 'supervisor',
+            render: (supervisor: string) => (
+                <Space>
+                    <UserCheck size={16} color="#52c41a" /> {supervisor}
+                </Space>
+            ),
+        },
+        {
+            title: 'Salary',
+            dataIndex: 'salary',
+            key: 'salary',
+            render: (salary: number) => (
+                <Space>
+                    <DollarSign size={16} color="#faad14" /> ${salary.toLocaleString()}
+                </Space>
+            ),
+        },
+        {
+            title: 'Work Location',
+            dataIndex: 'workLocation',
+            key: 'workLocation',
+            render: (workLocation: string) => (
+                <Space>
+                    <MapPin size={16} color="#eb2f96" /> {workLocation}
+                </Space>
+            ),
+        },
+        {
+            title: 'Employment Type',
+            dataIndex: 'employmentType',
+            key: 'employmentType',
+            render: (employmentType: string) => (
+                <Space>
+                    <Briefcase size={16} color="#13c2c2" /> {employmentType}
+                </Space>
+            ),
         },
         {
             title: 'Status',
