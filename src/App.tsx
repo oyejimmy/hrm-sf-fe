@@ -1,15 +1,15 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+// import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
-import { store } from './store';
+import { queryClient } from './lib/react-query';
 import { GlobalStyles } from './styles/global-styles';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LoadingProvider, useLoading } from './contexts/LoadingContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { PageLoader } from './components/common/PageLoader';
 import './styles/responsive.css';
-import { AuthProvider } from './features/auth/AuthProvider';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
 import RoleBasedRedirect from './features/auth/RoleBasedRedirect';
 
@@ -55,15 +55,7 @@ import { TeamPerformance } from './features/teamLead/TeamPerformance';
 import { TrainingAssignments } from './features/teamLead/TrainingAssignments';
 import { AuthTest } from './features/auth/AuthTest';
 
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+
 
 const AppContent: React.FC = () => {
   const { isLoading } = useLoading();
@@ -72,97 +64,95 @@ const AppContent: React.FC = () => {
     <>
       {isLoading && <PageLoader />}
       <Router>
-        <AuthProvider>
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/dashboard" element={<RoleBasedRedirect />} />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/dashboard" element={<RoleBasedRedirect />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-                {/* Protected Routes */}
-                {/* Admin Routes */}
-                <Route
-                  path="/admin"
-                  element={
-                    <ProtectedRoute allowedRoles={['admin', 'hr']}>
-                      <AdminLayout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<Navigate to="dashboard" replace />} />
-                  <Route path="dashboard" element={<AdminDashboard />} />
-                  <Route path="employees" element={<EmployeeManagement />} />
-                  <Route path="attendance-leave" element={<AttendanceAndLeave />} />
-                  <Route path="reports" element={<ReportsAnalytics />} />
-                  <Route path="recruitment" element={<Recruitments />} />
-                  <Route path="performance" element={<PerformanceManagement />} />
-                  <Route path="training" element={<TrainingManagement />} />
-                  <Route path="documents" element={<DocumentManagement />} />
-                  <Route path="communication" element={<CommunicationAndNotification />} />
-                  <Route path="notifications" element={<NotificationManagement />} />
-                  <Route path="profile" element={<EmployeeProfile />} />
-                  <Route path="profile/edit" element={<EditProfile />} />
-                </Route>
+          {/* Protected Routes */}
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'hr']}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="employees" element={<EmployeeManagement />} />
+            <Route path="attendance-leave" element={<AttendanceAndLeave />} />
+            <Route path="reports" element={<ReportsAnalytics />} />
+            <Route path="recruitment" element={<Recruitments />} />
+            <Route path="performance" element={<PerformanceManagement />} />
+            <Route path="training" element={<TrainingManagement />} />
+            <Route path="documents" element={<DocumentManagement />} />
+            <Route path="communication" element={<CommunicationAndNotification />} />
+            <Route path="notifications" element={<NotificationManagement />} />
+            <Route path="profile" element={<EmployeeProfile />} />
+            <Route path="profile/edit" element={<EditProfile />} />
+          </Route>
 
-                {/* Employee Routes */}
-                <Route
-                  path="/employee"
-                  element={
-                    <ProtectedRoute allowedRoles={['employee']}>
-                      <EmployeeLayout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<Navigate to="dashboard" replace />} />
-                  <Route path="dashboard" element={<EmployeeDashboard />} />
-                  <Route path="attendance" element={<Attendance />} />
-                  <Route path="leave" element={<LeaveManagement />} />
-                  <Route path="training" element={<TrainingAndDevelopment />} />
-                  <Route path="payslip" element={<Payslip />} />
-                  <Route path="assets" element={<Assets />} />
-                  <Route path="documents" element={<Documents />} />
-                  <Route path="profile" element={<EmployeeProfile />} />
-                  <Route path="profile/edit" element={<EditProfile />} />
-                  <Route path="complain" element={<EmployeeComplain />} />
-                  <Route path="request" element={<EmployeeRequest />} />
-                </Route>
+          {/* Employee Routes */}
+          <Route
+            path="/employee"
+            element={
+              <ProtectedRoute allowedRoles={['employee']}>
+                <EmployeeLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<EmployeeDashboard />} />
+            <Route path="attendance" element={<Attendance />} />
+            <Route path="leave" element={<LeaveManagement />} />
+            <Route path="training" element={<TrainingAndDevelopment />} />
+            <Route path="payslip" element={<Payslip />} />
+            <Route path="assets" element={<Assets />} />
+            <Route path="documents" element={<Documents />} />
+            <Route path="profile" element={<EmployeeProfile />} />
+            <Route path="profile/edit" element={<EditProfile />} />
+            <Route path="complain" element={<EmployeeComplain />} />
+            <Route path="request" element={<EmployeeRequest />} />
+          </Route>
 
-                {/* Team Lead Routes */}
-                <Route
-                  path="/team-lead"
-                  element={
-                    <ProtectedRoute allowedRoles={['team_lead']}>
-                      <TeamLeadLayout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<Navigate to="dashboard" replace />} />
-                  <Route path="dashboard" element={<TeamLeadDashboard />} />
-                  <Route path="attendance" element={<TeamAttendance />} />
-                  <Route path="leave-requests" element={<TeamLeaveRequests />} />
-                  <Route path="performance" element={<TeamPerformance />} />
-                  <Route path="training" element={<TrainingAssignments />} />
-                  <Route path="profile" element={<EmployeeProfile />} />
-                  <Route path="profile/edit" element={<EditProfile />} />
-                </Route>
-
+          {/* Team Lead Routes */}
+          <Route
+            path="/team-lead"
+            element={
+              <ProtectedRoute allowedRoles={['team_lead']}>
+                <TeamLeadLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<TeamLeadDashboard />} />
+            <Route path="attendance" element={<TeamAttendance />} />
+            <Route path="leave-requests" element={<TeamLeaveRequests />} />
+            <Route path="performance" element={<TeamPerformance />} />
+            <Route path="training" element={<TrainingAssignments />} />
+            <Route path="profile" element={<EmployeeProfile />} />
+            <Route path="profile/edit" element={<EditProfile />} />
+          </Route>
 
 
-                {/* Auth Test Route */}
-                <Route
-                  path="/auth-test"
-                  element={
-                    <ProtectedRoute allowedRoles={['admin', 'hr', 'team_lead', 'employee']}>
-                      <AuthTest />
-                    </ProtectedRoute>
-                  }
-                />
 
-                {/* Default Route */}
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
-              </Routes>
-        </AuthProvider>
+          {/* Auth Test Route */}
+          <Route
+            path="/auth-test"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'hr', 'team_lead', 'employee']}>
+                <AuthTest />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Default Route */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
       </Router>
     </>
   );
@@ -170,16 +160,17 @@ const AppContent: React.FC = () => {
 
 function App() {
   return (
-    <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <LoadingProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <LoadingProvider>
+          <AuthProvider>
             <GlobalStyles />
             <AppContent />
-          </LoadingProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </Provider>
+            {process.env.NODE_ENV === 'development'}
+          </AuthProvider>
+        </LoadingProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 
