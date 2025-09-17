@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Form, Input, Button, Card, Alert, Typography, Select } from 'antd';
+import { Form, Input, Button, Card, Typography, Select } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
-import { RootState } from '../../store';
-import { signup, clearError } from '../../store/slices/authSlice';
+import { useAuthContext } from '../../contexts/AuthContext';
 import { validateFormData, isValidEmail } from '../../utils/security';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -62,17 +60,10 @@ interface SignupFormData {
 }
 
 export const Signup: React.FC = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isLoading, error } = useSelector((state: RootState) => state.auth);
+  const { signup, isSignupLoading } = useAuthContext();
   const { currentTheme } = useTheme();
   const [form] = Form.useForm();
-
-  useEffect(() => {
-    return () => {
-      dispatch(clearError());
-    };
-  }, [dispatch]);
 
   const handleSubmit = async (values: SignupFormData) => {
     if (!isValidEmail(values.email)) {
@@ -98,12 +89,8 @@ export const Signup: React.FC = () => {
     const { confirmPassword, ...signupData } = values;
     const sanitizedData = validateFormData(signupData) as Omit<SignupFormData, 'confirmPassword'>;
     
-    try {
-      await dispatch(signup(sanitizedData) as any).unwrap();
-      navigate('/login');
-    } catch (error) {
-      // Error is handled by the reducer
-    }
+    signup(sanitizedData);
+    navigate('/login');
   };
 
   return (
@@ -116,16 +103,7 @@ export const Signup: React.FC = () => {
           <SignupSubtitle>Join the HRM System</SignupSubtitle>
         </div>
 
-        {error && (
-          <Alert
-            message={error}
-            type="error"
-            showIcon
-            closable
-            onClose={() => dispatch(clearError())}
-            style={{ marginBottom: 16 }}
-          />
-        )}
+
 
         <Form
           form={form}
@@ -233,7 +211,7 @@ export const Signup: React.FC = () => {
             <SignupButton
               type="primary"
               htmlType="submit"
-              loading={isLoading}
+              loading={isSignupLoading}
               block
             >
               Create Account

@@ -1,233 +1,334 @@
-import React, { useState } from "react";
-import { Layout, Row, Col, Card, Button, Tabs, message, Divider } from "antd";
-import {
-  TeamOutlined,
-  FileTextOutlined,
-  CalendarOutlined,
-  PlusOutlined,
-  UserOutlined,
-  CloseCircleOutlined,
-  ClockCircleOutlined,
-  CheckCircleOutlined
-} from "@ant-design/icons";
-import styled from "styled-components";
-import { Attendance, LeaveRequest } from "./types";
-// import HeaderComponent from "../../../components/PageHeader";
-import TodayAttendanceTable from "./components/TodayAttendance/TodayAttendanceTable";
-import TodayAttendanceModal from "./components/TodayAttendance/TodayAttendanceModal";
-import LeaveApplicationsTable from "./components/LeaveApplications/LeaveApplicationsTable";
-import LeaveApplicationsModal from "./components/LeaveApplications/LeaveApplicationsModal";
-import AttendanceCalendar from "./components/AttendanceCalendar/AttendanceCalendar";
-import { Wrapper } from "../../../components/Wrapper";
-import { useTheme } from "../../../contexts/ThemeContext";
-import HeaderComponent from "../../../components/PageHeader";
+import React, { useState, useEffect } from 'react';
+import { Row, Col, Tabs, message, Button, Space } from 'antd';
+import { Users, BarChart3, Bell, Download, Settings } from 'lucide-react';
+import HeaderComponent from '../../../components/PageHeader';
+import { Wrapper } from '../../../components/Wrapper';
+import { useTheme } from '../../../contexts/ThemeContext';
+import AttendanceStatsPanel from '../../employee/EmployeeAttendance/components/AttendanceStatsPanel';
+import AttendanceHistoryTable from '../../employee/EmployeeAttendance/components/AttendanceHistoryTable';
+import AttendanceNotificationPanel from '../../employee/EmployeeAttendance/components/AttendanceNotificationPanel';
+import { 
+  AttendanceRecord, 
+  AttendanceNotification, 
+  AttendanceStats 
+} from '../../employee/EmployeeAttendance/types';
+import { attendanceApi } from '../../../services/api/attendanceApi';
 
-const { Content } = Layout;
 const { TabPane } = Tabs;
 
-// Styled Components (same as before, but simplified)
-const StyledLayout = styled(Layout)`...`;
-const DashboardContent = styled(Content)`...`;
-const StatCard = styled(Card)`...`;
-const StatContent = styled.div`...`;
-const StatInfo = styled.div`...`;
-const StatLabel = styled.span`...`;
-const StatValue = styled.h3`...`;
-const StatIcon = styled.div`...`;
-const GreenStatIcon = styled(StatIcon)`...`;
-const OrangeStatIcon = styled(StatIcon)`...`;
-const PurpleStatIcon = styled(StatIcon)`...`;
-const RedStatIcon = styled(StatIcon)`...`;
-const DirectoryCard = styled(Card)`...`;
-const DirectoryHeader = styled.div`...`;
-const TabHeader = styled.div`...`;
+// Mock data for admin view
+const mockAdminStats: AttendanceStats = {
+  todayPresent: 45,
+  todayAbsent: 8,
+  todayLate: 5,
+  onBreak: 12,
+  totalEmployees: 58
+};
 
-const AttendanceAndLeave: React.FC = () => {
+const mockAllAttendanceRecords: AttendanceRecord[] = [
+  {
+    id: '1',
+    employeeId: 'emp1',
+    employeeName: 'John Doe',
+    department: 'Engineering',
+    date: '2024-01-15',
+    checkIn: '2024-01-15T09:15:00Z',
+    checkOut: '2024-01-15T18:00:00Z',
+    breakStart: '2024-01-15T12:00:00Z',
+    breakEnd: '2024-01-15T13:00:00Z',
+    totalHours: 8.75,
+    breakMinutes: 60,
+    workingHours: 7.75,
+    status: 'Late',
+    notes: 'Traffic delay'
+  },
+  {
+    id: '2',
+    employeeId: 'emp2',
+    employeeName: 'Jane Smith',
+    department: 'Marketing',
+    date: '2024-01-15',
+    checkIn: '2024-01-15T09:00:00Z',
+    checkOut: '2024-01-15T17:30:00Z',
+    breakStart: '2024-01-15T12:30:00Z',
+    breakEnd: '2024-01-15T13:30:00Z',
+    totalHours: 8.5,
+    breakMinutes: 60,
+    workingHours: 7.5,
+    status: 'Present'
+  },
+  {
+    id: '3',
+    employeeId: 'emp3',
+    employeeName: 'Mike Johnson',
+    department: 'Sales',
+    date: '2024-01-15',
+    checkIn: undefined,
+    checkOut: undefined,
+    totalHours: 0,
+    breakMinutes: 0,
+    workingHours: 0,
+    status: 'Absent',
+    notes: 'Sick leave'
+  }
+];
+
+const mockAdminNotifications: AttendanceNotification[] = [
+  {
+    id: '1',
+    type: 'late_arrival',
+    employeeId: 'emp1',
+    employeeName: 'John Doe',
+    department: 'Engineering',
+    message: 'John Doe checked in late at 9:15 AM (15 minutes late)',
+    timestamp: '30 minutes ago',
+    read: false,
+    priority: 'medium'
+  },
+  {
+    id: '2',
+    type: 'absence',
+    employeeId: 'emp3',
+    employeeName: 'Mike Johnson',
+    department: 'Sales',
+    message: 'Mike Johnson has been automatically marked absent (no check-in by 12:00 PM)',
+    timestamp: '1 hour ago',
+    read: false,
+    priority: 'high'
+  },
+  {
+    id: '3',
+    type: 'check_in',
+    employeeId: 'emp2',
+    employeeName: 'Jane Smith',
+    department: 'Marketing',
+    message: 'Jane Smith checked in at 9:00 AM',
+    timestamp: '2 hours ago',
+    read: true,
+    priority: 'low'
+  }
+];
+
+const AdminAttendanceManagement: React.FC = () => {
+  const [stats, setStats] = useState<AttendanceStats>(mockAdminStats);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(mockAllAttendanceRecords);
+  const [notifications, setNotifications] = useState<AttendanceNotification[]>(mockAdminNotifications);
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
+
   const { isDarkMode } = useTheme();
-  const [attendanceData, setAttendanceData] = useState<Attendance[]>([]);
-  const [leaveData, setLeaveData] = useState<LeaveRequest[]>([]);
-  const [todayModalVisible, setTodayModalVisible] = useState(false);
-  const [leaveModalVisible, setLeaveModalVisible] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<Attendance | LeaveRequest | null>(null);
 
-  const openTodayModal = (record?: Attendance) => {
-    setEditingRecord(record || null);
-    setTodayModalVisible(true);
-  };
+  useEffect(() => {
+    loadAttendanceStats();
+    loadAllAttendance();
+    loadNotifications();
+    
+    // Set up real-time updates
+    const interval = setInterval(() => {
+      loadAttendanceStats();
+      loadNotifications();
+    }, 30000); // Update every 30 seconds
 
-  const openLeaveModal = (record?: LeaveRequest) => {
-    setEditingRecord(record || null);
-    setLeaveModalVisible(true);
-  };
+    return () => clearInterval(interval);
+  }, []);
 
-  const closeTodayModal = () => {
-    setTodayModalVisible(false);
-    setEditingRecord(null);
-  };
-
-  const closeLeaveModal = () => {
-    setLeaveModalVisible(false);
-    setEditingRecord(null);
-  };
-
-  const handleSaveAttendance = (data: Attendance) => {
-    if (editingRecord && "status" in editingRecord) {
-      setAttendanceData(prev => prev.map((item: any) => item.id === editingRecord.id ? { ...data, id: item.id } : item));
-      message.success("Attendance updated!");
-    } else {
-      setAttendanceData(prev => [...prev, { ...data, id: Date.now() }]);
-      message.success("Attendance added!");
+  const loadAttendanceStats = async () => {
+    try {
+      const data = await attendanceApi.getAttendanceStats();
+      setStats(data);
+    } catch (error) {
+      console.error('Failed to load attendance stats:', error);
     }
-    closeTodayModal();
   };
 
-  const handleSaveLeave = (data: LeaveRequest) => {
-    if (editingRecord && "leaveType" in editingRecord) {
-      setLeaveData(prev => prev.map(item => item.id === editingRecord.id ? { ...data, id: item.id } : item));
-      message.success("Leave request updated!");
-    } else {
-      setLeaveData(prev => [...prev, { ...data, id: Date.now() }]);
-      message.success("Leave request added!");
+  const loadAllAttendance = async () => {
+    setLoading(true);
+    try {
+      const data = await attendanceApi.getAllAttendanceToday();
+      setAttendanceRecords(data);
+    } catch (error) {
+      message.error('Failed to load attendance records');
+    } finally {
+      setLoading(false);
     }
-    closeLeaveModal();
   };
 
-  const handleDeleteAttendance = (id: number) => {
-    setAttendanceData(prev => prev.filter(item => item.id !== id));
-    message.success("Attendance deleted!");
+  const loadNotifications = async () => {
+    try {
+      const data = await attendanceApi.getAttendanceNotifications();
+      setNotifications(data);
+    } catch (error) {
+      console.error('Failed to load notifications:', error);
+    }
   };
 
-  const handleDeleteLeave = (id: number) => {
-    setLeaveData(prev => prev.filter(item => item.id !== id));
-    message.success("Leave request deleted!");
+  const handleRecordUpdate = async (updatedRecord: AttendanceRecord) => {
+    setAttendanceRecords(prev => 
+      prev.map(record => 
+        record.id === updatedRecord.id ? updatedRecord : record
+      )
+    );
+    message.success('Attendance record updated successfully');
+    
+    // Reload stats to reflect changes
+    loadAttendanceStats();
   };
 
-  const statCardsData: any = [
-    {
-      title: "Today's Attendance",
-      count: 245,
-      icon: <TeamOutlined />,
-      color: GreenStatIcon
-    },
-    {
-      title: "Today's Absentees",
-      count: 8,
-      icon: <CloseCircleOutlined />,
-      color: RedStatIcon
-    },
-    {
-      title: "On Leave",
-      count: 13,
-      icon: <CalendarOutlined />,
-      color: OrangeStatIcon
-    },
-    {
-      title: "Late Arrivals",
-      count: 12,
-      icon: <ClockCircleOutlined />,
-      color: PurpleStatIcon
-    },
-  ];
+  const handleMarkAsRead = async (notificationId: string) => {
+    try {
+      await attendanceApi.markNotificationAsRead(notificationId);
+      setNotifications(prev => prev.map(n => 
+        n.id === notificationId ? { ...n, read: true } : n
+      ));
+    } catch (error) {
+      message.error('Failed to mark notification as read');
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      const promises = notifications.filter(n => !n.read).map(n => 
+        attendanceApi.markNotificationAsRead(n.id)
+      );
+      await Promise.all(promises);
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      message.success('All notifications marked as read');
+    } catch (error) {
+      message.error('Failed to mark all notifications as read');
+    }
+  };
+
+  const handleExportReport = async () => {
+    try {
+      const blob = await attendanceApi.exportAttendanceReport({
+        date: new Date().toISOString().split('T')[0],
+        includeAll: true
+      });
+      
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `attendance-report-${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      message.success('Attendance report exported successfully');
+    } catch (error) {
+      message.error('Failed to export attendance report');
+    }
+  };
+
+  const handleProcessAutoAbsence = async () => {
+    try {
+      await attendanceApi.processAutoAbsence();
+      message.success('Auto-absence processing completed');
+      loadAttendanceStats();
+      loadAllAttendance();
+    } catch (error) {
+      message.error('Failed to process auto-absence');
+    }
+  };
+
+  const unreadNotifications = notifications.filter(n => !n.read).length;
 
   return (
     <Wrapper isDarkMode={isDarkMode}>
       <HeaderComponent
         isDarkMode={isDarkMode}
-        title="Attendance & Leave Management"
-        subtitle="Manage Employees Attendance & Leaves"
+        title="Attendance Management System"
+        subtitle="Monitor and manage employee attendance with real-time tracking"
         breadcrumbItems={[
-          {
-            title: 'Home',
-            href: '/'
-          },
+          { title: 'Home', href: '/' },
+          { title: 'Admin', href: '/admin' }
+        ]}
+        extraButtons={[
+          <Button 
+            icon={<Download size={16} />} 
+            onClick={handleExportReport}
+          >
+            Export Report
+          </Button>,
+          <Button 
+            icon={<Settings size={16} />} 
+            onClick={handleProcessAutoAbsence}
+          >
+            Process Auto-Absence
+          </Button>
         ]}
       />
 
-      <Row gutter={[24, 24]} justify="start">
-        {statCardsData.map((card: any, index: any) => {
-          const IconComponent = card.color;
-          return (
-            <Col xs={24} sm={12} md={6} key={index}>
-              <StatCard>
-                <StatContent>
-                  <StatInfo>
-                    <StatLabel>{card.title}</StatLabel>
-                    <StatValue>{card.count}</StatValue>
-                  </StatInfo>
-                  <IconComponent>
-                    {card.icon}
-                  </IconComponent>
-                </StatContent>
-              </StatCard>
-            </Col>
-          );
-        })}
-      </Row>
-      <Divider />
-      <DirectoryCard>
-        <Tabs defaultActiveKey="1" type="card" size="large">
-          <TabPane
-            key="1"
-            tab={
-              <TabHeader>
-                <TeamOutlined />
-                Today's Attendance
-              </TabHeader>
-            }
-          >
-            <TodayAttendanceTable
-              data={attendanceData}
-              onEdit={openTodayModal}
-              onDelete={handleDeleteAttendance}
+      <Tabs activeKey={activeTab} onChange={setActiveTab}>
+        <TabPane
+          tab={
+            <span>
+              <BarChart3 size={16} style={{ marginRight: 8 }} />
+              Overview
+            </span>
+          }
+          key="overview"
+        >
+          <AttendanceStatsPanel
+            stats={stats}
+            loading={loading}
+            showEmployeeStats={false}
+          />
+        </TabPane>
+
+        <TabPane
+          tab={
+            <span>
+              <Users size={16} style={{ marginRight: 8 }} />
+              All Attendance
+            </span>
+          }
+          key="attendance"
+        >
+          <AttendanceHistoryTable
+            records={attendanceRecords}
+            loading={loading}
+            showEmployeeColumn={true}
+            allowEdit={true}
+            onRecordUpdate={handleRecordUpdate}
+          />
+        </TabPane>
+
+        <TabPane
+          tab={
+            <span>
+              <Bell size={16} style={{ marginRight: 8 }} />
+              Notifications
+              {unreadNotifications > 0 && (
+                <span style={{ 
+                  marginLeft: 8, 
+                  background: '#ff4d4f', 
+                  color: 'white', 
+                  borderRadius: '10px', 
+                  padding: '2px 6px', 
+                  fontSize: '12px' 
+                }}>
+                  {unreadNotifications}
+                </span>
+              )}
+            </span>
+          }
+          key="notifications"
+        >
+          <Row gutter={[16, 16]}>
+            <Col span={24}>
+              <AttendanceNotificationPanel
+                notifications={notifications}
+                onMarkAsRead={handleMarkAsRead}
+                onMarkAllAsRead={handleMarkAllAsRead}
+                showEmployeeInfo={true}
               />
-          </TabPane>
-          <TabPane
-            key="2"
-            tab={
-              <TabHeader>
-                <FileTextOutlined />
-                Leave Applications
-              </TabHeader>
-            }
-          >
-            <LeaveApplicationsTable
-              data={leaveData}
-              onEdit={openLeaveModal}
-              onDelete={handleDeleteLeave}
-            />
-          </TabPane>
-          <TabPane
-            key="3"
-            tab={
-              <TabHeader>
-                <CalendarOutlined />
-                Attendance Calendar
-              </TabHeader>
-            }
-          >
-            <AttendanceCalendar
-              attendanceData={attendanceData}
-              leaveData={leaveData}
-            />
-          </TabPane>
-        </Tabs>
-      </DirectoryCard>
-
-      <TodayAttendanceModal
-        visible={todayModalVisible}
-        onClose={closeTodayModal}
-        onSave={handleSaveAttendance}
-        record={editingRecord as Attendance}
-      />
-
-      <LeaveApplicationsModal
-        visible={leaveModalVisible}
-        onClose={closeLeaveModal}
-        onSave={handleSaveLeave}
-        record={editingRecord as LeaveRequest}
-      />
+            </Col>
+          </Row>
+        </TabPane>
+      </Tabs>
     </Wrapper>
   );
 };
 
-export default AttendanceAndLeave;
+export default AdminAttendanceManagement;

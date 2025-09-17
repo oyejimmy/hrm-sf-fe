@@ -49,60 +49,52 @@ interface HeaderComponentProps {
   subtitle?: string;
   breadcrumbItems?: BreadcrumbItem[];
   extraButtons?: React.ReactNode[];
+  actions?: React.ReactNode; // Add this line
+  isDarkMode: boolean;
   onBack?: () => void;
-  showBackButton?: boolean;
-  isDarkMode?: boolean;
 }
 
-const HeaderComponent = ({
+const HeaderComponent: React.FC<HeaderComponentProps> = ({
   title,
   subtitle,
-  breadcrumbItems = [],
-  extraButtons = [],
+  breadcrumbItems,
+  actions,
+  isDarkMode,
   onBack,
-  showBackButton = false,
-  isDarkMode = false
-}: HeaderComponentProps) => {
-  const breadcrumb = breadcrumbItems.length > 0 ? (
-    <BreadcrumbContainer>
-      <Breadcrumb>
-        {breadcrumbItems.map((item: BreadcrumbItem, index: number) => (
-          <Breadcrumb.Item
-            key={index}
-            href={item.href}
-          >
-            {item.title}
-          </Breadcrumb.Item>
-        ))}
-        <Breadcrumb.Item>{title}</Breadcrumb.Item>
-      </Breadcrumb>
-    </BreadcrumbContainer>
-  ) : null;
-
+}) => {
   return (
     <StyledPageHeader isDarkMode={isDarkMode}>
-      {breadcrumb}
-      <Flex justify="space-between" align="flex-start" wrap="wrap">
-        <Flex align="center" gap="middle">
-          {showBackButton && (
-            <Button
-              type="text"
-              icon={<ArrowLeftOutlined />}
-              onClick={onBack || (() => window.history.back())}
-            />
+      {onBack && (
+        <Button
+          type="text"
+          icon={<ArrowLeftOutlined />}
+          onClick={onBack}
+          style={{ marginBottom: 8, paddingLeft: 0 }}
+        >
+          Back
+        </Button>
+      )}
+      {breadcrumbItems && breadcrumbItems.length > 0 && (
+        <BreadcrumbContainer>
+          <Breadcrumb
+            items={breadcrumbItems.map((item) => ({
+              title: item.href ? <a href={item.href}>{item.title}</a> : item.title,
+            }))}
+          />
+        </BreadcrumbContainer>
+      )}
+      <Flex align="center" justify="space-between" wrap="wrap">
+        <TitleContainer>
+          <Title level={3} style={{ margin: 0, color: 'inherit' }}>
+            {title}
+          </Title>
+          {subtitle && (
+            <Text type="secondary" style={{ color: 'inherit' }}>
+              {subtitle}
+            </Text>
           )}
-          <TitleContainer>
-            <Title level={2} style={{ margin: 0 }}>{title}</Title>
-            {subtitle && <Text type="secondary">{subtitle}</Text>}
-          </TitleContainer>
-        </Flex>
-        {extraButtons.length > 0 && (
-          <div className="header-extra">
-            <Space size="middle">
-              {extraButtons}
-            </Space>
-          </div>
-        )}
+        </TitleContainer>
+        {actions && <div className="header-extra">{actions}</div>}
       </Flex>
     </StyledPageHeader>
   );

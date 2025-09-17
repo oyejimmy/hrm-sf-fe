@@ -1,13 +1,19 @@
 export interface LeaveRequest {
   id: string;
   employee: string;
+  employeeId?: string;
   department: string;
   type: "Annual" | "Sick" | "Casual" | "Compensatory";
   fromDate: string;
   toDate: string;
   duration: string;
   reason: string;
-  status: "Pending" | "Approved" | "Rejected";
+  status: "Pending" | "Approved" | "Rejected" | "On Hold";
+  adminComments?: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  rejectedBy?: string;
+  rejectedAt?: string;
 }
 
 export interface TeamLeaveSummary {

@@ -23,7 +23,7 @@ const AttendanceNotifications: React.FC<Props> = ({ notifications, onAcknowledge
           <List.Item key={n.id} actions={[<Button type="link" onClick={() => onAcknowledge?.(n.id)}>Acknowledge</Button>]}>
             <div style={{ width: "100%" }}>
               <div style={{ fontWeight: 700 }}>{n.message}</div>
-              <div style={{ color: "#888", marginTop: 6 }}>{n.date}</div>
+              <div style={{ color: "#888", marginTop: 6 }}>{n.timestamp}</div>
             </div>
           </List.Item>
         )}

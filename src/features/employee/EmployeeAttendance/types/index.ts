@@ -1,44 +1,86 @@
-// features/employee/Attendance/types/index.ts
-
 export type AttendanceStatus = "Present" | "Absent" | "Late" | "On Leave" | "Pending";
+export type AttendanceAction = "check_in" | "check_out" | "break_start" | "break_end";
+export type ClockType = "digital" | "analog";
 
 export interface AttendanceRecord {
   id: string;
-  date: string;            // ISO date (YYYY-MM-DD)
-  checkIn?: string;        // time string, e.g., "09:05 AM"
-  checkOut?: string;       // time string
-  totalHours?: number;     // decimal hours
-  breakMinutes?: number;
+  employeeId: string;
+  employeeName: string;
+  department: string;
+  date: string; // ISO date (YYYY-MM-DD)
+  checkIn?: string; // ISO timestamp
+  checkOut?: string; // ISO timestamp
+  breakStart?: string; // ISO timestamp
+  breakEnd?: string; // ISO timestamp
+  totalHours: number;
+  breakMinutes: number;
+  workingHours: number; // Total working hours excluding breaks
   status: AttendanceStatus;
   notes?: string;
+  isManualEntry?: boolean;
+  modifiedBy?: string;
+  modifiedAt?: string;
 }
 
 export interface TodayAttendance {
+  id?: string;
   date: string;
   checkIn?: string;
   checkOut?: string;
-  totalHours?: number;
-  breakMinutes?: number;
+  breakStart?: string;
+  breakEnd?: string;
+  totalHours: number;
+  breakMinutes: number;
+  workingHours: number;
   status: AttendanceStatus;
-}
-
-export interface LeaveBalance {
-  type: string;
-  taken: number;
-  remaining: number;
-}
-
-export interface ScheduleEvent {
-  id: string;
-  date: string; // ISO date or friendly
-  title: string;
-  type: "Meeting" | "Training" | "Deadline" | "Event";
+  isOnBreak: boolean;
 }
 
 export interface AttendanceNotification {
   id: string;
+  type: 'check_in' | 'check_out' | 'break_start' | 'break_end' | 'absence' | 'late_arrival';
+  employeeId: string;
+  employeeName: string;
+  department: string;
   message: string;
-  date: string; // friendly
-  read?: boolean;
-  level?: "info" | "warning" | "critical";
+  timestamp: string;
+  read: boolean;
+  priority: 'low' | 'medium' | 'high';
+}
+
+export interface AttendanceSummary {
+  totalDays: number;
+  presentDays: number;
+  absentDays: number;
+  lateDays: number;
+  totalWorkingHours: number;
+  averageWorkingHours: number;
+  attendancePercentage: number;
+}
+
+export interface AttendanceStats {
+  todayPresent: number;
+  todayAbsent: number;
+  todayLate: number;
+  onBreak: number;
+  totalEmployees: number;
+}
+
+export interface BreakRecord {
+  id: string;
+  startTime: string;
+  endTime?: string;
+  duration?: number; // minutes
+  type: 'lunch' | 'tea' | 'personal' | 'other';
+  notes?: string;
+}
+
+export interface AttendanceOverride {
+  attendanceId: string;
+  field: 'checkIn' | 'checkOut' | 'breakStart' | 'breakEnd' | 'status';
+  oldValue: string;
+  newValue: string;
+  reason: string;
+  overriddenBy: string;
+  overriddenAt: string;
 }

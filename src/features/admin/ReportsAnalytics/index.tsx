@@ -176,17 +176,20 @@ const ReportsAnalytics: React.FC = () => {
   });
 
   const handleView = (report: Report) => {
-    console.log("View", report);
-    message.info(`Viewing report: ${report.name}`);
+    // Log sanitized information only
+    console.log("View report ID:", report.id);
+    message.info('Viewing report');
   };
 
   const handleDownload = (report: Report) => {
-    console.log("Download", report);
-    message.success(`Downloading report: ${report.name}`);
+    // Log sanitized information only
+    console.log("Download report ID:", report.id);
+    message.success('Downloading report');
   };
 
   const handleDelete = (report: Report) => {
-    console.log("Delete", report);
+    // Log sanitized information only
+    console.log("Delete report ID:", report.id);
     deleteMutation.mutate(report.id);
   };
 

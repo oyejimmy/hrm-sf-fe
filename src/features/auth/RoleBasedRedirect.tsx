@@ -1,18 +1,19 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
-import { RootState } from '../../store';
+import { useAuthContext } from '../../contexts/AuthContext';
 import { getDashboardRoute, isValidSession } from '../../utils/authHelpers';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { tokenStorage } from '../../utils/security';
 
 const RoleBasedRedirect: React.FC = () => {
-  const { isAuthenticated, user, token, isLoading } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user, isLoading } = useAuthContext();
+  const token = tokenStorage.getToken('access_token');
 
   if (isLoading) {
     return <LoadingSpinner tip="Redirecting..." />;
   }
 
-  if (!isAuthenticated || !isValidSession(user, token)) {
+  if (!isAuthenticated || !isValidSession(user || null, token)) {
     return <Navigate to="/login" replace />;
   }
 

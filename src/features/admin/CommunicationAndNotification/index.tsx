@@ -9,12 +9,24 @@ import {
   Typography,
   List,
   Tabs,
-  Upload
+  Upload,
+  Input,
+  DatePicker,
+  Select,
+  Avatar,
+  Flex
 } from 'antd';
 import {
   BellOutlined,
   DeleteOutlined,
-  DownloadOutlined
+  DownloadOutlined,
+  ExclamationCircleOutlined,
+  UserOutlined,
+  EditOutlined,
+  InfoCircleOutlined,
+  CheckCircleOutlined,
+  SoundOutlined,
+  CheckSquareOutlined
 } from '@ant-design/icons';
 import {
   MessageSquare,
@@ -28,9 +40,6 @@ import {
   Upload as UploadIcon
 } from 'lucide-react';
 import HeaderComponent from '../../../components/PageHeader';
-import MessageModal from './components/MessageModal';
-import AnnouncementModal from './components/AnnouncementModal';
-import TaskModal from './components/TaskModal';
 import {
   Container,
   SectionCard,
@@ -51,9 +60,11 @@ import {
   AnnouncementFormValues,
   TaskFormValues
 } from './types';
+import { useTheme } from '../../../contexts/ThemeContext';
 
-const { Text, Paragraph } = Typography;
+const { Text, Paragraph, Title } = Typography;
 const { TabPane } = Tabs;
+const { Option } = Select;
 
 // Mock data and constants
 
@@ -156,36 +167,6 @@ const mockAnnouncements: Announcement[] = [
   },
 ];
 
-const mockDocuments: Document[] = [
-  {
-    id: '1',
-    name: 'Q3_Performance_Report.pdf',
-    type: 'pdf',
-    size: '2.4 MB',
-    uploaderId: '1',
-    timestamp: '2023-05-15T10:30:00',
-    sharedWith: ['2', '3']
-  },
-  {
-    id: '2',
-    name: 'Recruitment_Plan.docx',
-    type: 'docx',
-    size: '1.2 MB',
-    uploaderId: '2',
-    timestamp: '2023-05-14T14:15:00',
-    sharedWith: ['1']
-  },
-  {
-    id: '3',
-    name: 'Employee_Handbook.pdf',
-    type: 'pdf',
-    size: '3.8 MB',
-    uploaderId: '2',
-    timestamp: '2023-05-13T09:45:00',
-    sharedWith: ['1', '3']
-  },
-];
-
 const mockTasks: Task[] = [
   {
     id: '1',
@@ -221,405 +202,227 @@ const mockTasks: Task[] = [
 
 // Main Component
 const CommunicationAndNotification: React.FC = () => {
+  const { isDarkMode } = useTheme();
+
   const [activeTab, setActiveTab] = useState('messages');
-  const [isMessageModalVisible, setIsMessageModalVisible] = useState(false);
-  const [isAnnouncementModalVisible, setIsAnnouncementModalVisible] = useState(false);
-  const [isTaskModalVisible, setIsTaskModalVisible] = useState(false);
-  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [messages, setMessages] = useState<Message[]>(mockMessages);
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
   const [announcements, setAnnouncements] = useState<Announcement[]>(mockAnnouncements);
-  const [documents, setDocuments] = useState<Document[]>(mockDocuments);
-  const [tasks, setTasks] = useState<Task[]>(mockTasks);
-  const [messageForm] = Form.useForm();
-  const [announcementForm] = Form.useForm();
-  const [taskForm] = Form.useForm();
-  const currentUser: User = mockUsers[0]; // Assuming current user is admin
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalType, setModalType] = useState<'message' | 'notification' | 'announcement'>('message');
+  const [editingItem, setEditingItem] = useState<Message | Notification | Announcement | null>(null);
+  const [form] = Form.useForm();
 
   const unreadCount = notifications.filter(n => n.status === 'unread').length;
 
-  const handleSendMessage = (values: MessageFormValues) => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      senderId: currentUser.id,
-      recipientIds: values.recipients,
-      content: values.content,
-      timestamp: new Date().toISOString(),
-      status: 'unread',
-      priority: values.priority || 'medium',
-      attachments: values.attachments || []
-    };
-    
-    setMessages(prev => [newMessage, ...prev]);
-    setIsMessageModalVisible(false);
-    messageForm.resetFields();
-    message.success('Message sent successfully');
-  };
-
-  const handleCreateAnnouncement = (values: AnnouncementFormValues) => {
-    const newAnnouncement: Announcement = {
-      id: Date.now().toString(),
-      title: values.title,
-      content: values.content,
-      authorId: currentUser.id,
-      timestamp: new Date().toISOString(),
-      priority: values.priority || 'medium',
-      targetRoles: values.targetRoles
-    };
-    
-    setAnnouncements(prev => [newAnnouncement, ...prev]);
-    setIsAnnouncementModalVisible(false);
-    announcementForm.resetFields();
-    message.success('Announcement created successfully');
-  };
-
-  const handleCreateTask = (values: TaskFormValues) => {
-    const newTask: Task = {
-      id: Date.now().toString(),
-      title: values.title,
-      description: values.description,
-      assignerId: currentUser.id,
-      assigneeId: values.assignee,
-      dueDate: values.dueDate.format('YYYY-MM-DD'),
-      status: 'pending',
-      priority: values.priority || 'medium'
-    };
-    
-    setTasks(prev => [newTask, ...prev]);
-    setIsTaskModalVisible(false);
-    taskForm.resetFields();
-    message.success('Task created successfully');
-  };
-
-  const handleMarkAsRead = (id: string, type: 'message' | 'notification') => {
-    if (type === 'message') {
-      setMessages(prev => prev.map(item => 
-        item.id === id ? { ...item, status: 'read' } : item
-      ));
+  const handleOpenModal = (type: 'message' | 'notification' | 'announcement', item?: Message | Notification | Announcement) => {
+    setModalType(type);
+    setEditingItem(item || null);
+    if (item) {
+      form.setFieldsValue(item);
     } else {
-      setNotifications(prev => prev.map(item => 
-        item.id === id ? { ...item, status: 'read' } : item
-      ));
+      form.resetFields();
     }
+    setIsModalVisible(true);
   };
 
-  const handleDelete = (id: string, type: 'message' | 'notification' | 'announcement' | 'document' | 'task') => {
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+    setEditingItem(null);
+    form.resetFields();
+  };
+
+  const handleDelete = (id: string, type: 'message' | 'notification' | 'announcement') => {
     Modal.confirm({
-      title: `Delete ${type.charAt(0).toUpperCase() + type.slice(1)}`,
-      content: `Are you sure you want to delete this ${type}?`,
-      okText: 'Yes, Delete',
-      okType: 'danger',
-      cancelText: 'Cancel',
+      title: `Are you sure you want to delete this ${type}?`,
+      icon: <ExclamationCircleOutlined />,
+      content: 'This action cannot be undone.',
       onOk() {
-        switch (type) {
-          case 'message':
-            setMessages(prev => prev.filter(item => item.id !== id));
-            break;
-          case 'notification':
-            setNotifications(prev => prev.filter(item => item.id !== id));
-            break;
-          case 'announcement':
-            setAnnouncements(prev => prev.filter(item => item.id !== id));
-            break;
-          case 'document':
-            setDocuments(prev => prev.filter(item => item.id !== id));
-            break;
-          case 'task':
-            setTasks(prev => prev.filter(item => item.id !== id));
-            break;
+        if (type === 'message') {
+          setMessages(messages.filter(msg => msg.id !== id));
+        } else if (type === 'notification') {
+          setNotifications(notifications.filter(notif => notif.id !== id));
+        } else if (type === 'announcement') {
+          setAnnouncements(announcements.filter(ann => ann.id !== id));
         }
-        message.success(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully`);
+        message.success(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully.`);
+      },
+    });
+  };
+
+  const handleMarkAsRead = (id: string) => {
+    setNotifications(notifications.map(notif => 
+      notif.id === id ? { ...notif, status: 'read' } : notif
+    ));
+    message.success('Notification marked as read.');
+  };
+
+  const handleFormSubmit = (values: any) => {
+    const newItem = { ...values, id: editingItem?.id || Date.now().toString(), timestamp: editingItem?.timestamp || new Date().toISOString() };
+    if (modalType === 'message') {
+      if (editingItem) {
+        setMessages(messages.map(msg => msg.id === newItem.id ? newItem : msg));
+      } else {
+        setMessages([...messages, { ...newItem, status: 'unread' }]);
       }
-    });
-  };
-
-  const getUserName = (userId: string) => {
-    const user = mockUsers.find(u => u.id === userId);
-    return user ? user.name : 'Unknown User';
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getFileIcon = (type: string) => {
-    switch (type) {
-      case 'pdf':
-        return <FileText style={{ color: '#e74c3c' }} />;
-      case 'docx':
-        return <FileText style={{ color: '#2b579a' }} />;
-      case 'xlsx':
-        return <FileText style={{ color: '#217346' }} />;
-      default:
-        return <FileText />;
+    } else if (modalType === 'notification') {
+      if (editingItem) {
+        setNotifications(notifications.map(notif => notif.id === newItem.id ? newItem : notif));
+      } else {
+        setNotifications([...notifications, { ...newItem, status: 'unread' }]);
+      }
+    } else if (modalType === 'announcement') {
+      if (editingItem) {
+        setAnnouncements(announcements.map(ann => ann.id === newItem.id ? newItem : ann));
+      } else {
+        setAnnouncements([...announcements, newItem]);
+      }
     }
+    message.success(`${modalType.charAt(0).toUpperCase() + modalType.slice(1)} ${editingItem ? 'updated' : 'created'} successfully.`);
+    handleCloseModal();
   };
 
-  const renderMessages = () => (
+  const renderMessageList = (
     <div>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
-        <ActionButton 
-          type="primary" 
-          icon={<Send size={16} />}
-          onClick={() => setIsMessageModalVisible(true)}
-        >
-          New Message
-        </ActionButton>
-      </div>
-      
+      <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
+        <Title level={5} style={{ margin: 0 }}>Messages</Title>
+        <Button type="primary" onClick={() => handleOpenModal('message')}>New Message</Button>
+      </Flex>
       <List
+        itemLayout="horizontal"
         dataSource={messages}
         renderItem={item => (
-          <MessageItem onClick={() => handleMarkAsRead(item.id, 'message')}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-                  <StatusIndicator status={item.status} />
-                  <Text strong>{getUserName(item.senderId)}</Text>
-                  <Text type="secondary" style={{ marginLeft: 8 }}>
-                    to {item.recipientIds.map(id => getUserName(id)).join(', ')}
-                  </Text>
-                </div>
-                <Paragraph style={{ marginBottom: 8 }}>{item.content}</Paragraph>
-                {item.attachments && item.attachments.length > 0 && (
-                  <div style={{ marginBottom: 8 }}>
-                    {item.attachments.map(attachment => (
-                      <div key={attachment.id} style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-                        <Paperclip size={14} style={{ marginRight: 4 }} />
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          {attachment.name} ({attachment.size})
-                        </Text>
-                        <Button type="link" size="small" icon={<Download size={14} />} />
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Text type="secondary" style={{ fontSize: 12 }}>{formatDate(item.timestamp)}</Text>
-                  <Space>
-                    <PriorityTag priority={item.priority}>
-                      {item.priority.charAt(0).toUpperCase() + item.priority.slice(1)}
-                    </PriorityTag>
-                    <Button 
-                      type="text" 
-                      size="small" 
-                      icon={<DeleteOutlined />} 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(item.id, 'message');
-                      }}
-                    />
-                  </Space>
-                </div>
-              </div>
-            </div>
-          </MessageItem>
-        )}
-      />
-    </div>
-  );
-
-  const renderNotifications = () => (
-    <div>
-      <List
-        dataSource={notifications}
-        renderItem={item => (
-          <MessageItem onClick={() => handleMarkAsRead(item.id, 'notification')}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-                  <StatusIndicator status={item.status} />
-                  <Text strong>{item.title}</Text>
-                </div>
-                <Paragraph style={{ marginBottom: 8 }}>{item.content}</Paragraph>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Text type="secondary" style={{ fontSize: 12 }}>{formatDate(item.timestamp)}</Text>
-                  <Space>
-                    <PriorityTag priority={item.priority}>
-                      {item.priority.charAt(0).toUpperCase() + item.priority.slice(1)}
-                    </PriorityTag>
-                    <Button 
-                      type="text" 
-                      size="small" 
-                      icon={<DeleteOutlined />} 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(item.id, 'notification');
-                      }}
-                    />
-                  </Space>
-                </div>
-              </div>
-            </div>
-          </MessageItem>
-        )}
-      />
-    </div>
-  );
-
-  const renderAnnouncements = () => (
-    <div>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
-        <ActionButton 
-          type="primary" 
-          icon={<Megaphone size={16} />}
-          onClick={() => setIsAnnouncementModalVisible(true)}
-        >
-          New Announcement
-        </ActionButton>
-      </div>
-      
-      <List
-        dataSource={announcements}
-        renderItem={item => (
-          <MessageItem>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-                  <Text strong>{item.title}</Text>
-                </div>
-                <Paragraph style={{ marginBottom: 8 }}>{item.content}</Paragraph>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    By {getUserName(item.authorId)} • {formatDate(item.timestamp)}
-                  </Text>
-                  <Space>
-                    <PriorityTag priority={item.priority}>
-                      {item.priority.charAt(0).toUpperCase() + item.priority.slice(1)}
-                    </PriorityTag>
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      For: {item.targetRoles.map(role => role.toUpperCase()).join(', ')}
-                    </Text>
-                    <Button 
-                      type="text" 
-                      size="small" 
-                      icon={<DeleteOutlined />} 
-                      onClick={() => handleDelete(item.id, 'announcement')}
-                    />
-                  </Space>
-                </div>
-              </div>
-            </div>
-          </MessageItem>
-        )}
-      />
-    </div>
-  );
-
-  const renderDocuments = () => (
-    <div>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
-        <Upload 
-          action="/api/upload"
-          showUploadList={false}
-          onChange={info => {
-            if (info.file.status === 'done') {
-              message.success(`${info.file.name} file uploaded successfully`);
-              // In a real app, you would add the document to the state
-            } else if (info.file.status === 'error') {
-              message.error(`${info.file.name} file upload failed.`);
-            }
-          }}
-        >
-          <ActionButton icon={<UploadIcon size={16} />}>
-            Upload Document
-          </ActionButton>
-        </Upload>
-      </div>
-      
-      <List
-        dataSource={documents}
-        renderItem={item => (
-          <MessageItem>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                <div style={{ marginRight: 12 }}>
-                  {getFileIcon(item.type)}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <Text strong>{item.name}</Text>
-                  <div>
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      {item.size} • Uploaded by {getUserName(item.uploaderId)} • {formatDate(item.timestamp)}
-                    </Text>
-                  </div>
-                  <div>
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      Shared with: {item.sharedWith.map(id => getUserName(id)).join(', ')}
-                    </Text>
-                  </div>
-                </div>
-              </div>
+          <div style={{ padding: '12px', border: '1px solid #f0f0f0', marginBottom: '8px', borderRadius: '6px' }}>
+            <List.Item.Meta
+              avatar={<Avatar icon={<UserOutlined />} />}
+              title={<a onClick={() => handleOpenModal('message', item)}>{item.content.substring(0, 50)}...</a>}
+              description={
+                <Space direction="vertical" size={4}>
+                  <Text type="secondary">From: {mockUsers.find(u => u.id === item.senderId)?.name}</Text>
+                  <Text type="secondary">To: {item.recipientIds.map(id => mockUsers.find(u => u.id === id)?.name).join(', ')}</Text>
+                  <Text>{item.content}</Text>
+                  <Text type="secondary" style={{ fontSize: '0.8em' }}>{new Date(item.timestamp).toLocaleString()}</Text>
+                </Space>
+              }
+            />
+            <div>
               <Space>
-                <Button type="text" icon={<DownloadOutlined />} />
+                <Tag color={item.status === 'read' ? 'default' : 'blue'}>
+                  {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                </Tag>
                 <Button 
                   type="text" 
+                  size="small" 
+                  icon={<EditOutlined />} 
+                  onClick={() => handleOpenModal('message', item)}
+                />
+                <Button 
+                  type="text" 
+                  size="small" 
                   icon={<DeleteOutlined />} 
-                  onClick={() => handleDelete(item.id, 'document')}
+                  onClick={() => handleDelete(item.id, 'message')}
                 />
               </Space>
             </div>
-          </MessageItem>
+          </div>
         )}
       />
     </div>
   );
 
-  const renderTasks = () => (
+  const renderNotificationList = (
     <div>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
-        <ActionButton 
-          type="primary" 
-          icon={<ClipboardList size={16} />}
-          onClick={() => setIsTaskModalVisible(true)}
-        >
-          New Task
-        </ActionButton>
-      </div>
-      
+      <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
+        <Title level={5} style={{ margin: 0 }}>Notifications</Title>
+        <Button type="primary" onClick={() => handleOpenModal('notification')}>New Notification</Button>
+      </Flex>
       <List
-        dataSource={tasks}
+        itemLayout="horizontal"
+        dataSource={notifications}
         renderItem={item => (
-          <MessageItem>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-                  <Text strong>{item.title}</Text>
-                </div>
-                <Paragraph style={{ marginBottom: 8 }}>{item.description}</Paragraph>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    Assigned to {getUserName(item.assigneeId)} • Due: {new Date(item.dueDate).toLocaleDateString()}
-                  </Text>
-                  <Space>
-                    <Tag color={
-                      item.status === 'completed' ? 'green' : 
-                      item.status === 'in-progress' ? 'blue' : 'default'
-                    }>
-                      {item.status.split('-').map(word => 
-                        word.charAt(0).toUpperCase() + word.slice(1)
-                      ).join(' ')}
-                    </Tag>
-                    <PriorityTag priority={item.priority}>
-                      {item.priority.charAt(0).toUpperCase() + item.priority.slice(1)}
-                    </PriorityTag>
-                    <Button 
-                      type="text" 
-                      size="small" 
-                      icon={<DeleteOutlined />} 
-                      onClick={() => handleDelete(item.id, 'task')}
-                    />
-                  </Space>
-                </div>
-              </div>
+          <div style={{ padding: '12px', border: '1px solid #f0f0f0', marginBottom: '8px', borderRadius: '6px', backgroundColor: item.status === 'unread' ? '#f6ffed' : 'white' }}>
+            <List.Item.Meta
+              avatar={<Avatar icon={<InfoCircleOutlined />} />}
+              title={<a onClick={() => handleOpenModal('notification', item)}>{item.title}</a>}
+              description={
+                <Space direction="vertical" size={4}>
+                  <Text>{item.content}</Text>
+                  <Text type="secondary" style={{ fontSize: '0.8em' }}>{new Date(item.timestamp).toLocaleString()}</Text>
+                </Space>
+              }
+            />
+            <div>
+              <Space>
+                <Tag color={item.status === 'read' ? 'default' : 'red'}>
+                  {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                </Tag>
+                {item.status === 'unread' && (
+                  <Button 
+                    type="text" 
+                    size="small" 
+                    icon={<CheckCircleOutlined />} 
+                    onClick={() => handleMarkAsRead(item.id)}
+                  />
+                )}
+                <Button 
+                  type="text" 
+                  size="small" 
+                  icon={<EditOutlined />} 
+                  onClick={() => handleOpenModal('notification', item)}
+                />
+                <Button 
+                  type="text" 
+                  size="small" 
+                  icon={<DeleteOutlined />} 
+                  onClick={() => handleDelete(item.id, 'notification')}
+                />
+              </Space>
             </div>
-          </MessageItem>
+          </div>
+        )}
+      />
+    </div>
+  );
+
+  const renderAnnouncementList = (
+    <div>
+      <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
+        <Title level={5} style={{ margin: 0 }}>Announcements</Title>
+        <Button type="primary" onClick={() => handleOpenModal('announcement')}>New Announcement</Button>
+      </Flex>
+      <List
+        itemLayout="horizontal"
+        dataSource={announcements}
+        renderItem={item => (
+          <div style={{ padding: '12px', border: '1px solid #f0f0f0', marginBottom: '8px', borderRadius: '6px' }}>
+            <List.Item.Meta
+              avatar={<Avatar icon={<SoundOutlined />} />}
+              title={<a onClick={() => handleOpenModal('announcement', item)}>{item.title}</a>}
+              description={
+                <Space direction="vertical" size={4}>
+                  <Text>{item.content}</Text>
+                  <Text type="secondary" style={{ fontSize: '0.8em' }}>{new Date(item.timestamp).toLocaleString()}</Text>
+                </Space>
+              }
+            />
+            <div>
+              <Space>
+                <Tag color="green">Active</Tag>
+                <Button 
+                  type="text" 
+                  size="small" 
+                  icon={<EditOutlined />} 
+                  onClick={() => handleOpenModal('announcement', item)}
+                />
+                <Button 
+                  type="text" 
+                  size="small" 
+                  icon={<DeleteOutlined />} 
+                  onClick={() => handleDelete(item.id, 'announcement')}
+                />
+              </Space>
+            </div>
+          </div>
         )}
       />
     </div>
@@ -631,10 +434,9 @@ const CommunicationAndNotification: React.FC = () => {
         title="Communication Hub"
         subtitle="Manage messages, notifications, and announcements"
         extraButtons={[
-          <NotificationBadge key="notifications" count={unreadCount} size="small">
-            <Button icon={<BellOutlined />} shape="circle" />
-          </NotificationBadge>
+          <Button key="notifications" icon={<BellOutlined />} shape="circle" />
         ]}
+        isDarkMode={isDarkMode}
       />
       
       <SectionCard>
@@ -649,79 +451,77 @@ const CommunicationAndNotification: React.FC = () => {
               </span>
             }
           >
-            {renderMessages()}
+            {renderMessageList}
           </TabPane>
           <TabPane
             key="notifications"
             tab={
               <span>
-                <Bell size={16} style={{ marginRight: 8 }} />
+                <BellOutlined style={{ marginRight: 8 }} />
                 Notifications {unreadCount > 0 && `(${unreadCount})`}
               </span>
             }
           >
-            {renderNotifications()}
+            {renderNotificationList}
           </TabPane>
           <TabPane
             key="announcements"
             tab={
               <span>
-                <Megaphone size={16} style={{ marginRight: 8 }} />
+                <SoundOutlined style={{ marginRight: 8 }} />
                 Announcements
               </span>
             }
           >
-            {renderAnnouncements()}
-          </TabPane>
-          <TabPane
-            key="documents"
-            tab={
-              <span>
-                <FileText size={16} style={{ marginRight: 8 }} />
-                Documents
-              </span>
-            }
-          >
-            {renderDocuments()}
-          </TabPane>
-          <TabPane
-            key="tasks"
-            tab={
-              <span>
-                <ClipboardList size={16} style={{ marginRight: 8 }} />
-                Tasks
-              </span>
-            }
-          >
-            {renderTasks()}
+            {renderAnnouncementList}
           </TabPane>
         </Tabs>
       </SectionCard>
-      
-      <MessageModal
-        visible={isMessageModalVisible}
-        onCancel={() => setIsMessageModalVisible(false)}
-        onSubmit={handleSendMessage}
-        form={messageForm}
-        mockUsers={mockUsers}
-        currentUser={currentUser}
-      />
-      
-      <AnnouncementModal
-        visible={isAnnouncementModalVisible}
-        onCancel={() => setIsAnnouncementModalVisible(false)}
-        onSubmit={handleCreateAnnouncement}
-        form={announcementForm}
-      />
-      
-      <TaskModal
-        visible={isTaskModalVisible}
-        onCancel={() => setIsTaskModalVisible(false)}
-        onSubmit={handleCreateTask}
-        form={taskForm}
-        mockUsers={mockUsers}
-        currentUser={currentUser}
-      />
+
+      <Modal
+        title={editingItem ? `Edit ${modalType.charAt(0).toUpperCase() + modalType.slice(1)}` : `New ${modalType.charAt(0).toUpperCase() + modalType.slice(1)}`}
+        open={isModalVisible}
+        onCancel={handleCloseModal}
+        footer={null}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleFormSubmit}
+          initialValues={editingItem || {}}
+        >
+          {modalType === 'message' && (
+            <>
+              <Form.Item name="senderId" label="Sender" rules={[{ required: true, message: 'Please select sender!' }]}>
+                <Select placeholder="Select Sender">
+                  {mockUsers.map(user => (
+                    <Option key={user.id} value={user.id}>{user.name}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <Form.Item name="recipientIds" label="Recipients" rules={[{ required: true, message: 'Please select recipients!' }]}>
+                <Select mode="multiple" placeholder="Select Recipients">
+                  {mockUsers.map(user => (
+                    <Option key={user.id} value={user.id}>{user.name}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </>
+          )}
+          <Form.Item name="title" label="Title" rules={[{ required: true, message: 'Please enter title!' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="content" label="Content" rules={[{ required: true, message: 'Please enter content!' }]}>
+            <Input.TextArea rows={4} />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" style={{ marginRight: 8 }}>
+              {editingItem ? 'Update' : 'Create'}
+            </Button>
+            <Button onClick={handleCloseModal}>Cancel</Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </Container>
   );
 };

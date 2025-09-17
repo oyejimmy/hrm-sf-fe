@@ -64,7 +64,7 @@ const DocumentModal: React.FC<DocumentModalProps> = ({
               rules={[{ required: true, message: 'Please select a document type' }]}
             >
               <Select placeholder="Select document type">
-                {mockDocumentTypes.map(type => (
+                {mockDocumentTypes.map((type: any) => (
                   <Option key={type.id} value={type.name}>
                     {type.name} {type.required && <Text type="secondary">(Required)</Text>}
                   </Option>

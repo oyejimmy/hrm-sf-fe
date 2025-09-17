@@ -6,9 +6,10 @@ interface Props {
   requests: LeaveRequest[];
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
+  loading?: boolean;
 }
 
-const LeaveApprovalTable: React.FC<Props> = ({ requests, onApprove, onReject }) => {
+const LeaveApprovalTable: React.FC<Props> = ({ requests, onApprove, onReject, loading }) => {
   const columns = [
     { title: "Employee", dataIndex: "employee", key: "employee" },
     { title: "Department", dataIndex: "department", key: "department" },
@@ -53,7 +54,7 @@ const LeaveApprovalTable: React.FC<Props> = ({ requests, onApprove, onReject }) 
     },
   ];
 
-  return <Table rowKey="id" dataSource={requests} columns={columns} />;
+  return <Table rowKey="id" dataSource={requests} columns={columns} loading={loading} />;
 };
 
 export default LeaveApprovalTable;

@@ -1,10 +1,10 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Result, Button } from 'antd';
-import { RootState } from '../../store';
+import { useAuthContext } from '../../contexts/AuthContext';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { canAccessRoute, isValidSession } from '../../utils/authHelpers';
+import { tokenStorage } from '../../utils/security';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -28,18 +28,19 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children, 
   allowedRoles = [] 
 }) => {
-  const { isAuthenticated, user, token, isLoading } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user, isLoading } = useAuthContext();
   const location = useLocation();
+  const token = tokenStorage.getToken('access_token');
 
   if (isLoading) {
     return <LoadingSpinner tip="Verifying access..." />;
   }
 
-  if (!isAuthenticated || !isValidSession(user, token)) {
+  if (!isAuthenticated || !isValidSession(user || null, token)) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (!canAccessRoute(user, allowedRoles)) {
+  if (!canAccessRoute(user || null, allowedRoles)) {
     return <UnauthorizedPage />;
   }
 

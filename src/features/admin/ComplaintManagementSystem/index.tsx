@@ -10,6 +10,7 @@ import HRDashboard from './components/HRDashboard';
 import AnalyticsTab from './components/AnalyticsTab';
 import { Container, SectionCard } from './styles';
 import { User, Complaint, Comment, ComplaintFormValues } from './types';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
@@ -105,6 +106,8 @@ const complaintCategories = [
 
 // Main Component
 const ComplaintManagementSystem: React.FC = () => {
+  const { isDarkMode } = useTheme();
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isComplaintModalVisible, setIsComplaintModalVisible] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
@@ -231,6 +234,7 @@ const ComplaintManagementSystem: React.FC = () => {
             <Avatar icon={<UserOutlined />} />
           </Space>
         ]}
+        isDarkMode={isDarkMode}
       />
       
       <SectionCard>

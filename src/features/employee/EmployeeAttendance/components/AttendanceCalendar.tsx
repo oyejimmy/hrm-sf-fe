@@ -1,45 +1,183 @@
-import React from "react";
-import styled from "styled-components";
-import { Card, Calendar, Tag } from "antd";
-import type { AttendanceRecord } from "../types";
+import React, { useState } from 'react';
+import { Calendar, Badge, Card, Space, Tag, Typography, Button } from 'antd';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
+import { AttendanceRecord } from '../types';
 
-/**
- * Simple calendar with color coded day badges.
- * Accepts optional `records` array to map exact dates to statuses.
- */
+const { Text } = Typography;
 
-const Wrapper = styled(Card)`
-  border-radius: 12px;
-  .ant-card-body { padding: 8px; }
-`;
-
-/** Props */
-interface Props {
-  records?: AttendanceRecord[]; // map of date->status
+interface AttendanceCalendarProps {
+  records: AttendanceRecord[];
 }
 
-/** Helper to map status to tag */
-const statusTag = (status?: AttendanceRecord["status"]) => {
-  if (!status) return null;
-  const color = status === "Present" ? "green" : status === "Late" ? "orange" : status === "On Leave" ? "blue" : "red";
-  return <Tag color={color} style={{ marginTop: 6 }}>{status}</Tag>;
-};
+const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({ records }) => {
+  const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
 
-const AttendanceCalendar: React.FC<Props> = ({ records = [] }) => {
-  // easy lookup map
-  const map = new Map(records.map(r => [r.date, r.status]));
-
-  const dateCellRender = (value: any) => {
-    // value is moment/dayjs-like object: format to YYYY-MM-DD
-    const dateStr = value.format ? value.format("YYYY-MM-DD") : value.toISOString().slice(0,10);
-    const status = map.get(dateStr);
-    return <div style={{ display: "flex", justifyContent: "center" }}>{statusTag(status)}</div>;
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Present': return 'success';
+      case 'Absent': return 'error';
+      case 'Late': return 'warning';
+      case 'On Leave': return 'processing';
+      default: return 'default';
+    }
   };
 
+  const getAttendanceForDate = (date: Dayjs) => {
+    return records.find(record => 
+      dayjs(record.date).isSame(date, 'day')
+    );
+  };
+
+  const dateCellRender = (date: Dayjs) => {
+    const attendance = getAttendanceForDate(date);
+    
+    if (!attendance) return null;
+
+    return (
+      <div style={{ minHeight: '60px', padding: '2px' }}>
+        <Badge
+          status={getStatusColor(attendance.status)}
+          text={
+            <Text style={{ fontSize: '11px' }}>
+              {attendance.status}
+            </Text>
+          }
+        />
+        {attendance.checkIn && (
+          <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
+            In: {new Date(attendance.checkIn).toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            })}
+          </div>
+        )}
+        {attendance.checkOut && (
+          <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
+            Out: {new Date(attendance.checkOut).toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const onDateSelect = (date: Dayjs) => {
+    setSelectedDate(date);
+  };
+
+  const selectedDateAttendance = getAttendanceForDate(selectedDate);
+
   return (
-    <Wrapper title="Monthly Attendance Calendar">
-      <Calendar dateCellRender={dateCellRender} />
-    </Wrapper>
+    <Space direction="vertical" style={{ width: '100%' }}>
+      <Card
+        title="Attendance Calendar"
+        extra={
+          <Space>
+            <Button 
+              icon={<ChevronLeft size={16} />} 
+              onClick={() => setSelectedDate(selectedDate.subtract(1, 'month'))}
+            />
+            <Text strong>{selectedDate.format('MMMM YYYY')}</Text>
+            <Button 
+              icon={<ChevronRight size={16} />} 
+              onClick={() => setSelectedDate(selectedDate.add(1, 'month'))}
+            />
+          </Space>
+        }
+      >
+        <Calendar
+          value={selectedDate}
+          onSelect={onDateSelect}
+          dateCellRender={dateCellRender}
+          headerRender={() => null}
+        />
+      </Card>
+
+      {selectedDateAttendance && (
+        <Card title={`Attendance Details - ${selectedDate.format('MMMM D, YYYY')}`}>
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <div style={{ 
+              padding: 16, 
+              border: '1px solid var(--border-color)', 
+              borderRadius: 6,
+              background: 'var(--surface)'
+            }}>
+              <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                <Space>
+                  <Tag color={getStatusColor(selectedDateAttendance.status) === 'success' ? 'green' : 
+                              getStatusColor(selectedDateAttendance.status) === 'error' ? 'red' :
+                              getStatusColor(selectedDateAttendance.status) === 'warning' ? 'orange' : 'blue'}>
+                    {selectedDateAttendance.status}
+                  </Tag>
+                  {selectedDateAttendance.isManualEntry && (
+                    <Tag color="purple">Manual Entry</Tag>
+                  )}
+                </Space>
+                
+                <div>
+                  <Text strong>Check-in: </Text>
+                  <Text>
+                    {selectedDateAttendance.checkIn ? 
+                      new Date(selectedDateAttendance.checkIn).toLocaleTimeString() : 
+                      'Not recorded'
+                    }
+                  </Text>
+                </div>
+                
+                <div>
+                  <Text strong>Check-out: </Text>
+                  <Text>
+                    {selectedDateAttendance.checkOut ? 
+                      new Date(selectedDateAttendance.checkOut).toLocaleTimeString() : 
+                      'Not recorded'
+                    }
+                  </Text>
+                </div>
+                
+                {selectedDateAttendance.breakStart && (
+                  <>
+                    <div>
+                      <Text strong>Break Start: </Text>
+                      <Text>{new Date(selectedDateAttendance.breakStart).toLocaleTimeString()}</Text>
+                    </div>
+                    <div>
+                      <Text strong>Break End: </Text>
+                      <Text>
+                        {selectedDateAttendance.breakEnd ? 
+                          new Date(selectedDateAttendance.breakEnd).toLocaleTimeString() : 
+                          'Ongoing'
+                        }
+                      </Text>
+                    </div>
+                  </>
+                )}
+                
+                <div>
+                  <Text strong>Working Hours: </Text>
+                  <Text>{selectedDateAttendance.workingHours.toFixed(2)}h</Text>
+                </div>
+                
+                <div>
+                  <Text strong>Break Duration: </Text>
+                  <Text>{selectedDateAttendance.breakMinutes} minutes</Text>
+                </div>
+                
+                {selectedDateAttendance.notes && (
+                  <div>
+                    <Text strong>Notes: </Text>
+                    <Text>{selectedDateAttendance.notes}</Text>
+                  </div>
+                )}
+              </Space>
+            </div>
+          </Space>
+        </Card>
+      )}
+    </Space>
   );
 };
 

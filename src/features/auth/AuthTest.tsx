@@ -1,17 +1,16 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { Card, Button, Typography, Space, Tag } from 'antd';
-import { RootState } from '../../store';
-import { logout } from '../../store/slices/authSlice';
+import { useAuthContext } from '../../contexts/AuthContext';
+import { tokenStorage } from '../../utils/security';
 
 const { Title, Text } = Typography;
 
 export const AuthTest: React.FC = () => {
-  const dispatch = useDispatch();
-  const { user, isAuthenticated, token } = useSelector((state: RootState) => state.auth);
+  const { user, isAuthenticated, logout } = useAuthContext();
+  const token = tokenStorage.getToken('access_token');
 
   const handleLogout = () => {
-    dispatch(logout() as any);
+    logout();
   };
 
   if (!isAuthenticated || !user) {

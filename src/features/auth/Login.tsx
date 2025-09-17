@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Form, Input, Button, Card, Alert, Typography } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
-import { RootState } from '../../store';
-import { login, clearError, getCurrentUser } from '../../store/slices/authSlice';
+import { useAuthContext } from '../../contexts/AuthContext';
 import { validateFormData, isValidEmail } from '../../utils/security';
 import { getDashboardRoute } from '../../utils/authHelpers';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -58,35 +56,19 @@ interface LoginFormData {
 }
 
 export const Login: React.FC = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isLoading, error, isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user, login, isLoginLoading } = useAuthContext();
   const { currentTheme } = useTheme();
   const [form] = Form.useForm();
 
   useEffect(() => {
     if (isAuthenticated && user?.redirect_url) {
-      // Use redirect_url from API response
       navigate(user.redirect_url);
     } else if (isAuthenticated && user?.role) {
-      // Fallback to role-based routing
       const dashboardRoute = getDashboardRoute(user.role);
       navigate(dashboardRoute);
     }
   }, [isAuthenticated, user, navigate]);
-
-  useEffect(() => {
-    // Fetch user data after successful login
-    if (isAuthenticated && !user?.role) {
-      dispatch(getCurrentUser() as any);
-    }
-  }, [isAuthenticated, user, dispatch]);
-
-  useEffect(() => {
-    return () => {
-      dispatch(clearError());
-    };
-  }, [dispatch]);
 
   const handleSubmit = async (values: LoginFormData) => {
     if (!isValidEmail(values.email)) {
@@ -100,7 +82,7 @@ export const Login: React.FC = () => {
     }
 
     const sanitizedData = validateFormData(values) as LoginFormData;
-    dispatch(login(sanitizedData) as any);
+    login(sanitizedData);
   };
 
   return (
@@ -113,16 +95,7 @@ export const Login: React.FC = () => {
           <LoginSubtitle>Sign in to your account</LoginSubtitle>
         </div>
 
-        {error && (
-          <Alert
-            message={error}
-            type="error"
-            showIcon
-            closable
-            onClose={() => dispatch(clearError())}
-            style={{ marginBottom: 16 }}
-          />
-        )}
+
 
         <Form
           form={form}
@@ -165,7 +138,7 @@ export const Login: React.FC = () => {
             <LoginButton
               type="primary"
               htmlType="submit"
-              loading={isLoading}
+              loading={isLoginLoading}
               block
             >
               Sign In

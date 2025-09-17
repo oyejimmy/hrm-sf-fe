@@ -1,54 +1,73 @@
-// LeaveManagement types
+export type LeaveStatus = "Pending" | "Approved" | "Rejected" | "On Hold" | "Cancelled";
+export type LeaveType = "Annual" | "Sick" | "Casual" | "Half Day" | "Comp Off" | "Maternity" | "Paternity" | "Unpaid";
+export type DurationType = "Full Day" | "Half Day - Morning" | "Half Day - Afternoon";
+export type ApprovalAction = "approve" | "reject" | "hold" | "request_details";
 
-export type LeaveStatus = "Pending" | "Approved" | "Rejected" | "Cancelled";
-export type LeaveType = "Annual" | "Sick" | "Casual" | "Comp Off" | "Maternity" | "Paternity" | "Unpaid";
+export interface Employee {
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+  role: string;
+  avatar?: string;
+}
 
 export interface LeaveBalance {
   type: LeaveType;
   taken: number;
   remaining: number;
-  totalAllocated?: number;
+  totalAllocated: number;
 }
 
 export interface LeaveRequest {
   id: string;
+  employeeId: string;
+  employeeName: string;
+  employeeEmail: string;
+  department: string;
   type: LeaveType;
-  from: string; // ISO date
-  to: string;   // ISO date
-  duration: number; // days (can be 0.5)
-  durationType: "Full Day" | "Half Day" | "Hourly";
-  hours?: number; // when hourly
-  reason?: string;
+  from: string;
+  to: string;
+  duration: number;
+  durationType: DurationType;
+  reason: string;
   attachmentUrl?: string;
-  approver?: string;
+  recipients: string[]; // Employee IDs who will receive notifications
+  recipientDetails: Employee[];
   status: LeaveStatus;
-  appliedAt: string; // ISO
+  appliedAt: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  rejectedBy?: string;
+  rejectedAt?: string;
   comments?: string;
+  adminComments?: string;
 }
 
-export interface LeaveCalendarEvent {
-  id: string;
-  date: string; // ISO date (single-day event) or start/end handled client-side
-  type: LeaveType;
-  status: LeaveStatus;
-  note?: string;
+export interface LeaveApprovalRequest {
+  requestId: string;
+  action: ApprovalAction;
+  comments?: string;
+  additionalDetailsRequired?: string;
 }
 
 export interface LeaveNotification {
   id: string;
+  type: 'leave_request' | 'leave_approved' | 'leave_rejected' | 'leave_on_hold' | 'details_requested';
   message: string;
-  date: string; // friendly string
-  read?: boolean;
-  level?: "info" | "warning" | "critical";
-}
-export interface LeaveBalance {
-  annual: number;
-  sick: number;
-  casual: number;
-  compensatory: number;
-  totalTaken: number;
+  leaveRequestId: string;
+  fromEmployee: string;
+  timestamp: string;
+  read: boolean;
+  priority: 'low' | 'medium' | 'high';
 }
 
+export interface DashboardStats {
+  pendingRequests: number;
+  approvedThisMonth: number;
+  rejectedThisMonth: number;
+  onLeaveToday: number;
+}
 
 export interface LeavePolicy {
   type: string;

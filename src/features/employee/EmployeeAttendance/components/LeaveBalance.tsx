@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { Card, List, Progress, Button } from "antd";
-import type { LeaveBalance } from "../types";
+import type { LeaveBalance } from "../../EmployeeLeaveManagement/types";
 
 const Wrapper = styled(Card)`
   border-radius: 12px;

@@ -68,7 +68,7 @@ interface Holiday {
 }
 
 const holidays: Holiday[] = [
-  { id: "h1", name: "New Year's Day", date: "January 1, 2025", day: "Wednesday", description: "Celebration of the new year" },
+  { id: "h1", name: "New Year's Day", date: "September 16, 2025", day: "Tuesday", description: "Celebration of the new year" },
   { id: "h2", name: "Valentine's Day", date: "February 14, 2025", day: "Friday", description: "Day of love and romance" },
   { id: "h3", name: "Eid Ul Fitr", date: "April 23, 2025", day: "Monday", description: "Islamic festival marking the end of Ramadan" },
   { id: "h4", name: "Eid Ul Adha", date: "June 28, 2025", day: "Saturday", description: "Islamic festival of sacrifice" },

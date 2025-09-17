@@ -193,16 +193,17 @@ const ComplaintForm: React.FC<{ onSubmit: (values: ComplaintFormData) => void; i
     name: 'file',
     action: '/upload.do',
     headers: {
-      authorization: 'authorization-text',
+      authorization: process.env.REACT_APP_UPLOAD_TOKEN || 'Bearer token',
     },
     onChange(info: any) {
       if (info.file.status !== 'uploading') {
-        console.log(info.file, info.fileList);
+        // Log sanitized information only
+        console.log('File upload status:', info.file.status);
       }
       if (info.file.status === 'done') {
-        message.success(`${info.file.name} file uploaded successfully`);
+        message.success('File uploaded successfully');
       } else if (info.file.status === 'error') {
-        message.error(`${info.file.name} file upload failed.`);
+        message.error('File upload failed.');
       }
     },
   };
