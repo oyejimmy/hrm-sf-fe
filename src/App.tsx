@@ -19,8 +19,8 @@ import { EmployeeLayout } from './components/Layout/EmployeeLayout';
 import { TeamLeadLayout } from './components/Layout/TeamLeadLayout';
 
 // Auth Components
-import { Login } from './features/auth/Login';
-import { Signup } from './features/auth/Signup';
+import Login from './features/auth/Login';
+import Signup from './features/auth/Signup';
 
 // Admin Components
 import AdminDashboard from './features/admin/AdminDashboard';
