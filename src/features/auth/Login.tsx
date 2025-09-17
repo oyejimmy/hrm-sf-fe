@@ -1,158 +1,165 @@
-import React, { useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Form, Input, Button, Card, Alert, Typography } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
-import { useAuthContext } from '../../contexts/AuthContext';
-import { validateFormData, isValidEmail } from '../../utils/security';
-import { getDashboardRoute } from '../../utils/authHelpers';
-import { useTheme } from '../../contexts/ThemeContext';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTheme } from "../../contexts/ThemeContext";
+import { useAuthContext } from "../../contexts/AuthContext";
+import { Form, Input, notification } from "antd";
+import { getDashboardRoute } from "../../utils/authHelpers";
+import { isValidEmail, validateFormData } from "../../utils/security";
+import { 
+  AuthButton, AuthContainer, AuthFooter, AuthFooterText, 
+  AuthForm, AuthLink, AuthSubtitle, AuthTitle, ForgotPasswordLink, 
+  GlassCard, LogoContainer, FloatingLabel, InputContainer 
+} from "./styles";
+import { EyeInvisibleOutlined, EyeTwoTone, MailOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
 
-const { Title } = Typography;
-
-const LoginContainer = styled.div`
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, ${props => props.theme.colors.primary} 0%, ${props => props.theme.colors.component} 100%);
-`;
-
-const LoginCard = styled(Card)`
-  width: 400px;
-  box-shadow: ${props => props.theme.shadows.xl};
-  border-radius: ${props => props.theme.borderRadius.xl};
-`;
-
-const LoginTitle = styled(Title)`
-  color: ${props => props.theme.colors.primary} !important;
-  margin-bottom: ${props => props.theme.spacing.sm} !important;
-`;
-
-const LoginSubtitle = styled.p`
-  color: ${props => props.theme.colors.textSecondary};
-  margin: 0;
-`;
-
-const LoginButton = styled(Button)`
-  height: 40px;
-`;
-
-const SignupText = styled.span`
-  color: ${props => props.theme.colors.textSecondary};
-`;
-
-const SignupLink = styled(Link)`
-  color: ${props => props.theme.colors.primary};
-  
-  &:hover {
-    color: ${props => props.theme.colors.secondary};
-  }
-`;
-
-interface LoginFormData {
-  email: string;
-  password: string;
-}
-
-export const Login: React.FC = () => {
+const Login = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, login, isLoginLoading } = useAuthContext();
   const { currentTheme } = useTheme();
   const [form] = Form.useForm();
+  const [isFocused, setIsFocused] = useState({ email: false, password: false });
+  const [shake, setShake] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated && user?.redirect_url) {
       navigate(user.redirect_url);
     } else if (isAuthenticated && user?.role) {
-      const dashboardRoute = getDashboardRoute(user.role);
-      navigate(dashboardRoute);
+      navigate(getDashboardRoute(user.role));
     }
   }, [isAuthenticated, user, navigate]);
 
-  const handleSubmit = async (values: LoginFormData) => {
+  const handleSubmit = async (values: any) => {
     if (!isValidEmail(values.email)) {
-      form.setFields([
-        {
-          name: 'email',
-          errors: ['Please enter a valid email address'],
-        },
-      ]);
+      form.setFields([{ name: 'email', errors: ['Please enter a valid email address'] }]);
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
       return;
     }
-
-    const sanitizedData = validateFormData(values) as LoginFormData;
+    
+    const sanitizedData: any = validateFormData(values);
     login(sanitizedData);
   };
 
+  const handleFocus = (field: string) => {
+    setIsFocused(prev => ({ ...prev, [field]: true }));
+  };
+
+  const handleBlur = (field: string, value: string) => {
+    if (!value) {
+      setIsFocused(prev => ({ ...prev, [field]: false }));
+    }
+  };
+
   return (
-    <LoginContainer>
-      <LoginCard>
+    <AuthContainer>
+      <GlassCard theme={currentTheme} className={shake ? 'shake' : ''}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <LoginTitle level={2}>
-            HRM System
-          </LoginTitle>
-          <LoginSubtitle>Sign in to your account</LoginSubtitle>
+          <LogoContainer theme={currentTheme}>
+            <UserOutlined />
+          </LogoContainer>
+          <AuthTitle level={2} theme={currentTheme}>
+            Welcome Back
+          </AuthTitle>
+          <AuthSubtitle>Sign in to continue to your account</AuthSubtitle>
         </div>
 
-
-
-        <Form
+        <AuthForm
           form={form}
           name="login"
           onFinish={handleSubmit}
           layout="vertical"
           size="large"
+          theme={currentTheme}
         >
           <Form.Item
             name="email"
-            label="Email"
             rules={[
-              { required: true, message: 'Please input your email!' },
-              { type: 'email', message: 'Please enter a valid email!' }
+              { required: true, message: '' },
+              { type: 'email', message: '' },
             ]}
+            style={{ marginBottom: 30 }}
           >
-            <Input
-              prefix={<UserOutlined />}
-              placeholder="Enter your email"
-              autoComplete="email"
-            />
+            <InputContainer>
+              <Input
+                prefix={<MailOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />}
+                placeholder=""
+                autoComplete="email"
+                onFocus={() => handleFocus('email')}
+                onBlur={(e) => handleBlur('email', e.target.value)}
+                style={{ 
+                  background: 'transparent', 
+                  border: 'none', 
+                  boxShadow: 'none',
+                  padding: '12px 16px',
+                  color: 'white'
+                }}
+              />
+              <FloatingLabel isFocused={isFocused.email} hasValue={form.getFieldValue('email')}>
+                Email Address
+              </FloatingLabel>
+            </InputContainer>
           </Form.Item>
 
           <Form.Item
             name="password"
-            label="Password"
             rules={[
-              { required: true, message: 'Please input your password!' },
-              { min: 6, message: 'Password must be at least 6 characters!' }
+              { required: true, message: '' },
+              { min: 6, message: '' },
             ]}
+            style={{ marginBottom: 10 }}
           >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="Enter your password"
-              autoComplete="current-password"
-            />
+            <InputContainer>
+              <Input.Password
+                prefix={<LockOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />}
+                placeholder=""
+                autoComplete="current-password"
+                iconRender={(visible) => (visible ? 
+                  <EyeTwoTone style={{ color: 'rgba(255, 255, 255, 0.6)' }} /> : 
+                  <EyeInvisibleOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
+                )}
+                onFocus={() => handleFocus('password')}
+                onBlur={(e) => handleBlur('password', e.target.value)}
+                style={{ 
+                  background: 'transparent', 
+                  border: 'none', 
+                  boxShadow: 'none',
+                  padding: '12px 16px',
+                  color: 'white'
+                }}
+              />
+              <FloatingLabel isFocused={isFocused.password} hasValue={form.getFieldValue('password')}>
+                Password
+              </FloatingLabel>
+            </InputContainer>
           </Form.Item>
 
-          <Form.Item>
-            <LoginButton
+          <ForgotPasswordLink to="/forgot-password" theme={currentTheme}>
+            Forgot password?
+          </ForgotPasswordLink>
+
+          <Form.Item style={{ marginTop: 20 }}>
+            <AuthButton
               type="primary"
               htmlType="submit"
               loading={isLoginLoading}
               block
+              theme={currentTheme}
+              className="hover-lift"
             >
               Sign In
-            </LoginButton>
+            </AuthButton>
           </Form.Item>
-        </Form>
+        </AuthForm>
 
-        <div style={{ textAlign: 'center', marginTop: 16 }}>
-          <SignupText>Don't have an account? </SignupText>
-          <SignupLink to="/signup">
+        <AuthFooter>
+          <AuthFooterText>Don't have an account? </AuthFooterText>
+          <AuthLink to="/signup" theme={currentTheme} className="hover-underline">
             Sign up here
-          </SignupLink>
-        </div>
-      </LoginCard>
-    </LoginContainer>
+          </AuthLink>
+        </AuthFooter>
+      </GlassCard>
+    </AuthContainer>
   );
-};
+}
+
+export default Login;
