@@ -12,7 +12,9 @@ module.exports = function override(config, env) {
     "stream": require.resolve("stream-browserify"),
     "url": require.resolve("url"),
     "util": require.resolve("util"),
-    "zlib": require.resolve("browserify-zlib")
+    "zlib": require.resolve("browserify-zlib"),
+    "fs": false,
+    "path": require.resolve("path-browserify")
   };
 
   config.plugins = (config.plugins || []).concat([
@@ -20,7 +22,17 @@ module.exports = function override(config, env) {
       process: 'process/browser',
       Buffer: ['buffer', 'Buffer'],
     }),
+    new webpack.DefinePlugin({
+      'process.env': JSON.stringify(process.env)
+    })
   ]);
+
+  config.module.rules.push({
+    test: /\.m?js$/,
+    resolve: {
+      fullySpecified: false
+    }
+  });
 
   return config;
 };
