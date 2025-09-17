@@ -22,12 +22,10 @@ import {
 } from '@ant-design/icons';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import type { MenuProps } from 'antd';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../store';
+import { useAuthContext } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useResponsive } from '../../hooks';
 import styled from 'styled-components';
-import { logout } from '../../store/slices/authSlice';
 
 const { Header: AntHeader, Content, Sider } = Layout;
 
@@ -278,8 +276,7 @@ interface CommonLayoutProps {
 export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user, logout } = useAuthContext();
   const { isDarkMode, toggleTheme, currentTheme } = useTheme();
   const { isMobile, isDesktop } = useResponsive();
   const [siderCollapsed, setSiderCollapsed] = useState(false);
@@ -297,7 +294,7 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
   }, [isMobile]);
 
   const handleLogout = () => {
-    dispatch(logout() as any);
+    logout();
     navigate('/login');
   };
 
