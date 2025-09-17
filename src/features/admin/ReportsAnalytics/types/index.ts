@@ -1,3 +1,5 @@
+// Types for Reports & Analytics
+
 export interface Report {
   id: string;
   name: string;
@@ -11,8 +13,6 @@ export interface DashboardStat {
   title: string;
   value: number | string;
   suffix?: string;
-  icon?: React.ReactNode;
-  color?: string;
 }
 
 export interface ChartData {
