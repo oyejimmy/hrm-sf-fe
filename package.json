@@ -10,7 +10,6 @@
     "@emotion/styled": "^11.14.1",
     "@fireworks-js/react": "^2.10.8",
     "@hookform/resolvers": "^3.3.2",
-    "@reduxjs/toolkit": "^2.0.1",
     "@tanstack/react-query": "^5.17.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.8.0",
@@ -20,10 +19,9 @@
     "@types/node": "^16.18.126",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@types/redux-saga": "^0.10.2",
     "@types/styled-components": "^5.1.34",
     "antd": "^5.27.3",
-    "axios": "^1.11.0",
+    "axios": "^1.12.2",
     "dayjs": "^1.11.18",
     "fireworks-js": "^2.10.8",
     "framer-motion": "^12.23.12",
@@ -33,20 +31,20 @@
     "react-apexcharts": "^1.7.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.62.0",
-    "react-redux": "^9.0.4",
     "react-router-dom": "^6.20.1",
     "react-scripts": "5.0.1",
+    "nth-check": "^2.1.1",
+    "elliptic": "^6.5.8",
     "recharts": "^2.8.0",
-    "redux-saga": "^1.3.0",
     "styled-components": "^6.1.6",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4",
     "yup": "^1.4.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -68,6 +66,18 @@
     ]
   },
   "devDependencies": {
-    "@types/papaparse": "^5.3.16"
+    "@tanstack/react-query-devtools": "^5.89.0",
+    "@types/papaparse": "^5.3.16",
+    "assert": "^2.1.0",
+    "browserify-zlib": "^0.2.0",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.1",
+    "https-browserify": "^1.0.0",
+    "process": "^0.11.10",
+    "react-app-rewired": "^2.2.1",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "url": "^0.11.4",
+    "util": "^0.12.5"
   }
 }
