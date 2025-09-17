@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal, Descriptions, Tag, Space, Avatar, Button, Divider, List, Typography } from 'antd';
 import { Download, Edit, User, History } from 'lucide-react';
 import { Document, Employee, DocumentType } from '../types';
+import { AnyAaaaRecord } from 'dns';
 
 const { Text } = Typography;
 
@@ -62,7 +63,7 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
         </Descriptions.Item>
         <Descriptions.Item label="Document Type">
           <Space>
-            {mockDocumentTypes.find(t => t.name === document.documentType)?.icon}
+            {getFileIcon(document.fileName)}
             {document.documentType}
           </Space>
         </Descriptions.Item>
