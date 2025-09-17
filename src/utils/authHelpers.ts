@@ -1,4 +1,4 @@
-import { User } from '../store/slices/authSlice';
+import { User } from '../hooks/useAuth';
 
 /**
  * Role hierarchy for permission checking
