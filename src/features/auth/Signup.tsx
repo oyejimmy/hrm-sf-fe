@@ -1,231 +1,302 @@
-import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Form, Input, Button, Card, Typography, Select } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Form, Input, notification } from 'antd';
+import { UserOutlined, LockOutlined, MailOutlined, EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { validateFormData, isValidEmail } from '../../utils/security';
 import { useTheme } from '../../contexts/ThemeContext';
+import { 
+  AuthButton, AuthContainer, AuthFooter, AuthFooterText, 
+  AuthForm, AuthLink, AuthSubtitle, AuthTitle, GlassCard, 
+  LogoContainer, FloatingLabel, InputContainer, PasswordStrengthBar 
+} from "./styles";
 
-const { Title } = Typography;
-const { Option } = Select;
-
-const SignupContainer = styled.div`
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, ${props => props.theme.colors.primary} 0%, ${props => props.theme.colors.component} 100%);
-`;
-
-const SignupCard = styled(Card)`
-  width: 450px;
-  box-shadow: ${props => props.theme.shadows.xl};
-  border-radius: ${props => props.theme.borderRadius.xl};
-`;
-
-const SignupTitle = styled(Title)`
-  color: ${props => props.theme.colors.primary} !important;
-  margin-bottom: ${props => props.theme.spacing.sm} !important;
-`;
-
-const SignupSubtitle = styled.p`
-  color: ${props => props.theme.colors.textSecondary};
-  margin: 0;
-`;
-
-const SignupButton = styled(Button)`
-  height: 40px;
-`;
-
-const LoginText = styled.span`
-  color: ${props => props.theme.colors.textSecondary};
-`;
-
-const LoginLink = styled(Link)`
-  color: ${props => props.theme.colors.primary};
-  
-  &:hover {
-    color: ${props => props.theme.colors.secondary};
-  }
-`;
-
-interface SignupFormData {
-  email: string;
-  password: string;
-  confirmPassword: string;
-  first_name: string;
-  last_name: string;
-  role: string;
-}
-
-export const Signup: React.FC = () => {
+const Signup = () => {
   const navigate = useNavigate();
   const { signup, isSignupLoading } = useAuthContext();
   const { currentTheme } = useTheme();
   const [form] = Form.useForm();
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [isFocused, setIsFocused] = useState({
+    first_name: false,
+    last_name: false,
+    email: false,
+    password: false,
+    confirmPassword: false
+  });
+  const [shake, setShake] = useState(false);
 
-  const handleSubmit = async (values: SignupFormData) => {
+  const handleSubmit = async (values: any) => {
     if (!isValidEmail(values.email)) {
-      form.setFields([
-        {
-          name: 'email',
-          errors: ['Please enter a valid email address'],
-        },
-      ]);
+      form.setFields([{ name: 'email', errors: ['Please enter a valid email address'] }]);
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
       return;
     }
 
     if (values.password !== values.confirmPassword) {
-      form.setFields([
-        {
-          name: 'confirmPassword',
-          errors: ['Passwords do not match'],
-        },
-      ]);
+      form.setFields([{ name: 'confirmPassword', errors: ['Passwords do not match'] }]);
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
       return;
     }
 
-    const { confirmPassword, ...signupData } = values;
-    const sanitizedData = validateFormData(signupData) as Omit<SignupFormData, 'confirmPassword'>;
+    const { confirmPassword, ...rest } = values;
+    const signupData = {
+      ...rest,
+      role: 'employee',
+    };
+
+    try {
+      const sanitizedData: any = validateFormData(signupData);
+      signup(sanitizedData);
+      
+      notification.success({
+        message: 'Account Created',
+        description: 'Your account has been created successfully! Redirecting to login...',
+        placement: 'topRight',
+      });
+      setTimeout(() => navigate('/login'), 2000);
+    } catch (error) {
+      notification.error({
+        message: 'Signup Failed',
+        description: 'There was an issue creating your account. Please try again.',
+        placement: 'topRight',
+      });
+    }
+  };
+
+  const checkPasswordStrength = (password: string) => {
+    let strength = 0;
+    if (password.length >= 8) strength += 25;
+    if (/[A-Z]/.test(password)) strength += 25;
+    if (/[0-9]/.test(password)) strength += 25;
+    if (/[^A-Za-z0-9]/.test(password)) strength += 25;
     
-    signup(sanitizedData);
-    navigate('/login');
+    setPasswordStrength(strength);
+  };
+
+  const handleFocus = (field: string) => {
+    setIsFocused(prev => ({ ...prev, [field]: true }));
+  };
+
+  const handleBlur = (field: string, value: string) => {
+    if (!value) {
+      setIsFocused(prev => ({ ...prev, [field]: false }));
+    }
   };
 
   return (
-    <SignupContainer>
-      <SignupCard>
+    <AuthContainer>
+      <GlassCard theme={currentTheme} className={shake ? 'shake' : ''}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <SignupTitle level={2}>
-            Create Account
-          </SignupTitle>
-          <SignupSubtitle>Join the HRM System</SignupSubtitle>
+          <LogoContainer theme={currentTheme}>
+            <UserOutlined />
+          </LogoContainer>
+          <AuthTitle level={2} theme={currentTheme}>
+            Join Our Community
+          </AuthTitle>
+          <AuthSubtitle>Create your account to get started</AuthSubtitle>
         </div>
 
-
-
-        <Form
+        <AuthForm
           form={form}
           name="signup"
           onFinish={handleSubmit}
           layout="vertical"
           size="large"
+          theme={currentTheme}
         >
-          <Form.Item
-            name="first_name"
-            label="First Name"
-            rules={[
-              { required: true, message: 'Please input your first name!' },
-              { min: 2, message: 'First name must be at least 2 characters!' }
-            ]}
-          >
-            <Input
-              prefix={<UserOutlined />}
-              placeholder="Enter your first name"
-              autoComplete="given-name"
-            />
-          </Form.Item>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: 20 }}>
+            <Form.Item
+              name="first_name"
+              rules={[
+                { required: true, message: '' },
+                { min: 2, message: '' },
+              ]}
+            >
+              <InputContainer>
+                <Input
+                  prefix={<UserOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />}
+                  placeholder=""
+                  autoComplete="given-name"
+                  onFocus={() => handleFocus('first_name')}
+                  onBlur={(e) => handleBlur('first_name', e.target.value)}
+                  style={{ 
+                    background: 'transparent', 
+                    border: 'none', 
+                    boxShadow: 'none',
+                    padding: '12px 16px',
+                    color: 'white'
+                  }}
+                />
+                <FloatingLabel isFocused={isFocused.first_name} hasValue={form.getFieldValue('first_name')}>
+                  First Name
+                </FloatingLabel>
+              </InputContainer>
+            </Form.Item>
 
-          <Form.Item
-            name="last_name"
-            label="Last Name"
-            rules={[
-              { required: true, message: 'Please input your last name!' },
-              { min: 2, message: 'Last name must be at least 2 characters!' }
-            ]}
-          >
-            <Input
-              prefix={<UserOutlined />}
-              placeholder="Enter your last name"
-              autoComplete="family-name"
-            />
-          </Form.Item>
+            <Form.Item
+              name="last_name"
+              rules={[
+                { required: true, message: '' },
+                { min: 2, message: '' },
+              ]}
+            >
+              <InputContainer>
+                <Input
+                  prefix={<UserOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />}
+                  placeholder=""
+                  autoComplete="family-name"
+                  onFocus={() => handleFocus('last_name')}
+                  onBlur={(e) => handleBlur('last_name', e.target.value)}
+                  style={{ 
+                    background: 'transparent', 
+                    border: 'none', 
+                    boxShadow: 'none',
+                    padding: '12px 16px',
+                    color: 'white'
+                  }}
+                />
+                <FloatingLabel isFocused={isFocused.last_name} hasValue={form.getFieldValue('last_name')}>
+                  Last Name
+                </FloatingLabel>
+              </InputContainer>
+            </Form.Item>
+          </div>
 
           <Form.Item
             name="email"
-            label="Email"
             rules={[
-              { required: true, message: 'Please input your email!' },
-              { type: 'email', message: 'Please enter a valid email!' }
+              { required: true, message: '' },
+              { type: 'email', message: '' },
             ]}
+            style={{ marginBottom: 20 }}
           >
-            <Input
-              prefix={<MailOutlined />}
-              placeholder="Enter your email"
-              autoComplete="email"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="role"
-            label="Role"
-            rules={[{ required: true, message: 'Please select your role!' }]}
-          >
-            <Select placeholder="Select your role">
-              <Option value="employee">Employee</Option>
-              <Option value="team_lead">Team Lead</Option>
-              <Option value="hr">HR</Option>
-              <Option value="admin">Admin</Option>
-            </Select>
+            <InputContainer>
+              <Input
+                prefix={<MailOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />}
+                placeholder=""
+                autoComplete="email"
+                onFocus={() => handleFocus('email')}
+                onBlur={(e) => handleBlur('email', e.target.value)}
+                style={{ 
+                  background: 'transparent', 
+                  border: 'none', 
+                  boxShadow: 'none',
+                  padding: '12px 16px',
+                  color: 'white'
+                }}
+              />
+              <FloatingLabel isFocused={isFocused.email} hasValue={form.getFieldValue('email')}>
+                Email Address
+              </FloatingLabel>
+            </InputContainer>
           </Form.Item>
 
           <Form.Item
             name="password"
-            label="Password"
             rules={[
-              { required: true, message: 'Please input your password!' },
-              { min: 8, message: 'Password must be at least 8 characters!' }
+              { required: true, message: '' },
+              { min: 8, message: '' },
             ]}
+            style={{ marginBottom: 10 }}
           >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="Enter your password"
-              autoComplete="new-password"
-            />
+            <InputContainer>
+              <Input.Password
+                prefix={<LockOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />}
+                placeholder=""
+                autoComplete="new-password"
+                iconRender={(visible) => (visible ? 
+                  <EyeTwoTone style={{ color: 'rgba(255, 255, 255, 0.6)' }} /> : 
+                  <EyeInvisibleOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
+                )}
+                onFocus={() => handleFocus('password')}
+                onBlur={(e) => handleBlur('password', e.target.value)}
+                onChange={(e) => checkPasswordStrength(e.target.value)}
+                style={{ 
+                  background: 'transparent', 
+                  border: 'none', 
+                  boxShadow: 'none',
+                  padding: '12px 16px',
+                  color: 'white'
+                }}
+              />
+              <FloatingLabel isFocused={isFocused.password} hasValue={form.getFieldValue('password')}>
+                Password
+              </FloatingLabel>
+              <PasswordStrengthBar strength={passwordStrength} theme={currentTheme}>
+                <div className="strength-fill" />
+                <span className="strength-text">
+                  {passwordStrength < 40 ? 'Weak' : passwordStrength < 70 ? 'Medium' : 'Strong'}
+                </span>
+              </PasswordStrengthBar>
+            </InputContainer>
           </Form.Item>
 
           <Form.Item
             name="confirmPassword"
-            label="Confirm Password"
             rules={[
-              { required: true, message: 'Please confirm your password!' },
+              { required: true, message: '' },
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   if (!value || getFieldValue('password') === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error('Passwords do not match!'));
+                  return Promise.reject(new Error(''));
                 },
               }),
             ]}
+            style={{ marginBottom: 20 }}
           >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="Confirm your password"
-              autoComplete="new-password"
-            />
+            <InputContainer>
+              <Input.Password
+                prefix={<LockOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />}
+                placeholder=""
+                autoComplete="new-password"
+                iconRender={(visible) => (visible ? 
+                  <EyeTwoTone style={{ color: 'rgba(255, 255, 255, 0.6)' }} /> : 
+                  <EyeInvisibleOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
+                )}
+                onFocus={() => handleFocus('confirmPassword')}
+                onBlur={(e) => handleBlur('confirmPassword', e.target.value)}
+                style={{ 
+                  background: 'transparent', 
+                  border: 'none', 
+                  boxShadow: 'none',
+                  padding: '12px 16px',
+                  color: 'white'
+                }}
+              />
+              <FloatingLabel isFocused={isFocused.confirmPassword} hasValue={form.getFieldValue('confirmPassword')}>
+                Confirm Password
+              </FloatingLabel>
+            </InputContainer>
           </Form.Item>
 
           <Form.Item>
-            <SignupButton
+            <AuthButton
               type="primary"
               htmlType="submit"
               loading={isSignupLoading}
               block
+              theme={currentTheme}
+              className="hover-lift"
             >
               Create Account
-            </SignupButton>
+            </AuthButton>
           </Form.Item>
-        </Form>
+        </AuthForm>
 
-        <div style={{ textAlign: 'center', marginTop: 16 }}>
-          <LoginText>Already have an account? </LoginText>
-          <LoginLink to="/login">
+        <AuthFooter>
+          <AuthFooterText>Already have an account? </AuthFooterText>
+          <AuthLink to="/login" theme={currentTheme} className="hover-underline">
             Sign in here
-          </LoginLink>
-        </div>
-      </SignupCard>
-    </SignupContainer>
+          </AuthLink>
+        </AuthFooter>
+      </GlassCard>
+    </AuthContainer>
   );
 };
+
+export default Signup;
