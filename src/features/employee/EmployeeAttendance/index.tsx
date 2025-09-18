@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, message, Card, Space, Typography } from 'antd';
+import { Row, Col, message, Card } from 'antd';
 import { Clock, BarChart3, History, Bell, Calendar } from 'lucide-react';
 import styled from 'styled-components';
 import HeaderComponent from '../../../components/PageHeader';
@@ -10,19 +10,17 @@ import AttendanceHistoryTable from './components/AttendanceHistoryTable';
 import AttendanceNotificationPanel from './components/AttendanceNotificationPanel';
 import AttendanceStatsPanel from './components/AttendanceStatsPanel';
 import AttendanceCalendar from './components/AttendanceCalendar';
-import { 
-  TodayAttendance, 
-  AttendanceRecord, 
-  AttendanceNotification, 
-  AttendanceSummary 
+import {
+  TodayAttendance,
+  AttendanceRecord,
+  AttendanceNotification,
+  AttendanceSummary
 } from './types';
 import { useAttendance } from '../../../hooks/useAttendance';
 import { useTheme } from '../../../contexts/ThemeContext';
 
-const { Title } = Typography;
-
-const StyledCard = styled(Card)<{ isDarkMode: boolean }>`
-  background: ${props => props.isDarkMode ? '#1f1f1f' : 'white'};
+const StyledCard = styled(Card) <{ isDarkMode: boolean }>`
+  background: ${(props: any) => props.isDarkMode ? '#1f1f1f' : 'white'};
   border: none;
   border-radius: 16px;
   margin-bottom: 24px;
@@ -30,8 +28,8 @@ const StyledCard = styled(Card)<{ isDarkMode: boolean }>`
   overflow: hidden;
   
   .ant-card-head {
-    border-bottom: 1px solid ${props => props.isDarkMode ? '#2a2a2a' : '#f0f0f0'};
-    background: ${props => props.isDarkMode ? '#1a1a1a' : '#fafafa'};
+    border-bottom: 1px solid ${(props: any) => props.isDarkMode ? '#2a2a2a' : '#f0f0f0'};
+    background: ${(props: any) => props.isDarkMode ? '#1a1a1a' : '#fafafa'};
   }
   
   .ant-card-head-title {
@@ -42,29 +40,6 @@ const StyledCard = styled(Card)<{ isDarkMode: boolean }>`
   
   .ant-card-body {
     padding: 0;
-  }
-`;
-
-const SectionTitle = styled(Title)`
-  color: var(--text-color) !important;
-  margin: 40px 0 20px 0 !important;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 700 !important;
-  position: relative;
-  
-  &::after {
-    content: '';
-    flex: 1;
-    height: 2px;
-    background: linear-gradient(90deg, #2958C4 0%, transparent 100%);
-    margin-left: 16px;
-  }
-  
-  @media (max-width: 768px) {
-    font-size: 18px !important;
-    margin: 32px 0 16px 0 !important;
   }
 `;
 
@@ -156,15 +131,15 @@ const mockSummary: AttendanceSummary = {
 };
 
 const EmployeeAttendance: React.FC = () => {
-  const { 
-    todayAttendance, 
-    attendanceHistory, 
-    notifications, 
-    isLoading, 
-    logAttendance, 
-    markNotificationAsRead 
+  const {
+    todayAttendance,
+    attendanceHistory,
+    notifications,
+    isLoading,
+    logAttendance,
+    markNotificationAsRead
   } = useAttendance();
-  
+
   const [summary, setSummary] = useState<AttendanceSummary>(mockSummary);
   const { isDarkMode } = useTheme();
 
@@ -178,7 +153,7 @@ const EmployeeAttendance: React.FC = () => {
     const now = new Date();
     const noon = new Date();
     noon.setHours(12, 0, 0, 0);
-    
+
     if (now > noon && !currentTodayAttendance.checkIn) {
       handleAutoAbsence();
     }
@@ -196,8 +171,8 @@ const EmployeeAttendance: React.FC = () => {
   const handleAttendanceUpdate = (updatedAttendance: TodayAttendance) => {
     // This will be handled by the mutation in useAttendance hook
     const attendanceData = {
-      action: updatedAttendance.checkOut ? 'check_out' : 
-              updatedAttendance.isOnBreak ? 'break_start' : 'check_in',
+      action: updatedAttendance.checkOut ? 'check_out' :
+        updatedAttendance.isOnBreak ? 'break_start' : 'check_in',
       timestamp: new Date().toISOString()
     };
     logAttendance(attendanceData as any);
@@ -215,75 +190,61 @@ const EmployeeAttendance: React.FC = () => {
   };
 
   return (
-    <MainContainer>
-      <ContentWrapper>
-        <HeaderComponent
-          isDarkMode={isDarkMode}
-          title="Employee Attendance System"
-          subtitle="Track your daily attendance with real-time clock and comprehensive history"
-          breadcrumbItems={[
-            { title: 'Home', href: '/' },
-            { title: 'Employee', href: '/employee' }
-          ]}
-        />
+    <Wrapper isDarkMode={isDarkMode}>
+      <HeaderComponent
+        isDarkMode={isDarkMode}
+        title="Employee Attendance System"
+        subtitle="Track your daily attendance with real-time clock and comprehensive history"
+        breadcrumbItems={[
+          { title: 'Home', href: '/' },
+          { title: 'Employee', href: '/employee' }
+        ]}
+      />
 
-        {/* Attendance Clock Section */}
-        <ResponsiveRow gutter={[24, 24]}>
-          <ResponsiveCol xs={24} lg={16}>
-            <AttendanceClockPanel
-              todayAttendance={currentTodayAttendance}
-              onAttendanceUpdate={handleAttendanceUpdate}
-              loading={isLoading}
-            />
-          </ResponsiveCol>
-          <ResponsiveCol xs={24} lg={8}>
-            <AttendanceNotificationPanel
-              notifications={currentNotifications}
-              onMarkAsRead={handleMarkAsRead}
-              onMarkAllAsRead={handleMarkAllAsRead}
-            />
-          </ResponsiveCol>
-        </ResponsiveRow>
+      {/* Attendance Clock Section */}
+      <ResponsiveRow gutter={[24, 24]}>
+        <ResponsiveCol xs={24} lg={16}>
+          <AttendanceClockPanel
+            todayAttendance={currentTodayAttendance}
+            onAttendanceUpdate={handleAttendanceUpdate}
+            loading={isLoading}
+          />
+        </ResponsiveCol>
+        <ResponsiveCol xs={24} lg={8}>
+          <AttendanceNotificationPanel
+            notifications={currentNotifications}
+            onMarkAsRead={handleMarkAsRead}
+            onMarkAllAsRead={handleMarkAllAsRead}
+          />
+        </ResponsiveCol>
+      </ResponsiveRow>
 
-        {/* Statistics Section */}
-        <SectionTitle level={3}>
-          <BarChart3 size={20} />
-          Attendance Statistics
-        </SectionTitle>
-        <AttendanceStatsPanel
-          summary={summary}
-          loading={isLoading}
-          showEmployeeStats={true}
-        />
+      {/* Statistics Section */}
+      <AttendanceStatsPanel
+        summary={summary}
+        loading={isLoading}
+        showEmployeeStats={true}
+      />
 
-        {/* History Section */}
-        <SectionTitle level={3}>
-          <History size={20} />
-          Attendance History
-        </SectionTitle>
-        <StyledCard isDarkMode={isDarkMode} title="Recent Attendance Records">
-          <div style={{ padding: '24px' }}>
-            <AttendanceHistoryTable
-              records={currentAttendanceRecords}
-              loading={isLoading}
-              showEmployeeColumn={false}
-              allowEdit={false}
-            />
-          </div>
-        </StyledCard>
+      {/* History Section */}
+      <StyledCard isDarkMode={isDarkMode} title="Recent Attendance Records">
+        <div style={{ padding: '24px' }}>
+          <AttendanceHistoryTable
+            records={currentAttendanceRecords}
+            loading={isLoading}
+            showEmployeeColumn={false}
+            allowEdit={false}
+          />
+        </div>
+      </StyledCard>
 
-        {/* Calendar Section */}
-        <SectionTitle level={3}>
-          <Calendar size={20} />
-          Attendance Calendar
-        </SectionTitle>
-        <StyledCard isDarkMode={isDarkMode} title="Monthly Attendance View">
-          <div style={{ padding: '24px' }}>
-            <AttendanceCalendar records={currentAttendanceRecords} />
-          </div>
-        </StyledCard>
-      </ContentWrapper>
-    </MainContainer>
+      {/* Calendar Section */}
+      <StyledCard isDarkMode={isDarkMode} title="Monthly Attendance View">
+        <div style={{ padding: '24px' }}>
+          <AttendanceCalendar records={currentAttendanceRecords} />
+        </div>
+      </StyledCard>
+    </Wrapper>
   );
 };
 
