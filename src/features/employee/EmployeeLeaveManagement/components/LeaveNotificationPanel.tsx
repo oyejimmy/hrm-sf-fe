@@ -87,6 +87,7 @@ const LeaveNotificationPanel: React.FC<LeaveNotificationPanelProps> = ({
 
   return (
     <Card
+      style={{ marginTop: 16 }}
       title={
         <Space>
           <Bell size={18} />
