@@ -1,36 +1,15 @@
 import React from 'react';
 import { Card, Progress, Space, Typography, Row, Col } from 'antd';
-import { Sun, Thermometer, Briefcase, Clock } from 'lucide-react';
-import styled from 'styled-components';
+import { Sun, Thermometer, Briefcase, Clock, Baby, UserX } from 'lucide-react';
+
+import {
+  BalanceCard,
+  IconWrapper,
+  BalanceInfo
+} from './styles';
 import { LeaveBalance } from '../types';
 
 const { Text } = Typography;
-
-const BalanceCard = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  border-radius: 8px;
-  background: var(--surface);
-  border: 1px solid var(--border-color);
-  margin-bottom: 12px;
-`;
-
-const IconWrapper = styled.div<{ $color: string }>`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background: ${props => `${props.$color}15`};
-  color: ${props => props.$color};
-  margin-right: 16px;
-`;
-
-const BalanceInfo = styled.div`
-  flex: 1;
-`;
 
 interface LeaveSummaryPanelProps {
   leaveBalances: LeaveBalance[];
@@ -42,7 +21,9 @@ const LeaveSummaryPanel: React.FC<LeaveSummaryPanelProps> = ({ leaveBalances }) 
       case 'Annual': return <Sun size={20} />;
       case 'Sick': return <Thermometer size={20} />;
       case 'Casual': return <Briefcase size={20} />;
-      default: return <Clock size={20} />;
+      case 'Maternity': return <Baby size={20} />;
+      case 'Paternity': return <Baby size={20} />;
+      default: return <UserX size={20} />;
     }
   };
 
@@ -51,19 +32,21 @@ const LeaveSummaryPanel: React.FC<LeaveSummaryPanelProps> = ({ leaveBalances }) 
       case 'Annual': return '#faad14';
       case 'Sick': return '#f5222d';
       case 'Casual': return '#52c41a';
+      case 'Maternity': return '#eb2f96';
+      case 'Paternity': return '#722ed1';
       default: return '#1890ff';
     }
   };
 
   return (
-    <Card title="Leave Balance Summary">
+    <div>
       <Row gutter={[16, 16]}>
         {leaveBalances.map((balance: LeaveBalance, index: number) => {
           const usagePercent = (balance.taken / balance.totalAllocated) * 100;
           const remainingPercent = (balance.remaining / balance.totalAllocated) * 100;
           
           return (
-            <Col xs={24} sm={12} lg={8} key={index}>
+            <Col xs={24} sm={12} lg={12} key={index}>
               <BalanceCard>
                 <IconWrapper $color={getLeaveColor(balance.type)}>
                   {getLeaveIcon(balance.type)}
@@ -89,7 +72,7 @@ const LeaveSummaryPanel: React.FC<LeaveSummaryPanelProps> = ({ leaveBalances }) 
           );
         })}
       </Row>
-    </Card>
+    </div>
   );
 };
 
