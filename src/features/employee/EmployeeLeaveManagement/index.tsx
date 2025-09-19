@@ -10,19 +10,16 @@ import {
   Typography,
   Grid,
 } from 'antd';
-import { Plus, RefreshCw, Calendar } from 'lucide-react';
+import { Plus, Calendar } from 'lucide-react';
 import HeaderComponent from '../../../components/PageHeader';
 import { Wrapper } from '../../../components/Wrapper';
 import { useTheme } from '../../../contexts/ThemeContext';
-
 import LeaveRequestForm from './components/LeaveRequestForm';
 import LeaveNotificationPanel from './components/LeaveNotificationPanel';
 import LeaveDashboardStats from './components/LeaveDashboardStats';
 import LeaveHistoryTable from './components/LeaveHistoryTable';
 import LeaveSummaryPanel from './components/LeaveSummaryPanel';
-import LeaveCalendar from './components/LeaveCalendar';
 import PolicyGuidelines from './components/PolicyGuidelines';
-
 import {
   LeaveRequest,
   LeaveNotification,
@@ -31,14 +28,11 @@ import {
   LeavePolicy,
   Employee
 } from './types';
-
 import {
   StyledCard,
-  ActionBar
 } from './components/styles';
 
 const { useBreakpoint } = Grid;
-const { Title } = Typography;
 
 // Mock data generators
 const generateMockLeaveRequests = (): LeaveRequest[] => {
@@ -322,14 +316,6 @@ const EmployeeLeaveManagement: React.FC = () => {
             {screens.xs ? "Request" : "Request Leave"}
           </Button>,
           <Button
-            key="calendar"
-            icon={<Calendar size={16} />}
-            onClick={() => setCalendarVisible(true)}
-            size={screens.xs ? "small" : "middle"}
-          >
-            {screens.xs ? "Calendar" : "View Calendar"}
-          </Button>,
-          <Button
             key="policy-guidelines"
             icon={<Calendar size={16} />} // Reusing Calendar icon for now, can be changed later
             onClick={() => setPolicyGuidelinesVisible(true)}
@@ -345,13 +331,7 @@ const EmployeeLeaveManagement: React.FC = () => {
         <Row gutter={[16, 16]}>
           {/* Left Column - Main Content */}
           <Col xs={24} lg={16}>
-            <StyledCard
-              title="Leave Overview"
-              isDarkMode={isDarkMode}
-            >
-              {stats && <LeaveDashboardStats stats={stats} loading={loading} />}
-            </StyledCard>
-
+            {stats && <LeaveDashboardStats stats={stats} loading={loading} />}
             <StyledCard
               title="Leave History"
               isDarkMode={isDarkMode}
@@ -366,37 +346,15 @@ const EmployeeLeaveManagement: React.FC = () => {
             <StyledCard title="Leave Balance" isDarkMode={isDarkMode}>
               <LeaveSummaryPanel leaveBalances={leaveBalances} />
             </StyledCard>
-
-            <StyledCard
-              title="Notifications"
-              isDarkMode={isDarkMode}
-              style={{ marginTop: 16 }}
-            >
-              <LeaveNotificationPanel
-                notifications={notifications}
-                onNotificationClick={handleNotificationClick}
-                onMarkAsRead={handleMarkAsRead}
-                onMarkAllAsRead={handleMarkAllAsRead}
-              />
-            </StyledCard>
-
+            <LeaveNotificationPanel
+              notifications={notifications}
+              onNotificationClick={handleNotificationClick}
+              onMarkAsRead={handleMarkAsRead}
+              onMarkAllAsRead={handleMarkAllAsRead}
+            />
           </Col>
         </Row>
       </Spin>
-
-      <Modal
-        title="Leave Calendar"
-        open={calendarVisible}
-        onCancel={() => setCalendarVisible(false)}
-        footer={null}
-        width={screens.xs ? "100%" : 1000}
-        style={{ maxWidth: '100vw' }}
-        centered
-        bodyStyle={{ padding: screens.xs ? '8px' : '16px' }}
-      >
-        <LeaveCalendar requests={leaveRequests} />
-      </Modal>
-
       <Modal
         title="Policy Guidelines"
         open={policyGuidelinesVisible}
@@ -408,14 +366,13 @@ const EmployeeLeaveManagement: React.FC = () => {
       >
         <PolicyGuidelines />
       </Modal>
-
-      <LeaveRequestForm
-        visible={showRequestForm}
-        onCancel={() => setShowRequestForm(false)}
-        onSubmit={handleLeaveRequestSubmit}
-        loading={loading}
-        employees={mockEmployees}
-      />
+        <LeaveRequestForm
+          visible={showRequestForm}
+          onCancel={() => setShowRequestForm(false)}
+          onSubmit={handleLeaveRequestSubmit}
+          loading={loading}
+          employees={mockEmployees}
+        />
     </Wrapper>
   );
 };
