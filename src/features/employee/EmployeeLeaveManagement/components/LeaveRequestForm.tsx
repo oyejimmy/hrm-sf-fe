@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Modal,
   Form,
@@ -16,7 +16,7 @@ import {
   Row,
   Col
 } from 'antd';
-import { Send, Upload as UploadIcon, User, Mail, Building } from 'lucide-react';
+import { Send, Upload as UploadIcon, User, Mail, Building, X } from 'lucide-react';
 import styled from 'styled-components';
 import { LeaveType, DurationType, Employee } from '../types';
 
@@ -30,7 +30,7 @@ const RecipientCard = styled.div`
   padding: 8px 12px;
   border: 1px solid var(--border-color);
   border-radius: 6px;
-  margin: 4px;
+  margin: 4px 0;
   background: var(--surface);
 `;
 
@@ -39,25 +39,32 @@ const RecipientInfo = styled.div`
   flex: 1;
 `;
 
+const StyledModal = styled(Modal)`
+  .ant-modal-body {
+    padding: 20px;
+  }
+  
+  @media (max-width: 576px) {
+    .ant-modal-body {
+      padding: 16px;
+    }
+  }
+`;
+
 interface LeaveRequestFormProps {
   visible: boolean;
   onCancel: () => void;
   onSubmit: (values: any) => void;
   loading?: boolean;
+  employees: Employee[];
 }
-
-const mockEmployees: Employee[] = [
-  { id: '1', name: 'Sarah Johnson', email: 'sarah.j@company.com', department: 'HR', role: 'HR Manager', avatar: '' },
-  { id: '2', name: 'Mike Chen', email: 'mike.c@company.com', department: 'Engineering', role: 'Team Lead', avatar: '' },
-  { id: '3', name: 'Lisa Rodriguez', email: 'lisa.r@company.com', department: 'Operations', role: 'Operations Manager', avatar: '' },
-  { id: '4', name: 'David Kim', email: 'david.k@company.com', department: 'Finance', role: 'Finance Head', avatar: '' },
-];
 
 const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
   visible,
   onCancel,
   onSubmit,
-  loading = false
+  loading = false,
+  employees
 }) => {
   const [form] = Form.useForm();
   const [selectedRecipients, setSelectedRecipients] = useState<Employee[]>([]);
@@ -82,8 +89,16 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
   };
 
   const handleRecipientChange = (recipientIds: string[]) => {
-    const recipients = mockEmployees.filter(emp => recipientIds.includes(emp.id));
+    const recipients = employees.filter(emp => recipientIds.includes(emp.id));
     setSelectedRecipients(recipients);
+  };
+
+  const removeRecipient = (id: string) => {
+    setSelectedRecipients(prev => prev.filter(r => r.id !== id));
+    const currentRecipients = form.getFieldValue('recipients') || [];
+    form.setFieldsValue({
+      recipients: currentRecipients.filter((r: string) => r !== id)
+    });
   };
 
   const handleCancel = () => {
@@ -94,13 +109,14 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
   };
 
   return (
-    <Modal
+    <StyledModal
       title="Submit Leave Request"
       open={visible}
       onCancel={handleCancel}
       footer={null}
       width={700}
       centered
+      style={{ maxWidth: '90vw' }}
     >
       <Form
         form={form}
@@ -108,7 +124,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
         onFinish={handleSubmit}
       >
         <Row gutter={16}>
-          <Col span={12}>
+          <Col xs={24} sm={12}>
             <Form.Item
               label="Leave Type"
               name="type"
@@ -118,20 +134,22 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
                 <Option value="Annual">Annual Leave</Option>
                 <Option value="Sick">Sick Leave</Option>
                 <Option value="Casual">Casual Leave</Option>
-                <Option value="Half Day">Half Day</Option>
-                <Option value="Comp Off">Compensatory Off</Option>
+                <Option value="Maternity">Maternity Leave</Option>
+                <Option value="Paternity">Paternity Leave</Option>
+                <Option value="Unpaid">Unpaid Leave</Option>
               </Select>
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col xs={24} sm={12}>
             <Form.Item label="Duration Type">
               <Radio.Group
                 value={durationType}
                 onChange={(e) => setDurationType(e.target.value)}
+                buttonStyle="solid"
               >
-                <Radio value="Full Day">Full Day</Radio>
-                <Radio value="Half Day - Morning">Half Day AM</Radio>
-                <Radio value="Half Day - Afternoon">Half Day PM</Radio>
+                <Radio.Button value="Full Day">Full Day</Radio.Button>
+                <Radio.Button value="Half Day - Morning">Half Day AM</Radio.Button>
+                <Radio.Button value="Half Day - Afternoon">Half Day PM</Radio.Button>
               </Radio.Group>
             </Form.Item>
           </Col>
@@ -163,6 +181,8 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
 
         <Form.Item
           label="Notify Recipients"
+          name="recipients"
+          rules={[{ required: true, message: 'Please select at least one recipient' }]}
           help="Select HR managers, team leads, or other stakeholders who should be notified"
         >
           <Select
@@ -171,7 +191,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
             onChange={handleRecipientChange}
             style={{ width: '100%' }}
           >
-            {mockEmployees.map(emp => (
+            {employees.map(emp => (
               <Option key={emp.id} value={emp.id}>
                 <Space>
                   <Avatar size="small" icon={<User size={14} />} />
@@ -197,7 +217,12 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
                     {recipient.department}
                   </div>
                 </RecipientInfo>
-                <Tag color="blue">{recipient.role}</Tag>
+                <Button 
+                  type="text" 
+                  icon={<X size={14} />} 
+                  onClick={() => removeRecipient(recipient.id)}
+                  size="small"
+                />
               </RecipientCard>
             ))}
           </div>
@@ -212,7 +237,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
           </Space>
         </Form.Item>
       </Form>
-    </Modal>
+    </StyledModal>
   );
 };
 
