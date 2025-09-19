@@ -85,7 +85,6 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({
       key: 'actions',
       render: (record: LeaveRequest) => (
         <Space>
-          <Button size="small" icon={<Eye size={14} />} />
           {record.attachmentUrl && (
             <Button size="small" icon={<Download size={14} />} />
           )}
