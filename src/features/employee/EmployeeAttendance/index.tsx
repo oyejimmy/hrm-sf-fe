@@ -8,8 +8,8 @@ import { Wrapper } from '../../../components/Wrapper';
 import AttendanceClockPanel from './components/AttendanceClockPanel';
 import AttendanceHistoryTable from './components/AttendanceHistoryTable';
 import AttendanceNotificationPanel from './components/AttendanceNotificationPanel';
-import AttendanceStatsPanel from './components/AttendanceStatsPanel';
 import AttendanceCalendar from './components/AttendanceCalendar';
+import AttendanceOverviewPanel from './components/AttendanceOverviewPanel';
 import {
   TodayAttendance,
   AttendanceRecord,
@@ -216,9 +216,9 @@ const EmployeeAttendance: React.FC = () => {
         ]}
       />
 
-      {/* Attendance Clock Section */}
+      {/* Main Content: Clock, Notifications, and Overview in a single row */}
       <ResponsiveRow gutter={[24, 24]}>
-        <ResponsiveCol xs={24} lg={16}>
+        <ResponsiveCol xs={24} lg={8}>
           <AttendanceClockPanel
             todayAttendance={currentTodayAttendance}
             onAttendanceUpdate={(action: string) => {
@@ -233,6 +233,12 @@ const EmployeeAttendance: React.FC = () => {
           />
         </ResponsiveCol>
         <ResponsiveCol xs={24} lg={8}>
+          <AttendanceOverviewPanel
+            summary={summary}
+            loading={isLoading}
+          />
+        </ResponsiveCol>
+        <ResponsiveCol xs={24} lg={8}>
           <AttendanceNotificationPanel
             notifications={currentNotifications}
             onMarkAsRead={handleMarkAsRead}
@@ -240,13 +246,6 @@ const EmployeeAttendance: React.FC = () => {
           />
         </ResponsiveCol>
       </ResponsiveRow>
-
-      {/* Statistics Section */}
-      <AttendanceStatsPanel
-        summary={summary}
-        loading={isLoading}
-        showEmployeeStats={true}
-      />
 
       {/* History Section */}
       <StyledCard isDarkMode={isDarkMode} title="Recent Attendance Records">
