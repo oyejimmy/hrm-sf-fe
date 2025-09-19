@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, message, Card } from 'antd';
-import { Clock, BarChart3, History, Bell, Calendar } from 'lucide-react';
+import { Row, Col, message, Card, Button, Modal } from 'antd';
+import { Clock, BarChart3, History, Bell, Calendar, Eye } from 'lucide-react';
 import styled from 'styled-components';
 import HeaderComponent from '../../../components/PageHeader';
 import { Wrapper } from '../../../components/Wrapper';
@@ -58,21 +58,6 @@ const ResponsiveCol = styled(Col)`
   }
 `;
 
-const MainContainer = styled.div`
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  min-height: 100vh;
-  padding: 24px;
-  
-  @media (max-width: 768px) {
-    padding: 16px;
-  }
-`;
-
-const ContentWrapper = styled.div`
-  max-width: 1400px;
-  margin: 0 auto;
-`;
-
 // Mock data
 const mockTodayAttendance: TodayAttendance = {
   date: new Date().toISOString().split('T')[0],
@@ -102,6 +87,22 @@ const mockAttendanceRecords: AttendanceRecord[] = [
     breakMinutes: 60,
     workingHours: 8,
     status: 'Present',
+    notes: 'Regular day'
+  },
+  {
+    id: '2',
+    employeeId: 'emp1',
+    employeeName: 'Current User',
+    department: 'Engineering',
+    date: '2025-01-15',
+    checkIn: '2025-01-15T09:00:00Z',
+    checkOut: '2025-01-15T18:00:00Z',
+    breakStart: '2025-01-15T12:00:00Z',
+    breakEnd: '2025-01-15T13:00:00Z',
+    totalHours: 9,
+    breakMinutes: 60,
+    workingHours: 8,
+    status: 'Absent',
     notes: 'Regular day'
   }
 ];
@@ -142,6 +143,7 @@ const EmployeeAttendance: React.FC = () => {
 
   const [summary, setSummary] = useState<AttendanceSummary>(mockSummary);
   const { isDarkMode } = useTheme();
+  const [isCalendarModalVisible, setIsCalendarModalVisible] = useState(false); // State for modal visibility
 
   // Use actual data or fallback to mock data
   const currentTodayAttendance = todayAttendance || mockTodayAttendance;
@@ -189,6 +191,14 @@ const EmployeeAttendance: React.FC = () => {
     message.success('All notifications marked as read');
   };
 
+  const showCalendarModal = () => {
+    setIsCalendarModalVisible(true);
+  };
+
+  const handleCalendarModalCancel = () => {
+    setIsCalendarModalVisible(false);
+  };
+
   return (
     <Wrapper isDarkMode={isDarkMode}>
       <HeaderComponent
@@ -198,6 +208,11 @@ const EmployeeAttendance: React.FC = () => {
         breadcrumbItems={[
           { title: 'Home', href: '/' },
           { title: 'Employee', href: '/employee' }
+        ]}
+        extraButtons={[
+          <Button key="view-calendar" icon={<Eye />} onClick={showCalendarModal}>
+            View Attendance Calendar
+          </Button>,
         ]}
       />
 
@@ -238,12 +253,16 @@ const EmployeeAttendance: React.FC = () => {
         </div>
       </StyledCard>
 
-      {/* Calendar Section */}
-      <StyledCard isDarkMode={isDarkMode} title="Monthly Attendance View">
-        <div style={{ padding: '24px' }}>
-          <AttendanceCalendar records={currentAttendanceRecords} />
-        </div>
-      </StyledCard>
+      {/* Attendance Calendar Modal */}
+      <Modal
+        open={isCalendarModalVisible}
+        onCancel={handleCalendarModalCancel}
+        footer={null}
+        width={1000}
+        centered
+      >
+        <AttendanceCalendar isDarkMode={isDarkMode} records={currentAttendanceRecords} />
+      </Modal>
     </Wrapper>
   );
 };
