@@ -1,65 +1,31 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Card,
-  List,
   Badge,
-  Avatar,
   Button,
   Space,
   Typography,
   Tag,
-  Divider,
   Empty,
-  Tooltip
 } from 'antd';
 import {
   Bell,
   Check,
   Clock,
   X,
-  AlertCircle,
-  User,
   Calendar,
   MessageSquare
 } from 'lucide-react';
-import styled from 'styled-components';
+
+import {
+  NotificationCard,
+  NotificationHeader,
+  NotificationContent,
+  TimeStamp
+} from './styles';
 import { LeaveNotification } from '../types';
 
 const { Text } = Typography;
-
-const NotificationCard = styled.div<{ $read: boolean; $priority: string }>`
-  padding: 12px;
-  border-radius: 6px;
-  border-left: 4px solid ${props => 
-    props.$priority === 'high' ? '#ff4d4f' :
-    props.$priority === 'medium' ? '#faad14' : '#52c41a'
-  };
-  background: ${props => props.$read ? 'var(--surface)' : 'var(--surface-secondary)'};
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background: var(--surface-secondary);
-    transform: translateY(-1px);
-  }
-`;
-
-const NotificationHeader = styled.div`
-  display: flex;
-  justify-content: between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-`;
-
-const NotificationContent = styled.div`
-  margin-left: 32px;
-`;
-
-const TimeStamp = styled(Text)`
-  font-size: 11px;
-  color: var(--text-secondary);
-`;
 
 interface LeaveNotificationPanelProps {
   notifications: LeaveNotification[];
@@ -124,7 +90,7 @@ const LeaveNotificationPanel: React.FC<LeaveNotificationPanelProps> = ({
       title={
         <Space>
           <Bell size={18} />
-          Leave Notifications
+          Notifications
           {unreadCount > 0 && <Badge count={unreadCount} />}
         </Space>
       }
