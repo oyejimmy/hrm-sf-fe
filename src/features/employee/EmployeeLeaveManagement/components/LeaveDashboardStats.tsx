@@ -9,32 +9,15 @@ import {
   TrendingUp,
   AlertTriangle
 } from 'lucide-react';
-import styled from 'styled-components';
+
+import {
+  StatCard,
+  StatisticWrapper,
+  IconWrapper
+} from './styles';
 import { DashboardStats } from '../types';
 
 const { Text } = Typography;
-
-const StatCard = styled(Card)`
-  .ant-card-body {
-    padding: 20px;
-  }
-`;
-
-const IconWrapper = styled.div<{ $color: string }>`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: ${props => `${props.$color}15`};
-  color: ${props => props.$color};
-  margin-bottom: 12px;
-`;
-
-const StatisticWrapper = styled.div`
-  text-align: center;
-`;
 
 interface LeaveDashboardStatsProps {
   stats: DashboardStats;
