@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, message, Card, Button, Modal } from 'antd';
-import { Clock, BarChart3, History, Bell, Calendar, Eye } from 'lucide-react';
+import { Clock, BarChart3, History, Bell, Calendar, Eye, EyeIcon, LucideEye } from 'lucide-react';
 import styled from 'styled-components';
 import HeaderComponent from '../../../components/PageHeader';
 import { Wrapper } from '../../../components/Wrapper';
@@ -207,11 +207,11 @@ const EmployeeAttendance: React.FC = () => {
         subtitle="Track your daily attendance with real-time clock and comprehensive history"
         breadcrumbItems={[
           { title: 'Home', href: '/' },
-          { title: 'Employee', href: '/employee' }
+          { title: 'Employee Attendance', href: '/employee' }
         ]}
         extraButtons={[
-          <Button key="view-calendar" icon={<Eye />} onClick={showCalendarModal}>
-            View Attendance Calendar
+          <Button key="view-calendar" type='primary' icon={<LucideEye />} onClick={showCalendarModal}>
+            View Attendance Summary
           </Button>,
         ]}
       />
