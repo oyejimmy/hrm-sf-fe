@@ -22,6 +22,7 @@ interface AttendanceClockPanelProps {
   todayAttendance: TodayAttendance;
   onAttendanceUpdate: (action: string) => void;
   loading: boolean;
+  isDarkMode: boolean;
 }
 
 type ClockType = 'digital' | 'analog';
@@ -37,25 +38,21 @@ const pulse = keyframes`
   50% { transform: scale(1.02); }
 `;
 
-const ClockContainer = styled.div`
+const ClockContainer = styled.div<{ isDarkMode: boolean; }>`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 32px 24px;
-  background: #f0f4f8;
-  border-radius: 16px;
   animation: ${fadeIn} 0.6s ease-out;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   
   @media (max-width: 768px) {
     padding: 24px 16px;
   }
 `;
 
-const DigitalClock = styled.div`
+const DigitalClock = styled.div<{ isDarkMode: boolean; }>`
   font-size: 56px;
   font-weight: 700;
-  color: #1a237e;
+  color: ${props => props.isDarkMode ? '#ffffff' : '#1a237e'};
   font-family: 'Inter', sans-serif;
   margin: 20px 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -66,14 +63,14 @@ const DigitalClock = styled.div`
   }
 `;
 
-const AnalogClock = styled.div`
+const AnalogClock = styled.div<{ isDarkMode: boolean; }>`
   width: 240px;
   height: 240px;
-  border: 4px solid #455a64;
+  border: 4px solid ${props => props.isDarkMode ? '#ffffff' : '#455a64'};
   border-radius: 50%;
   position: relative;
   margin: 20px 0;
-  background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%);
+  background: ${props => props.isDarkMode ? '#1a237e' : 'linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%)'};
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   
   @media (max-width: 768px) {
@@ -82,9 +79,9 @@ const AnalogClock = styled.div`
   }
 `;
 
-const ClockHand = styled.div<{ $rotation: number; $length: number; $width: number; $color?: string; }>`
+const ClockHand = styled.div<{ $rotation: number; $length: number; $width: number; $color?: string; isDarkMode?: boolean; }>`
   position: absolute;
-  background: ${props => props.$color || '#455a64'};
+  background: ${props => props.$color || (props.isDarkMode ? '#ffffff' : '#455a64')};
   transform-origin: bottom center;
   left: 50%;
   bottom: 50%;
@@ -131,7 +128,7 @@ const ClockNumber = styled.div<{ $position: number; }>`
   margin-top: -12px;
 `;
 
-const ActionButton = styled(Button)<{ $variant: string; }>`
+const ActionButton = styled(Button) <{ $variant: string; }>`
   min-width: 140px;
   height: 52px;
   border-radius: 26px;
@@ -204,7 +201,7 @@ const StatusCard = styled.div`
 `;
 
 // --- Main Component ---
-const AttendanceClockPanel: React.FC<AttendanceClockPanelProps> = ({ todayAttendance, onAttendanceUpdate, loading }) => {
+const AttendanceClockPanel: React.FC<AttendanceClockPanelProps> = ({ todayAttendance, onAttendanceUpdate, loading, isDarkMode }) => {
   const { Text } = Typography;
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [clockType, setClockType] = useState<ClockType>('digital');
@@ -249,7 +246,7 @@ const AttendanceClockPanel: React.FC<AttendanceClockPanelProps> = ({ todayAttend
     const hours = currentTime.getHours() % 12;
     const minutes = currentTime.getMinutes();
     const seconds = currentTime.getSeconds();
-    
+
     // Adjust hours for 12-hour format, with 12 for 0 o'clock
     const displayHours = hours === 0 ? 12 : hours;
 
@@ -258,34 +255,34 @@ const AttendanceClockPanel: React.FC<AttendanceClockPanelProps> = ({ todayAttend
     const secondRotation = getClockHandRotation(seconds, 60);
 
     return (
-      <AnalogClock>
+      <AnalogClock isDarkMode={isDarkMode}>
         {/* Clock numbers */}
         {[...Array(12)].map((_, i) => (
           <ClockNumber key={i} $position={i + 1}>
             {i + 1}
           </ClockNumber>
         ))}
-        
+
         {/* Clock hands */}
         <ClockHand
           $rotation={hourRotation}
           $length={70}
           $width={6}
-          $color="#1a237e"
+          $color={isDarkMode ? '#ffffff' : '#1a237e'}
         />
         <ClockHand
           $rotation={minuteRotation}
           $length={95}
           $width={4}
-          $color="#1a237e"
+          $color={isDarkMode ? '#ffffff' : '#1a237e'}
         />
         <ClockHand
           $rotation={secondRotation}
           $length={100}
           $width={2}
-          $color="#f44336"
+          $color={isDarkMode ? '#ffffff' : '#f44336'}
         />
-        
+
         <ClockCenter />
       </AnalogClock>
     );
@@ -309,31 +306,27 @@ const AttendanceClockPanel: React.FC<AttendanceClockPanelProps> = ({ todayAttend
     <Card
       style={{
         borderRadius: '16px',
-        border: 'none',
+        border: `${!isDarkMode} ? 'none' : '1px solid #e0e0e0'`,
         boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
         maxWidth: '768px',
         margin: '0 auto',
       }}
     >
-      <ClockContainer>
-        <Button
-          type="text"
-          shape="round"
-          icon={clockType === 'digital' ? <Clock /> : <Watch />}
-          onClick={() => setClockType(clockType === 'digital' ? 'analog' : 'digital')}
-          style={{ marginBottom: 20, color: '#455a64' }}
-        >
-          {clockType === 'digital' ? 'Switch to Analog' : 'Switch to Digital'}
-        </Button>
-
+      <Button
+        type="text"
+        icon={clockType === 'digital' ? <Clock /> : <Watch />}
+        onClick={() => setClockType(clockType === 'digital' ? 'analog' : 'digital')}
+        style={{ color: isDarkMode ? '#ffffff' : '#455a64' }}
+      />
+      <ClockContainer isDarkMode={isDarkMode}>
         {clockType === 'digital' ? (
-          <DigitalClock>{formatTime(currentTime)}</DigitalClock>
+          <DigitalClock isDarkMode={isDarkMode}>{formatTime(currentTime)}</DigitalClock>
         ) : (
           renderAnalogClock()
         )}
 
         <Text style={{
-          color: '#455a64',
+          color: isDarkMode ? '#ffffff' : '#455a64',
           marginBottom: 32,
           fontSize: '16px',
           fontWeight: 500,
