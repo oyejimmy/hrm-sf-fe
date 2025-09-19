@@ -193,6 +193,7 @@ const EmployeeLeaveManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [calendarVisible, setCalendarVisible] = useState(false);
+  const [policyGuidelinesVisible, setPolicyGuidelinesVisible] = useState(false);
 
   const [form] = Form.useForm();
   const { isDarkMode } = useTheme();
@@ -329,36 +330,30 @@ const EmployeeLeaveManagement: React.FC = () => {
             {screens.xs ? "Calendar" : "View Calendar"}
           </Button>,
           <Button
-            key="refresh"
-            icon={<RefreshCw size={16} />}
-            onClick={fetchData}
+            key="policy-guidelines"
+            icon={<Calendar size={16} />} // Reusing Calendar icon for now, can be changed later
+            onClick={() => setPolicyGuidelinesVisible(true)}
             size={screens.xs ? "small" : "middle"}
           >
-            {screens.xs ? "Refresh" : "Refresh Data"}
+            {screens.xs ? "Policies" : "Policy Guidelines"}
           </Button>
         ]}
         isDarkMode={isDarkMode}
       />
 
-      <ActionBar>
-        <Title level={4} style={{ margin: 0, color: isDarkMode ? '#e6e6e6' : 'inherit' }}>
-          My Leave Dashboard
-        </Title>
-      </ActionBar>
-
       <Spin spinning={loading}>
         <Row gutter={[16, 16]}>
           {/* Left Column - Main Content */}
           <Col xs={24} lg={16}>
-            <StyledCard 
+            <StyledCard
               title="Leave Overview"
               isDarkMode={isDarkMode}
             >
               {stats && <LeaveDashboardStats stats={stats} loading={loading} />}
             </StyledCard>
 
-            <StyledCard 
-              title="Leave History" 
+            <StyledCard
+              title="Leave History"
               isDarkMode={isDarkMode}
               style={{ marginTop: 16 }}
             >
@@ -372,8 +367,8 @@ const EmployeeLeaveManagement: React.FC = () => {
               <LeaveSummaryPanel leaveBalances={leaveBalances} />
             </StyledCard>
 
-            <StyledCard 
-              title="Notifications" 
+            <StyledCard
+              title="Notifications"
               isDarkMode={isDarkMode}
               style={{ marginTop: 16 }}
             >
@@ -385,13 +380,6 @@ const EmployeeLeaveManagement: React.FC = () => {
               />
             </StyledCard>
 
-            <StyledCard 
-              title="Policy Guidelines" 
-              isDarkMode={isDarkMode}
-              style={{ marginTop: 16 }}
-            >
-              <PolicyGuidelines policies={policies} />
-            </StyledCard>
           </Col>
         </Row>
       </Spin>
@@ -407,6 +395,18 @@ const EmployeeLeaveManagement: React.FC = () => {
         bodyStyle={{ padding: screens.xs ? '8px' : '16px' }}
       >
         <LeaveCalendar requests={leaveRequests} />
+      </Modal>
+
+      <Modal
+        title="Policy Guidelines"
+        open={policyGuidelinesVisible}
+        onCancel={() => setPolicyGuidelinesVisible(false)}
+        footer={null}
+        width={screens.xs ? "100%" : 1000}
+        centered
+        bodyStyle={{ padding: screens.xs ? '8px' : '16px' }}
+      >
+        <PolicyGuidelines />
       </Modal>
 
       <LeaveRequestForm
