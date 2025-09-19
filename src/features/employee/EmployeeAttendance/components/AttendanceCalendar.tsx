@@ -193,6 +193,40 @@ const CalendarContainer = styled.div`
   }
 `;
 
+const DetailsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const DetailItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  
+  .detail-label {
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: #666;
+  }
+  
+  .detail-value {
+    font-size: 14px;
+  }
+`;
+
 // Custom hook for attendance data
 const useAttendanceData = (propRecords?: AttendanceRecord[]) => {
   const today = dayjs();
@@ -304,11 +338,11 @@ const useDateNavigation = (initialDate: Dayjs = dayjs()) => {
 };
 
 // Reusable component for date selectors
-const DateSelectors: React.FC<DateSelectorsProps> = ({ 
-  viewDate, 
-  onMonthChange, 
-  onYearChange, 
-  onNavigate 
+const DateSelectors: React.FC<DateSelectorsProps> = ({
+  viewDate,
+  onMonthChange,
+  onYearChange,
+  onNavigate
 }) => {
   const monthOptions = useMemo((): MonthOption[] =>
     Array.from({ length: 12 }, (_, i) => ({
@@ -438,11 +472,11 @@ const AttendanceStats: React.FC<AttendanceStatsProps> = ({ records }) => {
 };
 
 // Reusable component for date details
-const DateDetails: React.FC<DateDetailsProps> = ({ 
-  date, 
-  attendance, 
-  isFutureDate, 
-  isWeekendDate 
+const DateDetails: React.FC<DateDetailsProps> = ({
+  date,
+  attendance,
+  isFutureDate,
+  isWeekendDate
 }) => {
   if (isFutureDate) {
     return (
@@ -470,53 +504,65 @@ const DateDetails: React.FC<DateDetailsProps> = ({
 
   return (
     <DetailCard title={`Details - ${date.format('MMM D, YYYY')}`} style={{ marginTop: '12px' }}>
-      <Space direction="vertical" size="small" style={{ width: '100%' }}>
-        <div>
-          <Text strong>Status: </Text>
-          <Tag color={STATUS_CONFIG[attendance.status]?.color || 'default'}>
-            {attendance.status}
-          </Tag>
-          {attendance.isManualEntry && <Tag color="purple">Manual Entry</Tag>}
-        </div>
+      <DetailsGrid>
+        <DetailItem>
+          <div className="detail-label">Status</div>
+          <div className="detail-value">
+            <Tag color={STATUS_CONFIG[attendance.status]?.color || 'default'}>
+              {attendance.status}
+            </Tag>
+            {attendance.isManualEntry && <Tag color="purple" style={{ marginLeft: '4px' }}>Manual Entry</Tag>}
+          </div>
+        </DetailItem>
 
         {attendance.checkIn && (
-          <div>
-            <Text strong>Check-in: </Text>
-            <Text>{dayjs(attendance.checkIn).format('HH:mm:ss')}</Text>
-          </div>
+          <DetailItem>
+            <div className="detail-label">Check-in</div>
+            <div className="detail-value">
+              {dayjs(attendance.checkIn).format('HH:mm:ss')}
+            </div>
+          </DetailItem>
         )}
 
         {attendance.checkOut && (
-          <div>
-            <Text strong>Check-out: </Text>
-            <Text>{dayjs(attendance.checkOut).format('HH:mm:ss')}</Text>
-          </div>
+          <DetailItem>
+            <div className="detail-label">Check-out</div>
+            <div className="detail-value">
+              {dayjs(attendance.checkOut).format('HH:mm:ss')}
+            </div>
+          </DetailItem>
         )}
 
-        <div>
-          <Text strong>Working Hours: </Text>
-          <Text>{attendance.workingHours.toFixed(2)} hours</Text>
-        </div>
+        <DetailItem>
+          <div className="detail-label">Working Hours</div>
+          <div className="detail-value">
+            {attendance.workingHours.toFixed(2)} hours
+          </div>
+        </DetailItem>
 
-        <div>
-          <Text strong>Break Duration: </Text>
-          <Text>{attendance.breakMinutes} minutes</Text>
-        </div>
+        <DetailItem>
+          <div className="detail-label">Break Duration</div>
+          <div className="detail-value">
+            {attendance.breakMinutes} minutes
+          </div>
+        </DetailItem>
 
         {attendance.notes && (
-          <div>
-            <Text strong>Notes: </Text>
-            <Text>{attendance.notes}</Text>
-          </div>
+          <DetailItem style={{ gridColumn: '1 / -1' }}>
+            <div className="detail-label">Notes</div>
+            <div className="detail-value">
+              {attendance.notes}
+            </div>
+          </DetailItem>
         )}
-      </Space>
+      </DetailsGrid>
     </DetailCard>
   );
 };
 
-const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({ 
-  isDarkMode, 
-  records: propRecords 
+const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
+  isDarkMode,
+  records: propRecords
 }) => {
   const today = dayjs();
   const [selectedDate, setSelectedDate] = useState<Dayjs>(today);
@@ -566,7 +612,7 @@ const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
   const isWeekendDate = selectedDate.day() === 0 || selectedDate.day() === 6;
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <>
       <DescriptionPanel>
         <Alert
           message="Attendance Calendar"
@@ -618,7 +664,7 @@ const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
           />
         </Col>
       </Row>
-    </Wrapper>
+    </>
   );
 };
 
