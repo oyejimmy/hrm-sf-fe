@@ -220,6 +220,7 @@ const EmployeeAttendance: React.FC = () => {
       <ResponsiveRow gutter={[24, 24]}>
         <ResponsiveCol xs={24} lg={8}>
           <AttendanceClockPanel
+            isDarkMode={isDarkMode}
             todayAttendance={currentTodayAttendance}
             onAttendanceUpdate={(action: string) => {
               const updatedAttendance = {
