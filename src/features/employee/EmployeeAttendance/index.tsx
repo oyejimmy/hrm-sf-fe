@@ -221,7 +221,14 @@ const EmployeeAttendance: React.FC = () => {
         <ResponsiveCol xs={24} lg={16}>
           <AttendanceClockPanel
             todayAttendance={currentTodayAttendance}
-            onAttendanceUpdate={handleAttendanceUpdate}
+            onAttendanceUpdate={(action: string) => {
+              const updatedAttendance = {
+                ...currentTodayAttendance,
+                checkOut: action === 'check_out' ? new Date().toISOString() : currentTodayAttendance.checkOut,
+                isOnBreak: action === 'break_start'
+              };
+              handleAttendanceUpdate(updatedAttendance);
+            }}
             loading={isLoading}
           />
         </ResponsiveCol>
