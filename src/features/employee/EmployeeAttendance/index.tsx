@@ -255,9 +255,14 @@ const EmployeeAttendance: React.FC = () => {
 
       {/* Attendance Calendar Modal */}
       <Modal
+        title="Attendance Calendar"
         open={isCalendarModalVisible}
         onCancel={handleCalendarModalCancel}
-        footer={null}
+        footer={
+          <Button type="primary" onClick={handleCalendarModalCancel}>
+            Cancel
+          </Button>
+        }
         width={1000}
         centered
       >
