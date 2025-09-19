@@ -4,159 +4,266 @@ import {
   Col,
   Button,
   message,
-  Card,
-  Space,
-  Tabs,
-  Form
+  Form,
+  Spin,
+  Modal,
+  Typography,
+  Grid,
 } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
+import { Plus, RefreshCw, Calendar } from 'lucide-react';
 import HeaderComponent from '../../../components/PageHeader';
 import { Wrapper } from '../../../components/Wrapper';
 import { useTheme } from '../../../contexts/ThemeContext';
+
 import LeaveRequestForm from './components/LeaveRequestForm';
-import LeaveApprovalWorkflow from './components/LeaveApprovalWorkflow';
 import LeaveNotificationPanel from './components/LeaveNotificationPanel';
 import LeaveDashboardStats from './components/LeaveDashboardStats';
 import LeaveHistoryTable from './components/LeaveHistoryTable';
 import LeaveSummaryPanel from './components/LeaveSummaryPanel';
 import LeaveCalendar from './components/LeaveCalendar';
 import PolicyGuidelines from './components/PolicyGuidelines';
+
 import {
   LeaveRequest,
   LeaveNotification,
   DashboardStats,
-  LeaveApprovalRequest,
   LeaveBalance,
-  LeavePolicy
+  LeavePolicy,
+  Employee
 } from './types';
-import { leaveApi } from '../../../services/api/leaveApi';
 
-const StyledCard = styled(Card)<{ isDarkMode: boolean }>`
-  background: ${props => props.isDarkMode ? '#1f1f1f' : 'white'};
-  border: 1px solid var(--border-color);
-  .ant-card-head-title {
-    color: var(--text-color);
-  }
-`;
+import {
+  StyledCard,
+  ActionBar
+} from './components/styles';
 
-// Mock data - replace with API calls
-const mockLeaveRequests: LeaveRequest[] = [
-  {
-    id: '1',
-    employeeId: 'emp1',
+const { useBreakpoint } = Grid;
+const { Title } = Typography;
+
+// Mock data generators
+const generateMockLeaveRequests = (): LeaveRequest[] => {
+  const statuses: ('Approved' | 'Pending' | 'Rejected' | 'On Hold')[] = ['Approved', 'Pending', 'Rejected', 'On Hold'];
+  const types = ['Annual', 'Sick', 'Casual', 'Maternity', 'Paternity', 'Unpaid'];
+  const durationTypes = ['Full Day', 'Half Day - Morning', 'Half Day - Afternoon'];
+
+  return Array.from({ length: 15 }, (_, i) => ({
+    id: `req-${i + 1}`,
+    employeeId: 'current-user',
     employeeName: 'John Doe',
     employeeEmail: 'john.doe@company.com',
     department: 'Engineering',
-    type: 'Annual',
-    from: '2024-01-15',
-    to: '2024-01-20',
-    duration: 5,
-    durationType: 'Full Day',
-    reason: 'Family vacation',
-    recipients: ['hr1', 'tl1'],
-    recipientDetails: [
-      { id: 'hr1', name: 'Sarah Johnson', email: 'sarah.j@company.com', department: 'HR', role: 'HR Manager' },
-      { id: 'tl1', name: 'Mike Chen', email: 'mike.c@company.com', department: 'Engineering', role: 'Team Lead' }
-    ],
-    status: 'Pending',
-    appliedAt: '2024-01-10T10:00:00Z'
-  }
-];
-
-const mockNotifications: LeaveNotification[] = [
-  {
-    id: '1',
-    type: 'leave_request',
-    message: 'New leave request from John Doe requires approval',
-    leaveRequestId: '1',
-    fromEmployee: 'John Doe',
-    timestamp: '2 hours ago',
-    read: false,
-    priority: 'medium'
-  }
-];
-
-const mockStats: DashboardStats = {
-  pendingRequests: 3,
-  approvedThisMonth: 12,
-  rejectedThisMonth: 2,
-  onLeaveToday: 5
+    type: types[Math.floor(Math.random() * types.length)] as any,
+    durationType: durationTypes[Math.floor(Math.random() * durationTypes.length)] as any,
+    from: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    to: new Date(Date.now() - Math.random() * 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    duration: Math.floor(Math.random() * 10) + 1,
+    reason: ['Family vacation', 'Medical appointment', 'Personal reasons', 'Family emergency', 'Rest'][Math.floor(Math.random() * 5)],
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    appliedAt: new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000).toISOString(),
+    recipientDetails: Array.from({ length: Math.floor(Math.random() * 3) + 1 }, (_, j) => ({
+      id: `recip-${j + 1}`,
+      name: ['Sarah Johnson', 'Mike Chen', 'Lisa Rodriguez'][j],
+      role: ['HR Manager', 'Team Lead', 'Department Head'][j],
+      email: `recipient${j + 1}@company.com`,
+      department: ['HR', 'Engineering', 'Operations'][j],
+      avatar: ''
+    })),
+    adminComments: Math.random() > 0.7 ? 'Please provide medical certificate' : undefined,
+    attachmentUrl: Math.random() > 0.8 ? '/dummy-file.pdf' : undefined
+  }));
 };
 
-const mockLeaveBalances: LeaveBalance[] = [
-  { type: 'Annual', taken: 8, remaining: 12, totalAllocated: 20 },
-  { type: 'Sick', taken: 2, remaining: 8, totalAllocated: 10 },
-  { type: 'Casual', taken: 2, remaining: 5, totalAllocated: 7 }
+const generateMockNotifications = (): LeaveNotification[] => {
+  const types = ['leave_request', 'leave_approved', 'leave_rejected', 'leave_on_hold', 'details_requested'];
+  const priorities = ['high', 'medium', 'low'];
+
+  return Array.from({ length: 8 }, (_, i) => ({
+    id: `notif-${i + 1}`,
+    type: types[Math.floor(Math.random() * types.length)] as any,
+    message: [
+      'Your leave request has been approved',
+      'New leave request requires your approval',
+      'Your leave request has been put on hold pending additional information',
+      'Your leave request was rejected due to scheduling conflicts',
+      'Additional details required for your leave request'
+    ][Math.floor(Math.random() * 5)],
+    fromEmployee: ['John Doe', 'Jane Smith', 'HR Department'][Math.floor(Math.random() * 3)],
+    timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+    read: Math.random() > 0.5,
+    priority: priorities[Math.floor(Math.random() * priorities.length)] as any,
+    leaveRequestId: `req-${Math.floor(Math.random() * 15) + 1}`
+  }));
+};
+
+const generateMockStats = (): DashboardStats => ({
+  pendingRequests: Math.floor(Math.random() * 15) + 5,
+  approvedThisMonth: Math.floor(Math.random() * 20) + 10,
+  rejectedThisMonth: Math.floor(Math.random() * 5) + 1,
+  onLeaveToday: Math.floor(Math.random() * 8) + 2
+});
+
+const generateMockLeaveBalances = (): LeaveBalance[] => [
+  { type: 'Annual', totalAllocated: 20, taken: 7, remaining: 13 },
+  { type: 'Sick', totalAllocated: 10, taken: 2, remaining: 8 },
+  { type: 'Casual', totalAllocated: 12, taken: 4, remaining: 8 },
+  { type: 'Maternity', totalAllocated: 180, taken: 0, remaining: 180 },
+  { type: 'Paternity', totalAllocated: 10, taken: 0, remaining: 10 }
 ];
 
-const mockPolicies: LeavePolicy[] = [
+const generateMockPolicies = (): LeavePolicy[] => [
   {
     type: 'Annual Leave',
-    eligibility: 'All full-time employees are eligible after 6 months of service.',
-    workflow: 'Employees must submit a leave request through the HR portal at least 2 weeks in advance. Manager approval is required.',
-    documentation: 'Company Leave Policy V2.1'
+    eligibility: 'All full-time employees after 3 months of service',
+    workflow: 'Submit at least 2 weeks in advance for approval',
+    documentation: 'No documentation required'
   },
   {
     type: 'Sick Leave',
-    eligibility: 'All employees are eligible from their start date.',
-    workflow: 'For absences of 3 or more days, a doctor\'s note is required. Notify your manager by 9 AM on the first day of absence.',
-    documentation: 'Sick Leave Policy Addendum'
-  },
-  {
-    type: 'Casual Leave',
-    eligibility: 'All full-time employees are eligible after 3 months of service.',
-    workflow: 'Requires manager approval. Should be used for unforeseen personal matters.',
-    documentation: 'N/A'
+    eligibility: 'All employees from date of joining',
+    workflow: 'Notify manager on first day of absence',
+    documentation: 'Medical certificate required for absences longer than 3 days'
   }
 ];
 
+const mockEmployees: Employee[] = [
+  { id: '1', name: 'Sarah Johnson', email: 'sarah.j@company.com', department: 'HR', role: 'HR Manager', avatar: '' },
+  { id: '2', name: 'Mike Chen', email: 'mike.c@company.com', department: 'Engineering', role: 'Team Lead', avatar: '' },
+];
+
+// Mock API functions
+const leaveApi = {
+  getMyLeaveRequests: async (): Promise<LeaveRequest[]> => {
+    return new Promise(resolve => {
+      setTimeout(() => resolve(generateMockLeaveRequests()), 800);
+    });
+  },
+
+  getLeaveNotifications: async (): Promise<LeaveNotification[]> => {
+    return new Promise(resolve => {
+      setTimeout(() => resolve(generateMockNotifications()), 600);
+    });
+  },
+
+  getDashboardStats: async (): Promise<DashboardStats> => {
+    return new Promise(resolve => {
+      setTimeout(() => resolve(generateMockStats()), 500);
+    });
+  },
+
+  getLeaveBalance: async (employeeId: string): Promise<LeaveBalance[]> => {
+    return new Promise(resolve => {
+      setTimeout(() => resolve(generateMockLeaveBalances()), 400);
+    });
+  },
+
+  getLeavePolicies: async (): Promise<LeavePolicy[]> => {
+    return new Promise(resolve => {
+      setTimeout(() => resolve(generateMockPolicies()), 300);
+    });
+  },
+
+  createLeaveRequest: async (request: LeaveRequest): Promise<void> => {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        message.info(`HR has been notified of your leave request`);
+        resolve();
+      }, 1000);
+    });
+  },
+
+  markNotificationAsRead: async (notificationId: string): Promise<void> => {
+    return new Promise(resolve => {
+      setTimeout(() => resolve(), 300);
+    });
+  },
+
+  markAllNotificationsAsRead: async (): Promise<void> => {
+    return new Promise(resolve => {
+      setTimeout(() => resolve(), 500);
+    });
+  }
+};
+
 const EmployeeLeaveManagement: React.FC = () => {
-  const [currentTab, setCurrentTab] = useState('dashboard');
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null);
-  const [form] = Form.useForm();
-  const [showRequestForm, setShowRequestForm] = useState(false);
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(mockLeaveRequests);
-  const [notifications, setNotifications] = useState<LeaveNotification[]>(mockNotifications);
-  const [stats, setStats] = useState<DashboardStats>(mockStats);
-  const [leaveBalances] = useState<LeaveBalance[]>(mockLeaveBalances);
-  const [policies] = useState<LeavePolicy[]>(mockPolicies);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+  const [notifications, setNotifications] = useState<LeaveNotification[]>([]);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [leaveBalances, setLeaveBalances] = useState<LeaveBalance[]>([]);
+  const [policies, setPolicies] = useState<LeavePolicy[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showRequestForm, setShowRequestForm] = useState(false);
+  const [calendarVisible, setCalendarVisible] = useState(false);
 
+  const [form] = Form.useForm();
   const { isDarkMode } = useTheme();
+  const screens = useBreakpoint();
 
+  // Fetch all data on mount
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [requests, notifs, statsData, balances, policiesData] = await Promise.all([
+        leaveApi.getMyLeaveRequests(),
+        leaveApi.getLeaveNotifications(),
+        leaveApi.getDashboardStats(),
+        leaveApi.getLeaveBalance('current-user'),
+        leaveApi.getLeavePolicies()
+      ]);
+
+      setLeaveRequests(requests);
+      setNotifications(notifs);
+      setStats(statsData);
+      setLeaveBalances(balances);
+      setPolicies(policiesData);
+    } catch (error) {
+      message.error('Failed to load leave management data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Submit Leave Request
   const handleLeaveRequestSubmit = async (formData: any) => {
     setLoading(true);
     try {
-      // Create leave request
       const newRequest: LeaveRequest = {
         id: Date.now().toString(),
         employeeId: 'current-user',
-        employeeName: 'Current User',
-        employeeEmail: 'current@company.com',
+        employeeName: 'John Doe',
+        employeeEmail: 'john.doe@company.com',
         department: 'Engineering',
         ...formData,
         from: formData.dates[0].format('YYYY-MM-DD'),
         to: formData.dates[1].format('YYYY-MM-DD'),
         duration: formData.dates[1].diff(formData.dates[0], 'days') + 1,
-        status: 'Pending'
+        status: 'Pending',
+        appliedAt: new Date().toISOString(),
+        recipientDetails: formData.recipientDetails || []
       };
 
-      // Add to requests
+      await leaveApi.createLeaveRequest(newRequest);
       setLeaveRequests(prev => [newRequest, ...prev]);
+      setStats(prev => prev ? { ...prev, pendingRequests: prev.pendingRequests + 1 } : null);
 
-      // Trigger email notifications
-      await leaveApi.sendLeaveNotificationEmail({
-        requestId: newRequest.id,
-        recipientIds: newRequest.recipients,
-        type: 'request'
-      });
+      // Add notification for HR
+      const newNotification: LeaveNotification = {
+        id: `notif-${Date.now()}`,
+        type: 'leave_request',
+        message: `New leave request from John Doe (${formData.type} Leave)`,
+        fromEmployee: 'John Doe',
+        timestamp: new Date().toLocaleDateString(),
+        read: false,
+        priority: 'medium',
+        leaveRequestId: newRequest.id
+      };
 
-      // Update stats
-      setStats(prev => ({ ...prev, pendingRequests: prev.pendingRequests + 1 }));
+      setNotifications(prev => [newNotification, ...prev]);
 
-      message.success('Leave request submitted successfully! Notifications sent to selected recipients.');
+      message.success('Leave request submitted successfully! HR has been notified.');
       setShowRequestForm(false);
     } catch (error) {
       message.error('Failed to submit leave request');
@@ -165,59 +272,12 @@ const EmployeeLeaveManagement: React.FC = () => {
     }
   };
 
-  const handleApprovalAction = async (approval: LeaveApprovalRequest) => {
-    setLoading(true);
-    try {
-      // Process approval
-      await leaveApi.processLeaveApproval(approval);
-
-      // Update request status
-      setLeaveRequests(prev => prev.map(req =>
-        req.id === approval.requestId
-          ? {
-              ...req,
-              status: approval.action === 'approve' ? 'Approved' :
-                      approval.action === 'reject' ? 'Rejected' :
-                      approval.action === 'hold' ? 'On Hold' : req.status,
-              adminComments: approval.comments
-            }
-          : req
-      ));
-
-      // Update stats
-      if (approval.action === 'approve') {
-        setStats(prev => ({
-          ...prev,
-          pendingRequests: prev.pendingRequests - 1,
-          approvedThisMonth: prev.approvedThisMonth + 1
-        }));
-      } else if (approval.action === 'reject') {
-        setStats(prev => ({
-          ...prev,
-          pendingRequests: prev.pendingRequests - 1,
-          rejectedThisMonth: prev.rejectedThisMonth + 1
-        }));
-      }
-
-      message.success(`Leave request ${approval.action}d successfully`);
-    } catch (error) {
-      message.error('Failed to process approval');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleNotificationClick = (notification: LeaveNotification) => {
-    // No longer navigating to specific tab, just handle notification click
-  };
-
+  // Notification Handlers
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       await leaveApi.markNotificationAsRead(notificationId);
-      setNotifications(prev => prev.map(n =>
-        n.id === notificationId ? { ...n, read: true } : n
-      ));
-    } catch (error) {
+      setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, read: true } : n));
+    } catch {
       message.error('Failed to mark notification as read');
     }
   };
@@ -227,86 +287,134 @@ const EmployeeLeaveManagement: React.FC = () => {
       await leaveApi.markAllNotificationsAsRead();
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       message.success('All notifications marked as read');
-    } catch (error) {
-      message.error('Failed to mark all notifications as read');
+    } catch {
+      message.error('Failed to mark all as read');
     }
   };
 
-  const headerActions = (
-    <Space>
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        onClick={() => {
-          setSelectedRequest(null);
-          setShowRequestForm(true);
-        }}
-      >
-        Request Leave
-      </Button>
-    </Space>
-  );
+  const handleNotificationClick = (notification: LeaveNotification) => {
+    // Mark as read when clicked
+    if (!notification.read) {
+      handleMarkAsRead(notification.id);
+    }
+
+    message.info(`Notification: ${notification.message}`);
+  };
 
   return (
     <Wrapper isDarkMode={isDarkMode}>
       <HeaderComponent
-        title="Employee Leave Management"
-        subtitle="Manage your leave requests and balances"
+        title="Leave Management"
+        subtitle="Manage your leave requests and track your leave balance"
         breadcrumbItems={[
           { title: 'Home', href: '/' },
-          { title: 'Employee', href: '/employee' },
           { title: 'Leave Management' },
         ]}
-        extraButtons={[headerActions]}
+        extraButtons={[
+          <Button
+            key="request"
+            type="primary"
+            icon={<Plus size={16} />}
+            onClick={() => setShowRequestForm(true)}
+            size={screens.xs ? "small" : "middle"}
+          >
+            {screens.xs ? "Request" : "Request Leave"}
+          </Button>,
+          <Button
+            key="calendar"
+            icon={<Calendar size={16} />}
+            onClick={() => setCalendarVisible(true)}
+            size={screens.xs ? "small" : "middle"}
+          >
+            {screens.xs ? "Calendar" : "View Calendar"}
+          </Button>,
+          <Button
+            key="refresh"
+            icon={<RefreshCw size={16} />}
+            onClick={fetchData}
+            size={screens.xs ? "small" : "middle"}
+          >
+            {screens.xs ? "Refresh" : "Refresh Data"}
+          </Button>
+        ]}
         isDarkMode={isDarkMode}
       />
 
-      <Tabs defaultActiveKey="dashboard" activeKey={currentTab} onChange={setCurrentTab} style={{ marginBottom: 24 }}>
-        <Tabs.TabPane tab="Dashboard" key="dashboard">
-          <Row gutter={[16, 16]}>
-            <Col xs={24} lg={16}>
-              <StyledCard title="Leave Dashboard" isDarkMode={isDarkMode} style={{ marginBottom: '16px' }}>
-                <LeaveDashboardStats stats={stats} />
-              </StyledCard>
-              <StyledCard title="Leave Calendar" isDarkMode={isDarkMode} style={{ marginBottom: '16px' }}>
-                <LeaveCalendar requests={leaveRequests} />
-              </StyledCard>
-              <StyledCard title="Leave History" isDarkMode={isDarkMode}>
-                <LeaveHistoryTable leaveRequests={leaveRequests} />
-              </StyledCard>
-            </Col>
-            <Col xs={24} lg={8}>
-              <StyledCard title="Leave Summary" isDarkMode={isDarkMode} style={{ marginBottom: '16px' }}>
-                <LeaveSummaryPanel leaveBalances={leaveBalances} />
-              </StyledCard>
-              <StyledCard title="Notifications" isDarkMode={isDarkMode} style={{ marginBottom: '16px' }}>
-                <LeaveNotificationPanel
-                  notifications={notifications}
-                  onNotificationClick={handleNotificationClick}
-                  onMarkAsRead={handleMarkAsRead}
-                  onMarkAllAsRead={handleMarkAllAsRead}
-                />
-              </StyledCard>
-              <StyledCard title="Approval Workflow" isDarkMode={isDarkMode} style={{ marginBottom: '16px' }}>
-                <LeaveApprovalWorkflow
-                  pendingApprovals={leaveRequests.filter(req => req.status === 'Pending')}
-                  onApprove={handleApprovalAction}
-                  onReject={handleApprovalAction}
-                />
-              </StyledCard>
-              <StyledCard title="Policy Guidelines" isDarkMode={isDarkMode}>
-                <PolicyGuidelines policies={policies} />
-              </StyledCard>
-            </Col>
-          </Row>
-        </Tabs.TabPane>
-      </Tabs>
+      <ActionBar>
+        <Title level={4} style={{ margin: 0, color: isDarkMode ? '#e6e6e6' : 'inherit' }}>
+          My Leave Dashboard
+        </Title>
+      </ActionBar>
+
+      <Spin spinning={loading}>
+        <Row gutter={[16, 16]}>
+          {/* Left Column - Main Content */}
+          <Col xs={24} lg={16}>
+            <StyledCard 
+              title="Leave Overview"
+              isDarkMode={isDarkMode}
+            >
+              {stats && <LeaveDashboardStats stats={stats} loading={loading} />}
+            </StyledCard>
+
+            <StyledCard 
+              title="Leave History" 
+              isDarkMode={isDarkMode}
+              style={{ marginTop: 16 }}
+            >
+              <LeaveHistoryTable leaveRequests={leaveRequests} loading={loading} />
+            </StyledCard>
+          </Col>
+
+          {/* Right Column - Sidebar */}
+          <Col xs={24} lg={8}>
+            <StyledCard title="Leave Balance" isDarkMode={isDarkMode}>
+              <LeaveSummaryPanel leaveBalances={leaveBalances} />
+            </StyledCard>
+
+            <StyledCard 
+              title="Notifications" 
+              isDarkMode={isDarkMode}
+              style={{ marginTop: 16 }}
+            >
+              <LeaveNotificationPanel
+                notifications={notifications}
+                onNotificationClick={handleNotificationClick}
+                onMarkAsRead={handleMarkAsRead}
+                onMarkAllAsRead={handleMarkAllAsRead}
+              />
+            </StyledCard>
+
+            <StyledCard 
+              title="Policy Guidelines" 
+              isDarkMode={isDarkMode}
+              style={{ marginTop: 16 }}
+            >
+              <PolicyGuidelines policies={policies} />
+            </StyledCard>
+          </Col>
+        </Row>
+      </Spin>
+
+      <Modal
+        title="Leave Calendar"
+        open={calendarVisible}
+        onCancel={() => setCalendarVisible(false)}
+        footer={null}
+        width={screens.xs ? "100%" : 1000}
+        style={{ maxWidth: '100vw' }}
+        centered
+        bodyStyle={{ padding: screens.xs ? '8px' : '16px' }}
+      >
+        <LeaveCalendar requests={leaveRequests} />
+      </Modal>
 
       <LeaveRequestForm
         visible={showRequestForm}
         onCancel={() => setShowRequestForm(false)}
         onSubmit={handleLeaveRequestSubmit}
         loading={loading}
+        employees={mockEmployees}
       />
     </Wrapper>
   );
