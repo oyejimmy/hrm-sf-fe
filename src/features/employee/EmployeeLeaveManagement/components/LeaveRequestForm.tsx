@@ -113,10 +113,16 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
       title="Submit Leave Request"
       open={visible}
       onCancel={handleCancel}
-      footer={null}
+      footer={[
+        <Button onClick={handleCancel}>Cancel</Button>,
+        <Button type="primary" htmlType="submit" icon={<Send size={16} />} loading={loading}>
+          Submit Request
+        </Button>,
+      ]}
       width={700}
       centered
       style={{ maxWidth: '90vw' }}
+      closeIcon={null}
     >
       <Form
         form={form}
@@ -183,7 +189,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
           label="Notify Recipients"
           name="recipients"
           rules={[{ required: true, message: 'Please select at least one recipient' }]}
-          help="Select HR managers, team leads, or other stakeholders who should be notified"
+          help="Select HR managers, team leads, or other Team member who should be notified"
         >
           <Select
             mode="multiple"
@@ -217,9 +223,9 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
                     {recipient.department}
                   </div>
                 </RecipientInfo>
-                <Button 
-                  type="text" 
-                  icon={<X size={14} />} 
+                <Button
+                  type="text"
+                  icon={<X size={14} />}
                   onClick={() => removeRecipient(recipient.id)}
                   size="small"
                 />
@@ -230,10 +236,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
 
         <Form.Item>
           <Space>
-            <Button type="primary" htmlType="submit" icon={<Send size={16} />} loading={loading}>
-              Submit Request
-            </Button>
-            <Button onClick={handleCancel}>Cancel</Button>
+
           </Space>
         </Form.Item>
       </Form>
