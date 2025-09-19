@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Table, Tag, Space, Button, Tooltip, DatePicker, Select, Input, Modal, Form, message } from 'antd';
-import { Eye, Edit, Download, Search, Filter } from 'lucide-react';
+import { Download } from 'lucide-react';
 import styled from 'styled-components';
 import { AttendanceRecord, AttendanceOverride } from '../types';
 import { attendanceApi } from '../../../../services/api/attendanceApi';
@@ -41,7 +41,6 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
   records,
   loading = false,
   showEmployeeColumn = false,
-  allowEdit = false,
   onRecordUpdate
 }) => {
   const [filteredRecords, setFilteredRecords] = useState(records);
@@ -60,10 +59,10 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
 
   const formatTime = (timestamp?: string) => {
     if (!timestamp) return '-';
-    return new Date(timestamp).toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
+    return new Date(timestamp).toLocaleTimeString('en-US', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: true 
+      hour12: true
     });
   };
 
@@ -71,18 +70,6 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
     const h = Math.floor(hours);
     const m = Math.round((hours - h) * 60);
     return `${h}h ${m}m`;
-  };
-
-  const handleEdit = (record: AttendanceRecord) => {
-    setEditModal({ visible: true, record });
-    form.setFieldsValue({
-      checkIn: record.checkIn ? new Date(record.checkIn).toTimeString().slice(0, 5) : '',
-      checkOut: record.checkOut ? new Date(record.checkOut).toTimeString().slice(0, 5) : '',
-      breakStart: record.breakStart ? new Date(record.breakStart).toTimeString().slice(0, 5) : '',
-      breakEnd: record.breakEnd ? new Date(record.breakEnd).toTimeString().slice(0, 5) : '',
-      status: record.status,
-      notes: record.notes || ''
-    });
   };
 
   const handleEditSubmit = async (values: any) => {
@@ -103,7 +90,7 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
       message.success('Attendance record updated successfully');
       setEditModal({ visible: false });
       form.resetFields();
-      
+
       if (onRecordUpdate) {
         onRecordUpdate({ ...editModal.record, ...values });
       }
@@ -135,7 +122,7 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
       const blob = await attendanceApi.exportAttendanceReport({
         records: filteredRecords.map(r => r.id)
       });
-      
+
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -145,7 +132,7 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
+
       message.success('Report exported successfully');
     } catch (error) {
       message.error('Failed to export report');
@@ -236,33 +223,17 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
         </Space>
       )
     },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (record: AttendanceRecord) => (
-        <Space>
-          <Tooltip title="View Details">
-            <Button size="small" icon={<Eye size={14} />} />
-          </Tooltip>
-          {allowEdit && (
-            <Tooltip title="Edit Record">
-              <Button size="small" icon={<Edit size={14} />} onClick={() => handleEdit(record)} />
-            </Tooltip>
-          )}
-        </Space>
-      )
-    }
   ];
 
   return (
     <>
       <FilterContainer>
-        <RangePicker 
+        <RangePicker
           placeholder={['Start Date', 'End Date']}
           onChange={(dates) => handleFilter({ dateRange: dates })}
         />
-        <Select 
-          placeholder="Filter by Status" 
+        <Select
+          placeholder="Filter by Status"
           style={{ width: 150 }}
           allowClear
           onChange={(status) => handleFilter({ status })}
