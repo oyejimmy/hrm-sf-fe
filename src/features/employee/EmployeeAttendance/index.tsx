@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, message, Card, Button, Modal } from 'antd';
+import {  message, Button, Modal } from 'antd';
 import { LucideEye } from 'lucide-react';
-import styled from 'styled-components';
 import HeaderComponent from '../../../components/PageHeader';
 import { Wrapper } from '../../../components/Wrapper';
 import AttendanceClockPanel from './components/AttendanceClockPanel';
@@ -17,45 +16,7 @@ import { useAttendance } from '../../../hooks/useAttendance';
 import { useTheme } from '../../../contexts/ThemeContext';
 import AttendanceNotificationPanel from './components/AttendanceNotificationPanel';
 import AttendanceOverviewPanel from './components/AttendanceOverviewPanel';
-
-const StyledCard = styled(Card) <{ isDarkMode: boolean }>`
-  background: ${(props: any) => props.isDarkMode ? '#1f1f1f' : 'white'};
-  border: none;
-  border-radius: 16px;
-  margin-bottom: 24px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-  overflow: hidden;
-  
-  .ant-card-head {
-    border-bottom: 1px solid ${(props: any) => props.isDarkMode ? '#2a2a2a' : '#f0f0f0'};
-    background: ${(props: any) => props.isDarkMode ? '#1a1a1a' : '#fafafa'};
-  }
-  
-  .ant-card-head-title {
-    color: var(--text-color);
-    font-weight: 600;
-    font-size: 18px;
-  }
-  
-  .ant-card-body {
-    padding: 0;
-  }
-`;
-
-const ResponsiveRow = styled(Row)`
-  margin-bottom: 24px;
-  
-  @media (max-width: 768px) {
-    margin: 0 -8px 16px -8px;
-  }
-`;
-
-const ResponsiveCol = styled(Col)`
-  @media (max-width: 768px) {
-    padding: 0 8px;
-    margin-bottom: 16px;
-  }
-`;
+import { ResponsiveCol, ResponsiveRow, StyledCard } from './components/styles';
 
 // Mock data
 const mockTodayAttendance: TodayAttendance = {

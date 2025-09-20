@@ -1,68 +1,59 @@
-import React, { useState } from 'react';
-import { Table, Tag, Space, Button, Tooltip, DatePicker, Select, Input, Modal, Form, message } from 'antd';
-import { Download } from 'lucide-react';
-import styled from 'styled-components';
-import { AttendanceRecord, AttendanceOverride } from '../types';
-import { attendanceApi } from '../../../../services/api/attendanceApi';
+import React, { useState } from "react";
+import {
+  Table,
+  Tag,
+  Space,
+  Button,
+  DatePicker,
+  Select,
+  Input,
+  Modal,
+  Form,
+  message,
+} from "antd";
+import { Download } from "lucide-react";
+import { FilterContainer, TimeCell, TimeText } from "./styles";
+import { AttendanceRecord, AttendanceOverride } from "../types";
+import { attendanceApi } from "../../../../services/api/attendanceApi";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 const { TextArea } = Input;
 
-const FilterContainer = styled.div`
-  display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  align-items: center;
-`;
-
-const TimeCell = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
-
-const TimeText = styled.span<{ $type: 'primary' | 'secondary' }>`
-  font-size: ${props => props.$type === 'primary' ? '14px' : '12px'};
-  color: ${props => props.$type === 'primary' ? 'var(--text-color)' : 'var(--text-secondary)'};
-  font-weight: ${props => props.$type === 'primary' ? '500' : '400'};
-`;
-
-interface AttendanceHistoryTableProps {
-  records: AttendanceRecord[];
-  loading?: boolean;
-  showEmployeeColumn?: boolean;
-  allowEdit?: boolean;
-  onRecordUpdate?: (record: AttendanceRecord) => void;
-}
-
-const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
+const AttendanceHistoryTable = ({
   records,
   loading = false,
   showEmployeeColumn = false,
-  onRecordUpdate
-}) => {
+  onRecordUpdate,
+}: any) => {
   const [filteredRecords, setFilteredRecords] = useState(records);
-  const [editModal, setEditModal] = useState<{ visible: boolean; record?: AttendanceRecord }>({ visible: false });
+  const [editModal, setEditModal] = useState<{
+    visible: boolean;
+    record?: AttendanceRecord;
+  }>({ visible: false });
   const [form] = Form.useForm();
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Present': return 'green';
-      case 'Absent': return 'red';
-      case 'Late': return 'orange';
-      case 'On Leave': return 'blue';
-      default: return 'default';
+      case "Present":
+        return "green";
+      case "Absent":
+        return "red";
+      case "Late":
+        return "orange";
+      case "On Leave":
+        return "blue";
+      default:
+        return "default";
     }
   };
 
   const formatTime = (timestamp?: string) => {
-    if (!timestamp) return '-';
-    return new Date(timestamp).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
+    if (!timestamp) return "-";
+    return new Date(timestamp).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
@@ -78,16 +69,16 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
     try {
       const override: AttendanceOverride = {
         attendanceId: editModal.record.id,
-        field: 'checkIn', // This would be dynamic based on what changed
-        oldValue: editModal.record.checkIn || '',
+        field: "checkIn", // This would be dynamic based on what changed
+        oldValue: editModal.record.checkIn || "",
         newValue: values.checkIn,
-        reason: values.reason || 'Manual correction',
-        overriddenBy: 'Current User',
-        overriddenAt: new Date().toISOString()
+        reason: values.reason || "Manual correction",
+        overriddenBy: "Current User",
+        overriddenAt: new Date().toISOString(),
       };
 
       await attendanceApi.overrideAttendance(override);
-      message.success('Attendance record updated successfully');
+      message.success("Attendance record updated successfully");
       setEditModal({ visible: false });
       form.resetFields();
 
@@ -95,91 +86,93 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
         onRecordUpdate({ ...editModal.record, ...values });
       }
     } catch (error) {
-      message.error('Failed to update attendance record');
+      message.error("Failed to update attendance record");
     }
   };
 
   const handleFilter = (filters: any) => {
     let filtered = [...records];
-
     if (filters.status) {
-      filtered = filtered.filter(record => record.status === filters.status);
+      filtered = filtered.filter((record) => record.status === filters.status);
     }
-
     if (filters.dateRange) {
       const [start, end] = filters.dateRange;
-      filtered = filtered.filter(record => {
+      filtered = filtered.filter((record) => {
         const recordDate = new Date(record.date);
         return recordDate >= start && recordDate <= end;
       });
     }
-
     setFilteredRecords(filtered);
   };
 
   const handleExport = async () => {
     try {
       const blob = await attendanceApi.exportAttendanceReport({
-        records: filteredRecords.map(r => r.id)
+        records: filteredRecords.map((r: any) => r.id),
       });
-
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      const sanitizedDate = new Date().toISOString().split('T')[0].replace(/[^\w\-]/g, '');
+      const sanitizedDate = new Date()
+        .toISOString()
+        .split("T")[0]
+        .replace(/[^\w\-]/g, "");
       a.download = `attendance-report-${sanitizedDate}.xlsx`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-
-      message.success('Report exported successfully');
+      message.success("Report exported successfully");
     } catch (error) {
-      message.error('Failed to export report');
+      message.error("Failed to export report");
     }
   };
 
-  const columns = [
-    ...(showEmployeeColumn ? [{
-      title: 'Employee',
-      key: 'employee',
-      render: (record: AttendanceRecord) => (
-        <Space direction="vertical" size={0}>
-          <span style={{ fontWeight: 500 }}>{record.employeeName}</span>
-          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-            {record.department}
-          </span>
-        </Space>
-      )
-    }] : []),
+  const columns: any = [
+    ...(showEmployeeColumn
+      ? [
+          {
+            title: "Employee",
+            key: "employee",
+            render: (record: AttendanceRecord) => (
+              <Space direction="vertical" size={0}>
+                <span style={{ fontWeight: 500 }}>{record.employeeName}</span>
+                <span
+                  style={{ fontSize: "12px", color: "var(--text-secondary)" }}
+                >
+                  {record.department}
+                </span>
+              </Space>
+            ),
+          },
+        ]
+      : []),
     {
-      title: 'Date',
-      dataIndex: 'date',
-      key: 'date',
-      render: (date: string) => new Date(date).toLocaleDateString()
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
+      render: (date: string) => new Date(date).toLocaleDateString(),
     },
     {
-      title: 'Check In',
-      key: 'checkIn',
+      title: "Check In",
+      key: "checkIn",
       render: (record: AttendanceRecord) => (
         <TimeCell>
           <TimeText $type="primary">{formatTime(record.checkIn)}</TimeText>
-          {record.status === 'Late' && (
-            <Tag color="orange">Late</Tag>
-          )}
+          {record.status === "Late" && <Tag color="orange">Late</Tag>}
         </TimeCell>
-      )
+      ),
     },
     {
-      title: 'Check Out',
-      key: 'checkOut',
+      title: "Check Out",
+      key: "checkOut",
       render: (record: AttendanceRecord) => (
         <TimeText $type="primary">{formatTime(record.checkOut)}</TimeText>
-      )
+      ),
     },
     {
-      title: 'Break Time',
-      key: 'break',
+      title: "Break Time",
+      key: "break",
       render: (record: AttendanceRecord) => (
         <TimeCell>
           {record.breakStart && (
@@ -196,32 +189,32 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
             </>
           )}
         </TimeCell>
-      )
+      ),
     },
     {
-      title: 'Working Hours',
-      key: 'workingHours',
+      title: "Working Hours",
+      key: "workingHours",
       render: (record: AttendanceRecord) => (
         <Space direction="vertical" size={0}>
-          <TimeText $type="primary">{formatDuration(record.workingHours)}</TimeText>
+          <TimeText $type="primary">
+            {formatDuration(record.workingHours)}
+          </TimeText>
           <TimeText $type="secondary">
             Total: {formatDuration(record.totalHours)}
           </TimeText>
         </Space>
-      )
+      ),
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
       render: (status: string, record: AttendanceRecord) => (
         <Space direction="vertical" size={4}>
           <Tag color={getStatusColor(status)}>{status}</Tag>
-          {record.isManualEntry && (
-            <Tag color="purple">Manual</Tag>
-          )}
+          {record.isManualEntry && <Tag color="purple">Manual</Tag>}
         </Space>
-      )
+      ),
     },
   ];
 
@@ -229,7 +222,7 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
     <>
       <FilterContainer>
         <RangePicker
-          placeholder={['Start Date', 'End Date']}
+          placeholder={["Start Date", "End Date"]}
           onChange={(dates) => handleFilter({ dateRange: dates })}
         />
         <Select
@@ -265,7 +258,7 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
         width={600}
       >
         <Form form={form} layout="vertical" onFinish={handleEditSubmit}>
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space direction="vertical" style={{ width: "100%" }}>
             <Form.Item label="Check In Time" name="checkIn">
               <Input type="time" />
             </Form.Item>
@@ -286,16 +279,27 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
                 <Option value="On Leave">On Leave</Option>
               </Select>
             </Form.Item>
-            <Form.Item label="Reason for Change" name="reason" rules={[{ required: true }]}>
-              <TextArea rows={3} placeholder="Explain why this change is being made" />
+            <Form.Item
+              label="Reason for Change"
+              name="reason"
+              rules={[{ required: true }]}
+            >
+              <TextArea
+                rows={3}
+                placeholder="Explain why this change is being made"
+              />
             </Form.Item>
             <Form.Item label="Notes" name="notes">
               <TextArea rows={2} />
             </Form.Item>
           </Space>
           <Space style={{ marginTop: 16 }}>
-            <Button type="primary" htmlType="submit">Update Record</Button>
-            <Button onClick={() => setEditModal({ visible: false })}>Cancel</Button>
+            <Button type="primary" htmlType="submit">
+              Update Record
+            </Button>
+            <Button onClick={() => setEditModal({ visible: false })}>
+              Cancel
+            </Button>
           </Space>
         </Form>
       </Modal>

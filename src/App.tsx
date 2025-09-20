@@ -54,8 +54,13 @@ import { TeamLeaveRequests } from './features/teamLead/TeamLeaveRequests';
 import { TeamPerformance } from './features/teamLead/TeamPerformance';
 import { TrainingAssignments } from './features/teamLead/TrainingAssignments';
 import { AuthTest } from './features/auth/AuthTest';
-
-
+import isBetween from "dayjs/plugin/isBetween";
+import weekday from "dayjs/plugin/weekday";
+import localeData from "dayjs/plugin/localeData";
+import dayjs from 'dayjs';
+dayjs.extend(isBetween);
+dayjs.extend(weekday);
+dayjs.extend(localeData);
 
 const AppContent: React.FC = () => {
   const { isLoading } = useLoading();

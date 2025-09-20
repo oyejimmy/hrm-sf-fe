@@ -1,66 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Card, List, Badge, Button, Space, Typography, Tag, Empty, Tooltip } from 'antd';
-import { Bell, Check, Clock, Coffee, LogIn, LogOut, AlertTriangle, User } from 'lucide-react';
-import styled from 'styled-components';
+import { Card,  Badge, Button, Space, Typography, Tag, Empty } from 'antd';
+import { Bell, Clock, Coffee, LogIn, LogOut, AlertTriangle, User } from 'lucide-react';
 import { AttendanceNotification } from '../types';
-import { attendanceApi } from '../../../../services/api/attendanceApi';
+// import { attendanceApi } from '../../../../services/api/attendanceApi';
+import {
+  NotificationCard,
+  NotificationHeader,
+  NotificationContent,
+  TimeStamp
+} from './styles';
 
 const { Text } = Typography;
 
-const NotificationCard = styled.div<{ $read: boolean; $priority: string }>`
-  padding: 12px;
-  border-radius: 6px;
-  border-left: 4px solid ${props => 
-    props.$priority === 'high' ? '#ff4d4f' :
-    props.$priority === 'medium' ? '#faad14' : '#52c41a'
-  };
-  background: ${props => props.$read ? 'var(--surface)' : 'var(--surface-secondary)'};
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background: var(--surface-secondary);
-    transform: translateY(-1px);
-  }
-`;
-
-const NotificationHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-`;
-
-const NotificationContent = styled.div`
-  margin-left: 32px;
-`;
-
-const TimeStamp = styled(Text)`
-  font-size: 11px;
-  color: var(--text-secondary);
-`;
-
-interface AttendanceNotificationPanelProps {
-  notifications: AttendanceNotification[];
-  onMarkAsRead: (notificationId: string) => void;
-  onMarkAllAsRead: () => void;
-  showEmployeeInfo?: boolean;
-}
-
-const AttendanceNotificationPanel: React.FC<AttendanceNotificationPanelProps> = ({
+const AttendanceNotificationPanel = ({
   notifications,
   onMarkAsRead,
   onMarkAllAsRead,
   showEmployeeInfo = false
-}) => {
+}: any) => {
   const [localNotifications, setLocalNotifications] = useState(notifications);
 
   useEffect(() => {
     setLocalNotifications(notifications);
   }, [notifications]);
 
-  const unreadCount = localNotifications.filter(n => !n.read).length;
+  const unreadCount = localNotifications.filter((n: any) => !n.read).length;
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -112,8 +76,8 @@ const AttendanceNotificationPanel: React.FC<AttendanceNotificationPanelProps> = 
   const handleNotificationClick = (notification: AttendanceNotification) => {
     if (!notification.read) {
       onMarkAsRead(notification.id);
-      setLocalNotifications(prev => 
-        prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
+      setLocalNotifications((prev: any) => 
+        prev.map((n: any) => n.id === notification.id ? { ...n, read: true } : n)
       );
     }
   };
@@ -121,8 +85,8 @@ const AttendanceNotificationPanel: React.FC<AttendanceNotificationPanelProps> = 
   const handleMarkAsRead = (notificationId: string, event: React.MouseEvent) => {
     event.stopPropagation();
     onMarkAsRead(notificationId);
-    setLocalNotifications(prev => 
-      prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+    setLocalNotifications((prev: any) => 
+      prev.map((n: any) => n.id === notificationId ? { ...n, read: true } : n)
     );
   };
 
@@ -150,7 +114,7 @@ const AttendanceNotificationPanel: React.FC<AttendanceNotificationPanelProps> = 
         />
       ) : (
         <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-          {localNotifications.map(notification => (
+          {localNotifications.map((notification: any) => (
             <NotificationCard
               key={notification.id}
               $read={notification.read}
