@@ -1,73 +1,159 @@
-import React from "react";
-import { Modal, Descriptions, Divider, Tag } from "antd";
-import { Payslip } from "../types";
-import { ModalContent, HighlightedNet } from "./styles";
+import React from 'react';
+import {
+  Modal,
+  Button,
+  Descriptions,
+  Tag,
+  List,
+  Row,
+  Col,
+  Divider,
+  Typography,
+} from 'antd';
+import { PrinterOutlined, DownloadOutlined } from '@ant-design/icons';
+import { Card } from 'antd';
 
-interface Props {
+const { Title, Text } = Typography;
+
+// Mock data to make the component self-contained
+const mockPayslip = {
+  payPeriod: 'November 2024',
+  issueDate: '23 November 2024',
+  status: 'Paid',
+  grossPay: 40000.00,
+  deductions: 50000.00,
+  netPay: 10000.00,
+};
+
+const mockEarnings = [
+  { type: 'Basic Salary', amount: 10000.00 },
+  { type: 'Allowances', amount: 10000.00 },
+  { type: 'Other Benefits', amount: 10000.00 },
+  { type: 'Bonus', amount: 10000.00 },
+];
+
+const mockDeductions = [
+  { type: 'Income Tax', amount: 10000.00 },
+  { type: 'EOBI Deduction', amount: 10000.00 },
+  { type: 'Lunch Deduction', amount: 10000.00 },
+  { type: 'Loan/Advance', amount: 10000.00 },
+  { type: 'Provident Fund', amount: 10000.00 },
+];
+
+interface PayslipDetailsModalProps {
   visible: boolean;
-  onClose: () => void;
-  payslip: Payslip | null;
+  onCancel: () => void;
+  payslip: any;
+  earnings: any[];
+  deductions: any[];
 }
 
-const PayslipDetailsModal: React.FC<Props> = ({ visible, onClose, payslip }) => {
-  if (!payslip) return null;
-
+const PayslipDetailsModal: React.FC<PayslipDetailsModalProps> = ({
+  visible = true,
+  onCancel = () => {},
+  payslip = mockPayslip,
+  earnings = mockEarnings,
+  deductions = mockDeductions,
+}) => {
   return (
     <Modal
+      title={payslip ? `Payslip Details - ${payslip.payPeriod}` : 'Payslip Details'}
       open={visible}
-      onCancel={onClose}
-      footer={null}
-      width={700}
-      title={`Payslip Details - ${payslip.month} ${payslip.year}`}
+      onCancel={onCancel}
+      footer={[
+        <Button key="print" icon={<PrinterOutlined />}>
+          Print
+        </Button>,
+        <Button key="download" type="primary" icon={<DownloadOutlined />}>
+          Download PDF
+        </Button>,
+      ]}
+      width={800}
+      style={{ top: 20 }}
     >
-      <ModalContent>
-        <Descriptions title="Employee Payslip" bordered column={2} size="small">
-          <Descriptions.Item label="Month">{payslip.month}</Descriptions.Item>
-          <Descriptions.Item label="Year">{payslip.year}</Descriptions.Item>
-          <Descriptions.Item label="Status">
-            <Tag color={payslip.status === "Paid" ? "green" : "orange"}>
-              {payslip.status}
-            </Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="Net Pay">
-            <HighlightedNet>{payslip.netPay} PKR</HighlightedNet>
-          </Descriptions.Item>
-        </Descriptions>
+      {payslip && (
+        <div style={{ padding: '16px' }}>
+          <Descriptions bordered column={2} style={{ marginBottom: '24px' }}>
+            <Descriptions.Item label="Employee Name">John Doe</Descriptions.Item>
+            <Descriptions.Item label="Employee ID">EMP-12345</Descriptions.Item>
+            <Descriptions.Item label="Pay Period">{payslip.payPeriod}</Descriptions.Item>
+            <Descriptions.Item label="Issue Date">{payslip.issueDate}</Descriptions.Item>
+            <Descriptions.Item label="Payment Method">Direct Deposit</Descriptions.Item>
+            <Descriptions.Item label="Status">
+              <Tag color="green">{payslip.status}</Tag>
+            </Descriptions.Item>
+          </Descriptions>
 
-        <Divider />
+          <Row gutter={16} style={{ marginBottom: '24px' }}>
+            <Col xs={24} md={12}>
+              <Card title="Earnings" size="small" style={{ borderRadius: '8px' }}>
+                <List
+                  dataSource={earnings}
+                  renderItem={(item) => (
+                    <List.Item>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          width: '100%',
+                        }}
+                      >
+                        <Text>{item.type}</Text>
+                        <Text>PKR{item.amount.toFixed(2)}</Text>
+                      </div>
+                    </List.Item>
+                  )}
+                />
+                <Divider style={{ margin: '12px 0' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Text strong>Total Earnings</Text>
+                  <Text strong>PKR{payslip.grossPay.toFixed(2)}</Text>
+                </div>
+              </Card>
+            </Col>
+            <Col xs={24} md={12}>
+              <Card title="Deductions" size="small" style={{ borderRadius: '8px' }}>
+                <List
+                  dataSource={deductions}
+                  renderItem={(item) => (
+                    <List.Item>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          width: '100%',
+                        }}
+                      >
+                        <Text>{item.type}</Text>
+                        <Text>PKR{item.amount.toFixed(2)}</Text>
+                      </div>
+                    </List.Item>
+                  )}
+                />
+                <Divider style={{ margin: '12px 0' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Text strong>Total Deductions</Text>
+                  <Text strong>PKR{payslip.deductions.toFixed(2)}</Text>
+                </div>
+              </Card>
+            </Col>
+          </Row>
 
-        <Descriptions title="Earnings" bordered column={2} size="small">
-          <Descriptions.Item label="Basic">
-            {payslip.earnings.basic} PKR
-          </Descriptions.Item>
-          <Descriptions.Item label="HRA">
-            {payslip.earnings.hra} PKR
-          </Descriptions.Item>
-          <Descriptions.Item label="Bonus">
-            {payslip.earnings.bonus} PKR
-          </Descriptions.Item>
-          <Descriptions.Item label="Allowances">
-            {payslip.earnings.allowances} PKR
-          </Descriptions.Item>
-        </Descriptions>
-
-        <Divider />
-
-        <Descriptions title="Deductions" bordered column={2} size="small">
-          <Descriptions.Item label="Tax">
-            {payslip.deductions.tax} PKR
-          </Descriptions.Item>
-          <Descriptions.Item label="PF">
-            {payslip.deductions.pf} PKR
-          </Descriptions.Item>
-          <Descriptions.Item label="Loan">
-            {payslip.deductions.loan} PKR
-          </Descriptions.Item>
-          <Descriptions.Item label="Others">
-            {payslip.deductions.others} PKR
-          </Descriptions.Item>
-        </Descriptions>
-      </ModalContent>
+          <Card title="Summary" size="small" style={{ borderRadius: '8px' }}>
+            <Descriptions column={1}>
+              <Descriptions.Item label="Gross Earnings">
+                <Text>PKR{payslip.grossPay.toFixed(2)}</Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="Total Deductions">
+                <Text>PKR{payslip.deductions.toFixed(2)}</Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="Net Pay">
+                <Title level={4}>PKR{payslip.netPay.toFixed(2)}</Title>
+              </Descriptions.Item>
+            </Descriptions>
+          </Card>
+        </div>
+      )}
     </Modal>
   );
 };

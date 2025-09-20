@@ -1,19 +1,25 @@
+// components/EmployeePayslip/types/index.ts
 export interface Payslip {
-  id: string;
-  month: string;
-  year: number;
-  earnings: {
-    basic: number;
-    hra: number;
-    bonus: number;
-    allowances: number;
-  };
-  deductions: {
-    tax: number;
-    pf: number;
-    loan: number;
-    others: number;
-  };
+  key: string;
+  payPeriod: string;
+  issueDate: string;
+  grossPay: number;
   netPay: number;
-  status: "Paid" | "Pending";
+  status: string;
+  deductions: number;
+}
+
+export interface Earnings {
+  type: string;
+  amount: number;
+}
+
+export interface Deductions {
+  type: string;
+  amount: number;
+}
+
+export interface PayslipFilters {
+  searchText: string;
+  searchYear: string;
 }
