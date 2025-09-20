@@ -126,7 +126,7 @@ const HeaderComponent = ({
           {subtitle && (
             <Text type="secondary" style={{ color: 'inherit' }}>
               {subtitle}
-            </Text>
+            </Text> 
           )}
         </TitleContainer>
         {/* Render extra content if present */}
