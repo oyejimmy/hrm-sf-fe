@@ -124,7 +124,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
       onCancel={handleCancel} // Handle modal close
       footer={[
         <Button onClick={handleCancel}>Cancel</Button>, // Cancel button
-        <Button type="primary" htmlType="submit" icon={<Send size={16} />} loading={loading}> // Submit button
+        <Button type="primary" htmlType="submit" icon={<Send size={16} />} loading={loading}>
           Submit Request
         </Button>,
       ]}
@@ -146,12 +146,12 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
               rules={[{ required: true, message: 'Please select leave type' }]} // Validation rules
             >
               <Select placeholder="Select leave type"> {/* Select component for leave type */}
-                <Option value="Annual">Annual Leave</Option> // Option for Annual Leave
-                <Option value="Sick">Sick Leave</Option> // Option for Sick Leave
-                <Option value="Casual">Casual Leave</Option> // Option for Casual Leave
-                <Option value="Maternity">Maternity Leave</Option> // Option for Maternity Leave
-                <Option value="Paternity">Paternity Leave</Option> // Option for Paternity Leave
-                <Option value="Unpaid">Unpaid Leave</Option> // Option for Unpaid Leave
+                <Option value="Annual">Annual Leave</Option>
+                <Option value="Sick">Sick Leave</Option>
+                <Option value="Casual">Casual Leave</Option>
+                <Option value="Maternity">Maternity Leave</Option>
+                <Option value="Paternity">Paternity Leave</Option>
+                <Option value="Unpaid">Unpaid Leave</Option>
               </Select>
             </Form.Item>
           </Col>
@@ -162,9 +162,9 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
                 onChange={(e) => setDurationType(e.target.value)} // Handle duration type change
                 buttonStyle="solid" // Solid button style
               >
-                <Radio.Button value="Full Day">Full Day</Radio.Button> // Full Day option
-                <Radio.Button value="Half Day - Morning">Half Day AM</Radio.Button> // Half Day Morning option
-                <Radio.Button value="Half Day - Afternoon">Half Day PM</Radio.Button> // Half Day Afternoon option
+                <Radio.Button value="Full Day">Full Day</Radio.Button>
+                <Radio.Button value="Half Day - Morning">Half Day AM</Radio.Button>
+                <Radio.Button value="Half Day - Afternoon">Half Day PM</Radio.Button>
               </Radio.Group>
             </Form.Item>
           </Col>
@@ -188,12 +188,10 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
 
         <Form.Item label="Attachment (Optional)"> {/* Label for attachment upload */}
           <Upload> {/* Upload component */}
-            <Button icon={<UploadIcon size={16} />}>Upload Document</Button> // Upload button
+            <Button icon={<UploadIcon size={16} />}>Upload Document</Button>
           </Upload>
         </Form.Item>
-
         <Divider>Select Recipients</Divider> {/* Divider for recipient selection section */}
-
         <Form.Item
           label="Notify Recipients" // Label for recipient selection
           name="recipients" // Name of the form item
@@ -216,7 +214,6 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
             ))}
           </Select>
         </Form.Item>
-
         {selectedRecipients.length > 0 && ( // Conditionally render selected recipients section
           <div style={{ marginBottom: 16 }}>
             <div style={{ marginBottom: 8, fontWeight: 500 }}>Selected Recipients:</div>
@@ -242,12 +239,6 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
             ))}
           </div>
         )}
-
-        <Form.Item>
-          <Space>
-
-          </Space>
-        </Form.Item>
       </Form>
     </StyledModal>
   );
