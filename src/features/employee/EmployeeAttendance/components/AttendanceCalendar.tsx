@@ -12,7 +12,6 @@ import {
   Divider,
   Empty,
   Alert,
-  Statistic,
 } from "antd";
 import {
   ChevronLeft,
@@ -32,8 +31,8 @@ import {
   CalendarContainer,
   DetailsGrid,
   DetailItem,
-  StatsCard,
 } from "./styles";
+import { StateCard } from "../../../../components/StateCard";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 
@@ -86,24 +85,6 @@ interface DateSelectorsProps {
   onMonthChange: (month: number) => void;
   onYearChange: (year: number) => void;
   onNavigate: (direction: "prev" | "next") => void;
-}
-
-interface AttendanceStatsProps {
-  records: AttendanceRecord[];
-}
-
-interface DateDetailsProps {
-  date: Dayjs;
-  attendance?: AttendanceRecord;
-  isFutureDate: boolean;
-  isWeekendDate: boolean;
-}
-
-interface StatItemProps {
-  title: string;
-  value: number;
-  icon: React.ReactNode;
-  color: string;
 }
 
 // Status configuration for reusability
@@ -312,30 +293,15 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
   );
 };
 
-// StatItem component
-const StatItem: React.FC<StatItemProps> = ({ title, value, icon, color }) => (
-  <Col xs={12} sm={12} md={12} lg={12} xl={12}>
-    <StatsCard>
-      <Statistic
-        title={title}
-        value={value}
-        prefix={icon}
-        valueStyle={{ color, fontSize: "18px" }}
-        style={{ textAlign: "center" }}
-      />
-    </StatsCard>
-  </Col>
-);
-
-// Reusable component for attendance statistics
-const AttendanceStats: React.FC<AttendanceStatsProps> = ({ records }) => {
-  const stats = useMemo(() => {
-    const statusCounts = Object.keys(STATUS_CONFIG).reduce((acc, status) => {
-      acc[status] = records.filter((r) => r.status === status).length;
+// Now uses your StateCard for each stat
+const AttendanceStats = ({ records }: any) => {
+  const stats: any = useMemo(() => {
+    const statusCounts: any = Object.keys(STATUS_CONFIG).reduce((acc, status) => {
+      acc[status] = records.filter((r: any) => r.status === status).length;
       return acc;
     }, {} as Record<string, number>);
 
-    const workingDays = records.filter((r) =>
+    const workingDays = records.filter((r: any) =>
       ["Present", "Late", "Half Day"].includes(r.status)
     ).length;
 
@@ -346,38 +312,67 @@ const AttendanceStats: React.FC<AttendanceStatsProps> = ({ records }) => {
     };
   }, [records]);
 
+  const items: any = [
+    {
+      label: "Present",
+      value: stats.Present || 0,
+      icon: UserCheck,
+      tone: "pastelGreen" as const,
+    },
+    {
+      label: "Absent",
+      value: stats.Absent || 0,
+      icon: UserX,
+      tone: "pastelPink" as const,
+    },
+    {
+      label: "Late",
+      value: stats.Late || 0,
+      icon: AlertCircle,
+      tone: "lightPeach" as const,
+    },
+    {
+      label: "On Leave",
+      value: (stats as any)["On Leave"] || 0,
+      icon: Coffee,
+      tone: "softLavender" as const,
+    },
+  ];
+
   return (
     <Card
       title="Attendance Summary"
       bordered={false}
-      style={{ marginBottom: "12px" }}
+      style={{ marginBottom: 12 }}
     >
-      <Row gutter={[8, 8]}>
-        <StatItem
-          title="Present"
-          value={(stats as Record<string, number>).Present || 0}
-          icon={<UserCheck size={16} style={{ color: "#52c41a" }} />}
-          color="#52c41a"
-        />
-        <StatItem
-          title="Absent"
-          value={(stats as Record<string, number>).Absent || 0}
-          icon={<UserX size={16} style={{ color: "#f5222d" }} />}
-          color="#f5222d"
-        />
-        <StatItem
-          title="Late"
-          value={(stats as Record<string, number>).Late || 0}
-          icon={<AlertCircle size={16} style={{ color: "#faad14" }} />}
-          color="#faad14"
-        />
-        <StatItem
-          title="On Leave"
-          value={(stats as Record<string, number>)["On Leave"] || 0}
-          icon={<Coffee size={16} style={{ color: "#1890ff" }} />}
-          color="#1890ff"
-        />
+      <Row gutter={[12, 12]}>
+        {items.map((it: any) => (
+          <Col xs={12} sm={12} md={12} lg={12} xl={12} key={it.label}>
+            <StateCard
+              tone={it.tone}
+              label={it.label}
+              icon={it.icon}
+              iconSize={18}
+              titleLevel={3}
+              value={
+                <span>
+                  {it.value}
+                  <Text
+                    style={{
+                      marginLeft: 6,
+                      fontSize: "0.65em",
+                      color: "rgba(0,0,0,0.56)",
+                    }}
+                  >
+                    days
+                  </Text>
+                </span>
+              }
+            />
+          </Col>
+        ))}
       </Row>
+
       <Divider style={{ margin: "12px 0" }} />
       <Space direction="vertical" size="small" style={{ width: "100%" }}>
         <Text strong>Working Days: {stats.workingDays}</Text>
@@ -388,18 +383,15 @@ const AttendanceStats: React.FC<AttendanceStatsProps> = ({ records }) => {
 };
 
 // Reusable component for date details
-const DateDetails: React.FC<DateDetailsProps> = ({
-  date,
-  attendance,
-  isFutureDate,
-  isWeekendDate,
-}) => {
+const DateDetails: React.FC<{
+  date: Dayjs;
+  attendance?: AttendanceRecord;
+  isFutureDate: boolean;
+  isWeekendDate: boolean;
+}> = ({ date, attendance, isFutureDate, isWeekendDate }) => {
   if (isFutureDate) {
     return (
-      <Card
-        title={`${date.format("MMM D, YYYY")}`}
-        style={{ marginTop: "12px" }}
-      >
+      <Card title={`${date.format("MMM D, YYYY")}`} style={{ marginTop: 12 }}>
         <Empty description="Future date - no attendance record available" />
       </Card>
     );
@@ -409,7 +401,7 @@ const DateDetails: React.FC<DateDetailsProps> = ({
     return (
       <Card
         title={`${date.format("MMM D, YYYY")} (Weekend)`}
-        style={{ marginTop: "12px" }}
+        style={{ marginTop: 12 }}
       >
         <Empty description="Weekend - no attendance record" />
       </Card>
@@ -418,10 +410,7 @@ const DateDetails: React.FC<DateDetailsProps> = ({
 
   if (!attendance) {
     return (
-      <Card
-        title={`${date.format("MMM D, YYYY")}`}
-        style={{ marginTop: "12px" }}
-      >
+      <Card title={`${date.format("MMM D, YYYY")}`} style={{ marginTop: 12 }}>
         <Empty description="No attendance record for this date" />
       </Card>
     );
@@ -430,7 +419,7 @@ const DateDetails: React.FC<DateDetailsProps> = ({
   return (
     <DetailCard
       title={`Details - ${date.format("MMM D, YYYY")}`}
-      style={{ marginTop: "12px" }}
+      style={{ marginTop: 12 }}
     >
       <DetailsGrid>
         <DetailItem>
@@ -440,7 +429,7 @@ const DateDetails: React.FC<DateDetailsProps> = ({
               {attendance.status}
             </Tag>
             {attendance.isManualEntry && (
-              <Tag color="purple" style={{ marginLeft: "4px" }}>
+              <Tag color="purple" style={{ marginLeft: 4 }}>
                 Manual Entry
               </Tag>
             )}
@@ -559,7 +548,7 @@ const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
           description="View your attendance records with color-coded status indicators. Click on any date to see details."
           type="info"
           showIcon
-          style={{ marginBottom: "12px" }}
+          style={{ marginBottom: 12 }}
         />
         <StatusLegend>
           {Object.entries(STATUS_CONFIG).map(([status, config]) => (

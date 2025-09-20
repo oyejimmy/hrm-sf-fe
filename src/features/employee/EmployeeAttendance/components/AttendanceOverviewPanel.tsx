@@ -1,28 +1,53 @@
-import { Statistic, Row, Col, Progress, Space, Card } from "antd";
-import {
-  TrendingUp,
-  UserCheck,
-  UserX,
-  AlertCircle,
-  Coffee,
-} from "lucide-react";
-import { StatsCard, StyledCard } from "./styles";
+import React from "react";
+import { Row, Col, Progress, Space, Card, Typography } from "antd";
+import { TrendingUp, UserCheck, UserX, AlertCircle, Coffee } from "lucide-react";
+import { StateCard } from "../../../../components/StateCard";
 
-const StatItem = ({ title, value, icon, color }: any) => (
-  <Col xs={12} sm={12} md={12} lg={12} xl={12}>
-    <StatsCard>
-      <Statistic
-        title={title}
-        value={value}
-        prefix={icon}
-        valueStyle={{ color, fontSize: "18px" }}
-        style={{ textAlign: "center" }}
-      />
-    </StatsCard>
-  </Col>
-);
+const { Text } = Typography;
 
-const AttendanceOverviewPanel = ({ summary, loading }: any) => {
+type Summary = {
+  presentDays?: number;
+  absentDays?: number;
+  lateDays?: number;
+  onLeaveDays?: number;
+  attendancePercentage?: number;
+};
+
+interface Props {
+  summary: Summary;
+  loading?: boolean;
+}
+
+const AttendanceOverviewPanel: React.FC<Props> = ({ summary, loading }) => {
+  const stats = [
+    {
+      label: "Present",
+      value: summary?.presentDays ?? 0,
+      icon: UserCheck,
+      tone: "pastelGreen" as const,
+    },
+    {
+      label: "Absent",
+      value: summary?.absentDays ?? 0,
+      icon: UserX,
+      tone: "pastelPink" as const,
+    },
+    {
+      label: "Late",
+      value: summary?.lateDays ?? 0,
+      icon: AlertCircle,
+      tone: "lightPeach" as const,
+    },
+    {
+      label: "On Leave",
+      value: summary?.onLeaveDays ?? 0,
+      icon: Coffee,
+      tone: "softLavender" as const,
+    },
+  ];
+
+  const attendancePct = Number(summary?.attendancePercentage ?? 0);
+
   return (
     <Card
       loading={loading}
@@ -33,45 +58,44 @@ const AttendanceOverviewPanel = ({ summary, loading }: any) => {
         </Space>
       }
     >
-      <Row gutter={[8, 8]}>
-        <StatItem
-          title="Present"
-          value={summary.presentDays || 0}
-          icon={<UserCheck size={16} style={{ color: "#52c41a" }} />}
-          color="#52c41a"
-        />
-        <StatItem
-          title="Absent"
-          value={summary.absentDays || 0}
-          icon={<UserX size={16} style={{ color: "#f5222d" }} />}
-          color="#f5222d"
-        />
-        <StatItem
-          title="Late"
-          value={summary.lateDays || 0}
-          icon={<AlertCircle size={16} style={{ color: "#faad14" }} />}
-          color="#faad14"
-        />
-        <StatItem
-          title="On Leave"
-          value={0} // Mock data since this value is not in the summary prop
-          icon={<Coffee size={16} style={{ color: "#1890ff" }} />}
-          color="#1890ff"
-        />
+      <Row gutter={[12, 12]}>
+        {stats.map((s: any) => (
+          <Col xs={12} sm={12} md={12} lg={12} xl={12} key={s.label}>
+            <StateCard
+              tone={s.tone}
+              label={s.label}
+              icon={s.icon}
+              iconSize={18}
+              titleLevel={3}
+              value={
+                <span>
+                  {s.value}
+                  <Text style={{ marginLeft: 6, fontSize: "0.65em", color: "rgba(0,0,0,0.56)" }}>
+                    days
+                  </Text>
+                </span>
+              }
+            />
+          </Col>
+        ))}
       </Row>
-      <Row gutter={[16, 16]}>
+
+      <Row gutter={[16, 16]} style={{ marginTop: 8 }}>
         <Col xs={24}>
-          <Statistic
-            title="Attendance Rate"
-            value={`${summary.attendancePercentage}%`}
-            valueStyle={{ color: "#1a237e", fontSize: "24px" }}
-          />
-          <Progress
-            percent={summary.attendancePercentage}
-            status="active"
-            strokeColor={{ from: "#388E3C", to: "#1a237e" }}
-            showInfo={false}
-          />
+          <Text style={{ display: "block", marginBottom: 4, color: "rgba(0,0,0,0.65)" }}>
+            Attendance Rate
+          </Text>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Text style={{ fontWeight: 600, fontSize: 20, color: "#1a237e" }}>{attendancePct}%</Text>
+            <div style={{ flex: 1 }}>
+              <Progress
+                percent={attendancePct}
+                status="active"
+                strokeColor={{ from: "#388E3C", to: "#1a237e" }}
+                showInfo={false}
+              />
+            </div>
+          </div>
         </Col>
       </Row>
     </Card>
