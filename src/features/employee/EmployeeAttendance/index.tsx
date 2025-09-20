@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, message, Card, Button, Modal } from 'antd';
-import { Clock, BarChart3, History, Bell, Calendar, Eye, EyeIcon, LucideEye } from 'lucide-react';
+import { LucideEye } from 'lucide-react';
 import styled from 'styled-components';
 import HeaderComponent from '../../../components/PageHeader';
 import { Wrapper } from '../../../components/Wrapper';
-
 import AttendanceClockPanel from './components/AttendanceClockPanel';
 import AttendanceHistoryTable from './components/AttendanceHistoryTable';
 import AttendanceNotificationPanel from './components/AttendanceNotificationPanel';
