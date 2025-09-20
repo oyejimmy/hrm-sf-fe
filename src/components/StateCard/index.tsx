@@ -13,18 +13,18 @@ type IconComponent = React.ComponentType<{
 }>;
 
 export interface PastelStatCardProps {
-  label?: React.ReactNode;
-  value?: React.ReactNode;
+  label?: any;
+  value?: any;
   icon?: React.ReactNode | IconComponent;
   tone?: PastelVariant | "auto";
   colorKey?: string;
   iconSize?: number;
-  titleLevel?: 1 | 2 | 3 | 4 | 5;
+  titleLevel?: any | 1 | 2 | 3 | 4 | 5;
   textSecondary?: boolean;
   className?: string;
   style?: React.CSSProperties;
   onClick?: () => void;
-  description?: string;
+  description?: any;
 }
 
 const TONES: PastelVariant[] = [
