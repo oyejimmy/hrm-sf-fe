@@ -50,7 +50,7 @@ interface PayslipDetailsModalProps {
 
 const PayslipDetailsModal: React.FC<PayslipDetailsModalProps> = ({
   visible = true,
-  onCancel = () => {},
+  onCancel = () => { },
   payslip = mockPayslip,
   earnings = mockEarnings,
   deductions = mockDeductions,
@@ -66,6 +66,8 @@ const PayslipDetailsModal: React.FC<PayslipDetailsModalProps> = ({
         </Button>,
         <Button key="download" type="primary" icon={<DownloadOutlined />}>
           Download PDF
+        </Button>, <Button key="print" onClick={onCancel}>
+          Cancel
         </Button>,
       ]}
       width={800}
