@@ -6,9 +6,7 @@ import HeaderComponent from '../../../components/PageHeader';
 import { Wrapper } from '../../../components/Wrapper';
 import AttendanceClockPanel from './components/AttendanceClockPanel';
 import AttendanceHistoryTable from './components/AttendanceHistoryTable';
-import AttendanceNotificationPanel from './components/AttendanceNotificationPanel';
 import AttendanceCalendar from './components/AttendanceCalendar';
-import AttendanceOverviewPanel from './components/AttendanceOverviewPanel';
 import {
   TodayAttendance,
   AttendanceRecord,
@@ -17,6 +15,8 @@ import {
 } from './types';
 import { useAttendance } from '../../../hooks/useAttendance';
 import { useTheme } from '../../../contexts/ThemeContext';
+import AttendanceNotificationPanel from './components/AttendanceNotificationPanel';
+import AttendanceOverviewPanel from './components/AttendanceOverviewPanel';
 
 const StyledCard = styled(Card) <{ isDarkMode: boolean }>`
   background: ${(props: any) => props.isDarkMode ? '#1f1f1f' : 'white'};
