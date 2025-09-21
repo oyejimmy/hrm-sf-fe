@@ -4,7 +4,8 @@ export type PastelVariant =
   | "pastelGreen"
   | "pastelPink"
   | "lightPeach"
-  | "softLavender";
+  | "softLavender"
+  | "pastelBlue";
 
 export const pastelPalette: Record<
   PastelVariant,
@@ -25,6 +26,10 @@ export const pastelPalette: Record<
   softLavender: {
     bg: "#f3e8f8",
     icon: "#722ed1",
+  },
+  pastelBlue: {
+    bg: "#e6f7ff",
+    icon: "#1890ff",
   },
 };
 

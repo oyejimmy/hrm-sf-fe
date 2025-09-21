@@ -1,9 +1,9 @@
 import React from "react";
-import { Typography, Flex } from "antd";
+import { Typography, Flex, Statistic } from "antd";
 import { CardRoot, IconWrapper, PastelVariant } from "./styles";
 import { useTheme } from "../../contexts/ThemeContext";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 type IconComponent = React.ComponentType<{
   size?: number;
@@ -25,6 +25,11 @@ export interface PastelStatCardProps {
   style?: React.CSSProperties;
   onClick?: () => void;
   description?: any;
+  precision?: number;
+  prefix?: React.ReactNode;
+  suffix?: React.ReactNode;
+  formatter?: (value: any) => React.ReactNode;
+  valueStyle?: React.CSSProperties;
 }
 
 const TONES: PastelVariant[] = [
@@ -56,7 +61,7 @@ function resolveTone(
 
 // Icon rendering with existence check
 function renderIcon(icon: PastelStatCardProps["icon"], iconSize?: number) {
-  const size = iconSize ?? 20;
+  const size = iconSize ?? 30;
   if (!icon) return null;
 
   if (React.isValidElement(icon)) {
@@ -81,6 +86,11 @@ export const StateCard = ({
   style,
   onClick,
   description,
+  precision,
+  prefix,
+  suffix,
+  formatter,
+  valueStyle,
 }: PastelStatCardProps) => {
   const { isDarkMode } = useTheme();
   const resolvedTone =
@@ -125,11 +135,27 @@ export const StateCard = ({
           </IconWrapper>
         )}
       </Flex>
+      
       {value != null && (
-        <Title level={titleLevel} style={{ margin: "8px 0 0" }}>
-          {value}
-        </Title>
+        <Statistic
+          value={value}
+          precision={precision}
+          prefix={prefix}
+          suffix={suffix}
+          formatter={formatter}
+          valueStyle={{
+            margin: "8px 0 0",
+            fontSize: titleLevel === 1 ? "38px" : 
+                     titleLevel === 2 ? "30px" : 
+                     titleLevel === 3 ? "24px" : 
+                     titleLevel === 4 ? "20px" : "16px",
+            fontWeight: "bold",
+            color: isDarkMode ? "white" : "rgba(0, 0, 0, 0.88)",
+            ...valueStyle,
+          }}
+        />
       )}
+      
       {description != null && (
         <Text style={{ margin: "15px 0px" }}>{description}</Text>
       )}
