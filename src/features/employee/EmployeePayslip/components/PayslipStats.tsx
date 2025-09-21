@@ -11,6 +11,8 @@ const PayslipStats: React.FC = () => {
           icon={<Wallet />}
           label="Net Pay (Current)"
           value="PKR5,200.50"
+          tone="pastelGreen"
+          valueStyle={{ color: "#52c41a" }}
         />
       </Col>
 
@@ -19,6 +21,8 @@ const PayslipStats: React.FC = () => {
           icon={<DollarSign />}
           label="Gross Pay"
           value="PKR6,500.00"
+          tone="pastelBlue"
+          valueStyle={{ color: "#1890ff" }}
         />
       </Col>
 
@@ -27,12 +31,19 @@ const PayslipStats: React.FC = () => {
           icon={<CreditCard />}
           label="Deductions"
           value="PKR1,299.50"
-          description="Includes all deductions"
+          tone="pastelPink"
+          valueStyle={{ color: "#f5222d" }}
         />
       </Col>
 
       <Col xs={24} sm={12} lg={6}>
-        <StateCard icon={<Calendar />} label="Pay Period" value="Oct 2023" />
+        <StateCard
+          icon={<Calendar />}
+          label="Pay Period"
+          value="Oct 2023"
+          tone="softLavender"
+          valueStyle={{ color: "#722ed1" }}
+        />
       </Col>
     </Row>
   );
