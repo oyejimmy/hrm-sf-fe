@@ -296,10 +296,13 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
 // Now uses your StateCard for each stat
 const AttendanceStats = ({ records }: any) => {
   const stats: any = useMemo(() => {
-    const statusCounts: any = Object.keys(STATUS_CONFIG).reduce((acc, status) => {
-      acc[status] = records.filter((r: any) => r.status === status).length;
-      return acc;
-    }, {} as Record<string, number>);
+    const statusCounts: any = Object.keys(STATUS_CONFIG).reduce(
+      (acc, status) => {
+        acc[status] = records.filter((r: any) => r.status === status).length;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     const workingDays = records.filter((r: any) =>
       ["Present", "Late", "Half Day"].includes(r.status)
@@ -354,19 +357,17 @@ const AttendanceStats = ({ records }: any) => {
               icon={it.icon}
               iconSize={18}
               titleLevel={3}
-              value={
-                <span>
-                  {it.value}
-                  <Text
-                    style={{
-                      marginLeft: 6,
-                      fontSize: "0.65em",
-                      color: "rgba(0,0,0,0.56)",
-                    }}
-                  >
-                    days
-                  </Text>
-                </span>
+              value={it.value}
+              suffix={
+                <Text
+                  style={{
+                    marginLeft: 6,
+                    fontSize: "0.65em",
+                    color: "rgba(0,0,0,0.56)",
+                  }}
+                >
+                  days
+                </Text>
               }
             />
           </Col>

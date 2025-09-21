@@ -1,6 +1,12 @@
 import React from "react";
 import { Row, Col, Progress, Space, Card, Typography } from "antd";
-import { TrendingUp, UserCheck, UserX, AlertCircle, Coffee } from "lucide-react";
+import {
+  TrendingUp,
+  UserCheck,
+  UserX,
+  AlertCircle,
+  Coffee,
+} from "lucide-react";
 import { StateCard } from "../../../../components/StateCard";
 
 const { Text } = Typography;
@@ -67,13 +73,17 @@ const AttendanceOverviewPanel: React.FC<Props> = ({ summary, loading }) => {
               icon={s.icon}
               iconSize={18}
               titleLevel={3}
-              value={
-                <span>
-                  {s.value}
-                  <Text style={{ marginLeft: 6, fontSize: "0.65em", color: "rgba(0,0,0,0.56)" }}>
-                    days
-                  </Text>
-                </span>
+              value={s.value}
+              suffix={
+                <Text
+                  style={{
+                    marginLeft: 6,
+                    fontSize: "0.65em",
+                    color: "rgba(0,0,0,0.56)",
+                  }}
+                >
+                  days
+                </Text>
               }
             />
           </Col>
@@ -82,11 +92,19 @@ const AttendanceOverviewPanel: React.FC<Props> = ({ summary, loading }) => {
 
       <Row gutter={[16, 16]} style={{ marginTop: 8 }}>
         <Col xs={24}>
-          <Text style={{ display: "block", marginBottom: 4, color: "rgba(0,0,0,0.65)" }}>
+          <Text
+            style={{
+              display: "block",
+              marginBottom: 4,
+              color: "rgba(0,0,0,0.65)",
+            }}
+          >
             Attendance Rate
           </Text>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Text style={{ fontWeight: 600, fontSize: 20, color: "#1a237e" }}>{attendancePct}%</Text>
+            <Text style={{ fontWeight: 600, fontSize: 20, color: "#1a237e" }}>
+              {attendancePct}%
+            </Text>
             <div style={{ flex: 1 }}>
               <Progress
                 percent={attendancePct}
