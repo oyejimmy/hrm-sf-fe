@@ -20,12 +20,12 @@ const ActivityLogs = ({ logs, isDarkMode }: ActivityLogsProps) => {
         }}>
             <Avatar size={40} icon={<User size={20} />} src={log.avatar} />
             <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
                     <Text strong>{log.performedBy}</Text>
                     <Text type="secondary" style={{ fontSize: 12 }}>{log.timestamp}</Text>
                 </div>
                 <Text style={{ display: 'block', marginTop: 4 }}>
-                    <Tag color="blue" style={{ marginRight: 8 }}>{log.action}</Tag>
+                    <Tag color="blue" style={{ marginRight: 8, marginTop: 4 }}>{log.action}</Tag>
                     {log.details}
                 </Text>
             </div>

@@ -6,6 +6,7 @@ export const StyledCard = styled(Card)<{ isDarkMode?: boolean }>`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   border: 1px solid ${props => props.isDarkMode ? '#434343' : '#f0f0f0'};
+  margin-bottom: 24px;
   
   &:hover {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
@@ -15,21 +16,13 @@ export const StyledCard = styled(Card)<{ isDarkMode?: boolean }>`
   .ant-card-head {
     border-bottom: 1px solid ${props => props.isDarkMode ? '#434343' : '#f0f0f0'};
   }
-`;
 
-export const StatCard = styled(StyledCard)`
-  text-align: center;
-  
-  .ant-card-body {
-    padding: 20px;
-  }
-`;
-
-export const DocumentCard = styled(StyledCard)`
-  margin-bottom: 12px;
-  
-  .ant-card-body {
-    padding: 16px;
+  @media (max-width: 768px) {
+    margin-bottom: 16px;
+    
+    .ant-card-body {
+      padding: 16px;
+    }
   }
 `;
 
@@ -59,7 +52,17 @@ export const StyledTabs = styled(Tabs)<{ isDarkMode?: boolean }>`
   .ant-tabs-ink-bar {
     background: #1890ff;
   }
-  display: inline-flex;
+
+  @media (max-width: 768px) {
+    .ant-tabs-nav {
+      margin-bottom: 16px;
+    }
+    
+    .ant-tabs-tab {
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+  }
 `;
 
 export const StyledButton = styled(Button)<{ isDarkMode?: boolean }>`
@@ -70,6 +73,11 @@ export const StyledButton = styled(Button)<{ isDarkMode?: boolean }>`
   display: flex;
   align-items: center;
   gap: 6px;
+  
+  @media (max-width: 768px) {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
 `;
 
 export const PrimaryButton = styled(StyledButton)`
@@ -114,16 +122,14 @@ export const StyledModal = styled(Modal)<{ isDarkMode?: boolean }>`
     border-top: 1px solid ${props => props.isDarkMode ? '#434343' : '#f0f0f0'};
     padding: 16px 24px;
   }
-`;
 
-export const FormContainer = styled.div<{ isDarkMode?: boolean }>`
-  .ant-form-item {
-    margin-bottom: 16px;
-  }
-  
-  .ant-form-item-label > label {
-    font-weight: 500;
-    color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.85)' : 'rgba(0, 0, 0, 0.85)'};
+  @media (max-width: 768px) {
+    width: 95% !important;
+    max-width: none;
+    
+    .ant-modal-body {
+      padding: 16px;
+    }
   }
 `;
 
@@ -152,12 +158,12 @@ export const RequestCard = styled(StyledCard)`
 
 export const GridContainer = styled.div<{ isDarkMode?: boolean }>`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
   padding: 16px 0;
   
   @media (max-width: 1200px) {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 16px;
   }
   

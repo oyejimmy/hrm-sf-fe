@@ -38,3 +38,37 @@ export interface RequestLog {
   details: string;
   avatar?: string;
 }
+
+// API Response types
+export interface ApiResponse<T> {
+  data: T;
+  message: string;
+  status: number;
+}
+
+export interface CreateRequestPayload {
+  type: RequestType;
+  subject: string;
+  details: string;
+  amount?: number;
+  documentType?: string;
+  startDate?: string;
+  endDate?: string;
+  equipmentType?: string;
+  destination?: string;
+  recognitionType?: string;
+  priority?: 'low' | 'medium' | 'high';
+}
+
+export interface UpdateRequestPayload {
+  status?: RequestStatus;
+  approver?: string;
+  approverComments?: string;
+}
+
+// Error types
+export interface ApiError {
+  message: string;
+  status: number;
+  errors?: Record<string, string[]>;
+}
