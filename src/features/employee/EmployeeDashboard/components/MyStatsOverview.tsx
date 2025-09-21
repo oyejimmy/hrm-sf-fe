@@ -77,20 +77,18 @@ const MyStatsOverview: React.FC<Props> = ({ stats }) => {
               icon={IconComp}
               iconSize={sizes.iconSize}
               titleLevel={sizes.titleLevel}
-              value={
-                <>
-                  {s.value}
-                  {s.suffix ? (
-                    <Text
-                      style={{
-                        marginLeft: 6,
-                        fontSize: "0.6em",
-                      }}
-                    >
-                      {s.suffix}
-                    </Text>
-                  ) : null}
-                </>
+              value={s.value} // Pass just the value
+              suffix={
+                s.suffix ? ( // Use the suffix prop instead
+                  <Text
+                    style={{
+                      marginLeft: 6,
+                      fontSize: "0.6em",
+                    }}
+                  >
+                    {s.suffix}
+                  </Text>
+                ) : null
               }
               description={getCardDescription(s.title)}
             />
