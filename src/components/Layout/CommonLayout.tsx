@@ -528,12 +528,6 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
 
   const renderSiderContent = () => (
     <>
-      {!siderCollapsed && (
-        <SiderHeader>
-          <SiderTitle>{getTitle()}</SiderTitle>
-        </SiderHeader>
-      )}
-
       {siderCollapsed && !isMobile && (
         <div style={{ 
           padding: '16px', 
