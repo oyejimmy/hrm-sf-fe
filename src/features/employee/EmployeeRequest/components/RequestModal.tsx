@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Form, Input, Select, InputNumber, DatePicker, Divider, Row, Col, message } from 'antd';
+import { Form, Input, Select, InputNumber, DatePicker, Divider, Row, Col, message, Modal, Button } from 'antd';
 import {
   FileText,
   Calendar,
@@ -9,8 +9,6 @@ import {
   Plus,
   X
 } from 'lucide-react';
-
-import { StyledModal, SecondaryButton, PrimaryButton } from './styles';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -61,7 +59,7 @@ const RequestModal = ({
   ];
 
   return (
-    <StyledModal
+    <Modal
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Plus size={20} />
@@ -74,7 +72,6 @@ const RequestModal = ({
       width="95%"
       style={{ maxWidth: 700 }}
       centered
-      isDarkMode={isDarkMode}
       styles={{
         body: { padding: '16px' }
       }}
@@ -261,30 +258,30 @@ const RequestModal = ({
 
           <Row gutter={[12, 12]} justify="end">
             <Col xs={12} sm={8} md={6}>
-              <SecondaryButton
-                isDarkMode={isDarkMode}
+              <Button
                 onClick={onCancel}
                 disabled={isLoading}
                 block
+                icon={<X size={16} />}
               >
-                <X size={16} />
                 Cancel
-              </SecondaryButton>
+              </Button>
             </Col>
             <Col xs={12} sm={8} md={6}>
-              <PrimaryButton
+              <Button
+                type="primary"
                 htmlType="submit"
                 loading={isLoading}
                 block
+                icon={<Plus size={16} />}
               >
-                <Plus size={16} />
                 {initialValues ? 'Update' : 'Submit'}
-              </PrimaryButton>
+              </Button>
             </Col>
           </Row>
         </Form>
       </>
-    </StyledModal>
+    </Modal>
   );
 };
 

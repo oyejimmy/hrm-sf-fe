@@ -1,7 +1,6 @@
 import React from 'react';
-import { Empty } from 'antd';
-import { StyledCard } from './styles';
-import DocumentCard from './DocumentCard';
+import { Empty, Button } from 'antd';
+import { FileText, Eye, Download } from 'lucide-react';
 
 interface DocumentListProps {
     documents: any[];
@@ -11,36 +10,52 @@ interface DocumentListProps {
 }
 
 const DocumentList = ({ documents, isDarkMode, onViewDocument, onDownloadDocument }: DocumentListProps) => {
-    const handleView = (document: any) => {
-        if (onViewDocument) onViewDocument(document);
-        // Mock view action - in real app, this would open the document
-        console.log('View document:', document);
-    };
-
-    const handleDownload = (document: any) => {
-        if (onDownloadDocument) onDownloadDocument(document);
-        // Mock download action - in real app, this would download the file
-        console.log('Download document:', document);
-    };
-
     return (
-        <StyledCard isDarkMode={isDarkMode}>
+        <div>
             {documents.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     {documents.map((document: any) => (
-                        <DocumentCard
-                            key={document.id}
-                            document={document}
-                            isDarkMode={isDarkMode}
-                            onView={handleView}
-                            onDownload={handleDownload}
-                        />
+                        <div key={document.id} style={{
+                            padding: 16,
+                            border: `1px solid ${isDarkMode ? '#333' : '#e8e8e8'}`,
+                            borderRadius: 8,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <FileText size={24} color="#1890ff" />
+                                <div>
+                                    <div style={{ fontWeight: 500 }}>{document.name}</div>
+                                    <div style={{ fontSize: 12, color: '#666' }}>
+                                        {document.type} • {document.size} • {document.uploadDate}
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <Button 
+                                    size="small" 
+                                    icon={<Eye size={16} />}
+                                    onClick={() => onViewDocument?.(document)}
+                                >
+                                    View
+                                </Button>
+                                <Button 
+                                    type="primary" 
+                                    size="small" 
+                                    icon={<Download size={16} />}
+                                    onClick={() => onDownloadDocument?.(document)}
+                                >
+                                    Download
+                                </Button>
+                            </div>
+                        </div>
                     ))}
                 </div>
             ) : (
                 <Empty description="No documents available" imageStyle={{ height: 60 }} />
             )}
-        </StyledCard>
+        </div>
     );
 };
 

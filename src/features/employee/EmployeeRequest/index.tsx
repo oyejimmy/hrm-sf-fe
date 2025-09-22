@@ -1,184 +1,20 @@
 import React, { useState } from "react";
-import { Tabs, message, Row, Col, Statistic, Modal } from "antd";
-import {
-  FileTextOutlined,
-  FileSearchOutlined,
-  BarChartOutlined,
-  ClockCircleOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-  useMutation,
-} from "@tanstack/react-query";
+import { message, Button } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import DocumentList from "./components/DocumentList";
 import ActivityLogs from "./components/ActivityLogs";
 import RequestModal from "./components/RequestModal";
 import MyRequestsTable from "./components/MyRequestsTable";
-import { StyledCard, StyledTabs, PrimaryButton } from "./components/styles";
+import { RequestStats } from "./components/RequestStats";
+import { TabNavigation } from "./components/TabNavigation";
 import { useTheme } from "../../../contexts/ThemeContext";
 import HeaderComponent from "../../../components/PageHeader";
 import { Wrapper } from "../../../components/Wrapper";
-import { Request, HRDocument, RequestLog, UserRole } from "./types";
-import { StateCard } from "../../../components/StateCard";
-import { BadgeDollarSignIcon, DollarSignIcon } from "lucide-react";
+import { Request, UserRole } from "./types";
+import { mockApi } from "./services/api";
+import { useRequestActions } from "./hooks/useRequestActions";
 
-// Mock API functions (same as before)
-// Mock API functions
-const mockApi = {
-  getRequests: async (): Promise<Request[]> => {
-    return [
-      {
-        id: "1",
-        type: "loan",
-        subject: "Home Loan Request",
-        status: "pending",
-        date: "2023-01-01",
-        details:
-          "Need a loan for home purchase. Planning to buy a new apartment in the city center.",
-        amount: 50000,
-        priority: "high",
-      },
-      {
-        id: "2",
-        type: "document",
-        subject: "Salary Slip Request",
-        status: "approved",
-        date: "2023-01-05",
-        details:
-          "Request for last 3 months salary slips for bank loan application.",
-        documentType: "Salary Certificate",
-        approver: "John Manager",
-        priority: "medium",
-      },
-      {
-        id: "3",
-        type: "leave",
-        subject: "Annual Leave Request",
-        status: "rejected",
-        date: "2023-01-10",
-        details: "Need to take 2 weeks off for family vacation.",
-        startDate: "2023-02-01",
-        endDate: "2023-02-14",
-        approverComments:
-          "Project deadline during this period. Please reschedule.",
-        priority: "medium",
-      },
-      {
-        id: "4",
-        type: "equipment",
-        subject: "New Laptop Request",
-        status: "approved",
-        date: "2023-01-15",
-        details:
-          "Current laptop is outdated and affecting productivity. Need a replacement.",
-        equipmentType: 'MacBook Pro 16"',
-        approver: "Sarah HR",
-        priority: "low",
-      },
-      {
-        id: "5",
-        type: "travel",
-        subject: "Business Trip to Conference",
-        status: "pending",
-        date: "2023-01-20",
-        details:
-          "Request for travel approval to attend Tech Conference in San Francisco.",
-        destination: "San Francisco, USA",
-        priority: "high",
-      },
-      {
-        id: "6",
-        type: "recognition",
-        subject: "Employee of the Month Nomination",
-        status: "in_progress",
-        date: "2023-01-25",
-        details:
-          "Nomination for outstanding performance and contribution to the project.",
-        recognitionType: "Employee of the Month",
-        priority: "medium",
-      },
-    ];
-  },
-
-  getDocuments: async (): Promise<HRDocument[]> => {
-    return [
-      {
-        id: "1",
-        name: "Company Policy Handbook.pdf",
-        type: "PDF",
-        uploadDate: "2023-02-01",
-        url: "#",
-        size: "2.4 MB",
-      },
-      {
-        id: "2",
-        name: "HR Procedures Manual.docx",
-        type: "Word",
-        uploadDate: "2023-02-15",
-        url: "#",
-        size: "1.8 MB",
-      },
-      {
-        id: "3",
-        name: "Employee Benefits Guide.pdf",
-        type: "PDF",
-        uploadDate: "2023-03-01",
-        url: "#",
-        size: "3.2 MB",
-      },
-    ];
-  },
-
-  getLogs: async (): Promise<RequestLog[]> => {
-    return [
-      {
-        id: "1",
-        timestamp: "2023-01-15 10:30:45",
-        action: "CREATE",
-        performedBy: "You",
-        details: "Created equipment request for new laptop",
-        avatar: "https://example.com/avatar1.jpg",
-      },
-      {
-        id: "2",
-        timestamp: "2023-01-16 14:22:33",
-        action: "APPROVE",
-        performedBy: "Sarah HR",
-        details: "Approved laptop request",
-        avatar: "https://example.com/avatar2.jpg",
-      },
-    ];
-  },
-
-  updateRequest: async (
-    requestId: string,
-    updates: Partial<Request>
-  ): Promise<Request> => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    return { ...updates, id: requestId } as Request;
-  },
-
-  createRequest: async (request: Omit<Request, "id">): Promise<Request> => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    return { ...request, id: Date.now().toString() } as Request;
-  },
-
-  createLog: async (log: Omit<RequestLog, "id">): Promise<RequestLog> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    return { ...log, id: Date.now().toString() };
-  },
-
-  deleteRequest: async (requestId: string): Promise<void> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-  },
-};
-
-// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -194,8 +30,7 @@ const EmployeeRequestContent = () => {
   const [userRole] = useState<UserRole>("employee");
   const [activeTab, setActiveTab] = useState<string>("1");
 
-  // TanStack Query hooks
-  const { data: requests = [], refetch: refetchRequests } = useQuery({
+  const { data: requests = [] } = useQuery({
     queryKey: ["requests"],
     queryFn: mockApi.getRequests,
   });
@@ -210,109 +45,11 @@ const EmployeeRequestContent = () => {
     queryFn: mockApi.getLogs,
   });
 
-  const updateRequestMutation = useMutation({
-    mutationFn: ({
-      requestId,
-      updates,
-    }: {
-      requestId: string;
-      updates: Partial<Request>;
-    }) => mockApi.updateRequest(requestId, updates),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["requests"] });
-      refetchLogs();
-    },
-  });
+  const { handleApprove, handleReject, handleDelete, handleRequestSubmit, isCreating } = useRequestActions(userRole, refetchLogs);
 
-  const createRequestMutation = useMutation({
-    mutationFn: (request: Omit<Request, "id">) =>
-      mockApi.createRequest(request),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["requests"] });
-      refetchLogs();
-      setIsModalVisible(false);
-    },
-  });
-
-  const deleteRequestMutation = useMutation({
-    mutationFn: (requestId: string) => mockApi.deleteRequest(requestId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["requests"] });
-      refetchLogs();
-    },
-  });
-
-  const createLogMutation = useMutation({
-    mutationFn: (log: Omit<RequestLog, "id">) => mockApi.createLog(log),
-    onSuccess: () => {
-      refetchLogs();
-    },
-  });
-
-  const handleApprove = (requestId: string) => {
-    updateRequestMutation.mutate({
-      requestId,
-      updates: { status: "approved", approver: "Manager Name" },
-    });
-    createLogMutation.mutate({
-      timestamp: new Date().toISOString(),
-      action: "APPROVE",
-      performedBy: userRole,
-      details: `Approved request ${requestId}`,
-    });
-    message.success("Request approved successfully!");
-  };
-
-  const handleReject = (requestId: string, comments: string) => {
-    updateRequestMutation.mutate({
-      requestId,
-      updates: { status: "rejected", approverComments: comments },
-    });
-    createLogMutation.mutate({
-      timestamp: new Date().toISOString(),
-      action: "REJECT",
-      performedBy: userRole,
-      details: `Rejected request ${requestId} with comments: ${comments}`,
-    });
-    message.warning("Request rejected.");
-  };
-
-  const handleDelete = (requestId: string) => {
-    Modal.confirm({
-      title: "Delete Request",
-      content:
-        "Are you sure you want to delete this request? This action cannot be undone.",
-      okText: "Delete",
-      okType: "danger",
-      cancelText: "Cancel",
-      onOk: () => {
-        deleteRequestMutation.mutate(requestId);
-        createLogMutation.mutate({
-          timestamp: new Date().toISOString(),
-          action: "DELETE",
-          performedBy: userRole,
-          details: `Deleted request ${requestId}`,
-        });
-        message.success("Request deleted successfully!");
-      },
-    });
-  };
-
-  const handleRequestSubmit = async (values: any) => {
-    const newRequest: Omit<Request, "id"> = {
-      date: new Date().toISOString().slice(0, 10),
-      status: "pending",
-      ...values,
-    };
-
-    createRequestMutation.mutate(newRequest);
-    createLogMutation.mutate({
-      timestamp: new Date().toISOString(),
-      action: "CREATE",
-      performedBy: "Employee",
-      details: `Created request (${values.type})`,
-    });
-    message.success("Request submitted successfully!");
+  const handleModalSubmit = (values: any) => {
+    handleRequestSubmit(values);
+    setIsModalVisible(false);
   };
 
   const handleEdit = (request: Request) => {
@@ -328,32 +65,21 @@ const EmployeeRequestContent = () => {
     message.success(`Downloading document: ${document.name}`);
   };
 
-  const stats = {
-    total: requests.length,
-    pending: requests.filter((req) => req.status === "pending").length,
-    approved: requests.filter((req) => req.status === "approved").length,
-    rejected: requests.filter((req) => req.status === "rejected").length,
-    in_progress: requests.filter((req) => req.status === "in_progress").length,
-  };
-
   return (
     <Wrapper isDarkMode={isDarkMode}>
       <HeaderComponent
         isDarkMode={isDarkMode}
         title="Employee Requests"
-        subtitle="Create, track, and manage requests. HR can review and update"
+        subtitle="Create, track, and manage your workplace requests"
         breadcrumbItems={[
-          {
-            title: "Home",
-            href: "/",
-          },
-          {
-            title: "Employee Requests",
-          },
+          { title: "Home", href: "/" },
+          { title: "Employee Requests" }
         ]}
         extraButtons={[
-          <PrimaryButton
+          <Button
             key="new-request"
+            type="primary"
+            size="large"
             icon={<PlusOutlined />}
             onClick={() => {
               setEditingRequest(null);
@@ -361,82 +87,40 @@ const EmployeeRequestContent = () => {
             }}
           >
             New Request
-          </PrimaryButton>,
+          </Button>
         ]}
       />
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={12} sm={8} md={6} lg={4}>
-          <StateCard
-            label="Total"
-            value={stats.total}
-            icon={<FileTextOutlined />}
-            tone="pastelBlue"
-          />
-        </Col>
-        <Col xs={12} sm={8} md={6} lg={5}>
-          <StateCard
-            label="Approved"
-            value={stats.approved}
-            icon={<CheckCircleOutlined />}
-            tone="pastelGreen"
-          />
-        </Col>
-        <Col xs={12} sm={8} md={6} lg={5}>
-          <StateCard
-            label="In Progress"
-            value={stats.in_progress}
-            icon={<ClockCircleOutlined />}
-            tone="lightPeach"
-          />
-        </Col>
-        <Col xs={12} sm={12} md={3} lg={5}>
-          <StateCard
-            label="Pending"
-            value={stats.pending}
-            icon={<ClockCircleOutlined />}
-            tone="softLavender"
-          />
-        </Col>
-        <Col xs={24} sm={12} md={3} lg={5}>
-          <StateCard
-            label="Rejected"
-            value={stats.rejected}
-            icon={<CloseCircleOutlined />}
-            tone="pastelPink"
-          />
-        </Col>
-      </Row>
+      <RequestStats requests={requests} isDarkMode={isDarkMode} />
       <RequestModal
         isVisible={isModalVisible}
         onCancel={() => {
           setIsModalVisible(false);
           setEditingRequest(null);
         }}
-        onSubmit={handleRequestSubmit}
+        onSubmit={handleModalSubmit}
         isDarkMode={isDarkMode}
-        isLoading={createRequestMutation.isPending}
+        isLoading={isCreating}
         initialValues={editingRequest}
       />
 
-      <StyledTabs
-        activeKey={activeTab}
-        type="card"
-        size="large"
-        onChange={setActiveTab}
-        isDarkMode={isDarkMode}
-        tabPosition="top"
-        style={{ overflow: 'hidden' }}
-      >
-        <Tabs.TabPane
-          tab={
-            <span>
-              <FileTextOutlined />
-              <span className="tab-text"> My Requests</span>
-            </span>
-          }
-          key="1"
-        >
-          <StyledCard isDarkMode={isDarkMode}>
+      <div style={{
+        background: isDarkMode ? '#1a1a1a' : '#ffffff',
+        borderRadius: '12px',
+        border: `1px solid ${isDarkMode ? '#333' : '#e8e8e8'}`,
+        boxShadow: isDarkMode 
+          ? '0 4px 20px rgba(0, 0, 0, 0.3)' 
+          : '0 4px 20px rgba(0, 0, 0, 0.08)',
+        overflow: 'hidden',
+        margin: '0 -8px'
+      }}>
+        <TabNavigation 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
+          isDarkMode={isDarkMode} 
+        />
+        
+        <div style={{ padding: 'clamp(16px, 4vw, 24px)' }}>
+          {activeTab === '1' && (
             <MyRequestsTable
               requests={requests}
               isDarkMode={isDarkMode}
@@ -446,38 +130,22 @@ const EmployeeRequestContent = () => {
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
-          </StyledCard>
-        </Tabs.TabPane>
-
-        <Tabs.TabPane
-          tab={
-            <span>
-              <FileSearchOutlined />
-              <span className="tab-text"> HR Documents</span>
-            </span>
-          }
-          key="2"
-        >
-          <DocumentList
-            documents={hrDocuments}
-            isDarkMode={isDarkMode}
-            onViewDocument={handleViewDocument}
-            onDownloadDocument={handleDownloadDocument}
-          />
-        </Tabs.TabPane>
-
-        <Tabs.TabPane
-          tab={
-            <span>
-              <BarChartOutlined />
-              <span className="tab-text"> Activity Logs</span>
-            </span>
-          }
-          key="3"
-        >
-          <ActivityLogs logs={logs} isDarkMode={isDarkMode} />
-        </Tabs.TabPane>
-      </StyledTabs>
+          )}
+          
+          {activeTab === '2' && (
+            <DocumentList
+              documents={hrDocuments}
+              isDarkMode={isDarkMode}
+              onViewDocument={handleViewDocument}
+              onDownloadDocument={handleDownloadDocument}
+            />
+          )}
+          
+          {activeTab === '3' && (
+            <ActivityLogs logs={logs} isDarkMode={isDarkMode} />
+          )}
+        </div>
+      </div>
       
       <style>{`
         @media (max-width: 576px) {
