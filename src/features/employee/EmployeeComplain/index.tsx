@@ -34,12 +34,14 @@ import {
   ExclamationCircleOutlined,
   UserOutlined,
   BarChartOutlined,
-  DownloadOutlined
+  DownloadOutlined,
+  LoadingOutlined
 } from '@ant-design/icons';
 import styled from 'styled-components';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { Wrapper } from '../../../components/Wrapper';
 import HeaderComponent from '../../../components/PageHeader';
+import { StateCard } from '../../../components/StateCard';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -556,6 +558,7 @@ const ComplaintDetailsModal: React.FC<{
 
 const EmployeeComplain = () => {
   const { isDarkMode } = useTheme();
+  const [loading, setLoading] = useState(true);
   const [complaints, setComplaints] = useState<Complaint[]>([
     {
       id: '1',
@@ -612,6 +615,25 @@ const EmployeeComplain = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
   const [isComplaintFormModalVisible, setIsComplaintFormModalVisible] = useState(false);
+
+  React.useEffect(() => {
+    setTimeout(() => setLoading(false), 1000);
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '24px',
+        color: '#1890ff'
+      }}>
+        <LoadingOutlined spin />
+      </div>
+    );
+  }
 
   const handleComplaintSubmit = (values: any) => {
     const newComplaint: Complaint = {
@@ -680,44 +702,40 @@ const EmployeeComplain = () => {
       {/* Statistics Row */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={6}>
-          <StatCard isDarkMode={isDarkMode}>
-            <Statistic
-              title="Total Complaints"
-              value={stats.total}
-              valueStyle={{ color: '#1890ff' }}
-              prefix={<FileTextOutlined />}
-            />
-          </StatCard>
+          <StateCard
+            label="Total Complaints"
+            value={stats.total}
+            icon={FileTextOutlined}
+            tone="pastelBlue"
+            colorKey="total-complaints"
+          />
         </Col>
         <Col span={6}>
-          <StatCard isDarkMode={isDarkMode}>
-            <Statistic
-              title="Pending"
-              value={stats.pending}
-              valueStyle={{ color: '#faad14' }}
-              prefix={<ClockCircleOutlined />}
-            />
-          </StatCard>
+          <StateCard
+            label="Pending"
+            value={stats.pending}
+            icon={ClockCircleOutlined}
+            tone="lightPeach"
+            colorKey="pending-complaints"
+          />
         </Col>
         <Col span={6}>
-          <StatCard isDarkMode={isDarkMode}>
-            <Statistic
-              title="In Progress"
-              value={stats.inProgress}
-              valueStyle={{ color: '#1890ff' }}
-              prefix={<BarChartOutlined />}
-            />
-          </StatCard>
+          <StateCard
+            label="In Progress"
+            value={stats.inProgress}
+            icon={BarChartOutlined}
+            tone="pastelBlue"
+            colorKey="inprogress-complaints"
+          />
         </Col>
         <Col span={6}>
-          <StatCard isDarkMode={isDarkMode}>
-            <Statistic
-              title="Resolved"
-              value={stats.resolved}
-              valueStyle={{ color: '#52c41a' }}
-              prefix={<CheckCircleOutlined />}
-            />
-          </StatCard>
+          <StateCard
+            label="Resolved"
+            value={stats.resolved}
+            icon={CheckCircleOutlined}
+            tone="pastelGreen"
+            colorKey="resolved-complaints"
+          />
         </Col>
       </Row>
 

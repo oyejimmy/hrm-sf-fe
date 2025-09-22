@@ -76,7 +76,7 @@ const MyStatsOverview: React.FC<Props> = ({ stats }) => {
               label={s.title}
               icon={IconComp}
               iconSize={sizes.iconSize}
-              titleLevel={sizes.titleLevel}
+              titleLevel={sizes.titleLevel as 1 | 2 | 3 | 4 | 5}
               value={s.value} // Pass just the value
               suffix={
                 s.suffix ? ( // Use the suffix prop instead
