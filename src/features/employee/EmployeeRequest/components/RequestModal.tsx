@@ -71,11 +71,12 @@ const RequestModal = ({
       open={isVisible}
       onCancel={onCancel}
       footer={null}
-      width={700}
+      width="95%"
+      style={{ maxWidth: 700 }}
       centered
       isDarkMode={isDarkMode}
       styles={{
-        body: { padding: '24px' }
+        body: { padding: '16px' }
       }}
     >
       <>
@@ -157,7 +158,7 @@ const RequestModal = ({
                 )}
 
                 {getFieldValue('type') === 'leave' && (
-                  <Row gutter={16}>
+                  <Row gutter={[16, 16]}>
                     <Col xs={24} sm={12}>
                       <Form.Item
                         name="startDate"
@@ -165,7 +166,7 @@ const RequestModal = ({
                         rules={[{ required: true, message: 'Please select start date' }]}
                       >
                         <DatePicker
-                          style={{ width: '100%', borderRadius: '8px' }}
+                          style={{ width: '100%' }}
                           size="large"
                         />
                       </Form.Item>
@@ -177,7 +178,7 @@ const RequestModal = ({
                         rules={[{ required: true, message: 'Please select end date' }]}
                       >
                         <DatePicker
-                          style={{ width: '100%', borderRadius: '8px' }}
+                          style={{ width: '100%' }}
                           size="large"
                         />
                       </Form.Item>
@@ -258,25 +259,29 @@ const RequestModal = ({
 
           <Divider />
 
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-            <SecondaryButton
-              isDarkMode={isDarkMode}
-              onClick={onCancel}
-              style={{ borderRadius: '8px' }}
-              disabled={isLoading}
-            >
-              <X size={16} />
-              Cancel
-            </SecondaryButton>
-            <PrimaryButton
-              htmlType="submit"
-              style={{ borderRadius: '8px' }}
-              loading={isLoading}
-            >
-              <Plus size={16} />
-              {initialValues ? 'Update Request' : 'Submit Request'}
-            </PrimaryButton>
-          </div>
+          <Row gutter={[12, 12]} justify="end">
+            <Col xs={12} sm={8} md={6}>
+              <SecondaryButton
+                isDarkMode={isDarkMode}
+                onClick={onCancel}
+                disabled={isLoading}
+                block
+              >
+                <X size={16} />
+                Cancel
+              </SecondaryButton>
+            </Col>
+            <Col xs={12} sm={8} md={6}>
+              <PrimaryButton
+                htmlType="submit"
+                loading={isLoading}
+                block
+              >
+                <Plus size={16} />
+                {initialValues ? 'Update' : 'Submit'}
+              </PrimaryButton>
+            </Col>
+          </Row>
         </Form>
       </>
     </StyledModal>

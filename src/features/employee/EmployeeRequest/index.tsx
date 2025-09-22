@@ -365,49 +365,44 @@ const EmployeeRequestContent = () => {
         ]}
       />
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} md={4}>
+        <Col xs={12} sm={8} md={6} lg={4}>
           <StateCard
             label="Total"
             value={stats.total}
             icon={<FileTextOutlined />}
             tone="pastelBlue"
-            valueStyle={{ color: "#1890ff" }}
           />
         </Col>
-        <Col xs={24} sm={12} md={5}>
+        <Col xs={12} sm={8} md={6} lg={5}>
           <StateCard
             label="Approved"
             value={stats.approved}
             icon={<CheckCircleOutlined />}
             tone="pastelGreen"
-            valueStyle={{ color: "#52c41a" }}
           />
         </Col>
-        <Col xs={24} sm={12} md={5}>
+        <Col xs={12} sm={8} md={6} lg={5}>
           <StateCard
             label="In Progress"
             value={stats.in_progress}
             icon={<ClockCircleOutlined />}
             tone="lightPeach"
-            valueStyle={{ color: "#faad14" }}
           />
         </Col>
-        <Col xs={24} sm={12} md={5}>
+        <Col xs={12} sm={12} md={3} lg={5}>
           <StateCard
             label="Pending"
             value={stats.pending}
             icon={<ClockCircleOutlined />}
             tone="softLavender"
-            valueStyle={{ color: "#722ed1" }}
           />
         </Col>
-        <Col xs={24} sm={12} md={5}>
+        <Col xs={24} sm={12} md={3} lg={5}>
           <StateCard
             label="Rejected"
             value={stats.rejected}
             icon={<CloseCircleOutlined />}
             tone="pastelPink"
-            valueStyle={{ color: "#f5222d" }}
           />
         </Col>
       </Row>
@@ -429,11 +424,14 @@ const EmployeeRequestContent = () => {
         size="large"
         onChange={setActiveTab}
         isDarkMode={isDarkMode}
+        tabPosition="top"
+        style={{ overflow: 'hidden' }}
       >
         <Tabs.TabPane
           tab={
             <span>
-              <FileTextOutlined /> My Requests
+              <FileTextOutlined />
+              <span className="tab-text"> My Requests</span>
             </span>
           }
           key="1"
@@ -454,7 +452,8 @@ const EmployeeRequestContent = () => {
         <Tabs.TabPane
           tab={
             <span>
-              <FileSearchOutlined /> HR Documents
+              <FileSearchOutlined />
+              <span className="tab-text"> HR Documents</span>
             </span>
           }
           key="2"
@@ -470,7 +469,8 @@ const EmployeeRequestContent = () => {
         <Tabs.TabPane
           tab={
             <span>
-              <BarChartOutlined /> Activity Logs
+              <BarChartOutlined />
+              <span className="tab-text"> Activity Logs</span>
             </span>
           }
           key="3"
@@ -478,6 +478,22 @@ const EmployeeRequestContent = () => {
           <ActivityLogs logs={logs} isDarkMode={isDarkMode} />
         </Tabs.TabPane>
       </StyledTabs>
+      
+      <style>{`
+        @media (max-width: 576px) {
+          .tab-text {
+            display: none;
+          }
+          .ant-tabs-tab {
+            padding: 8px 12px !important;
+          }
+        }
+        @media (min-width: 577px) {
+          .tab-text {
+            display: inline;
+          }
+        }
+      `}</style>
     </Wrapper>
   );
 };
