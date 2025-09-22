@@ -1,10 +1,11 @@
 import React from "react";
-import { Typography, Flex, Statistic } from "antd";
-import { CardRoot, IconWrapper, PastelVariant } from "./styles";
+import { Typography, Flex, Statistic, Spin } from "antd";
+import { CardRoot, IconWrapper, PastelVariant, pastelPalette } from "./styles";
 import { useTheme } from "../../contexts/ThemeContext";
 
 const { Text } = Typography;
 
+// IconComponent type for feather/react-icons style support
 type IconComponent = React.ComponentType<{
   size?: number;
   color?: string;
@@ -12,24 +13,25 @@ type IconComponent = React.ComponentType<{
   className?: string;
 }>;
 
-export interface PastelStatCardProps {
-  label?: any;
-  value?: any;
+export interface StateCardProps {
+  label?: string | React.ReactNode;
+  value?: number | string;
   icon?: React.ReactNode | IconComponent;
   tone?: PastelVariant | "auto";
-  colorKey?: string;
+  colorKey?: string; // optional for consistent hash-based auto tone
   iconSize?: number;
-  titleLevel?: any | 1 | 2 | 3 | 4 | 5;
+  titleLevel?: 1 | 2 | 3 | 4 | 5;
   textSecondary?: boolean;
   className?: string;
   style?: React.CSSProperties;
   onClick?: () => void;
-  description?: any;
+  description?: React.ReactNode;
   precision?: number;
   prefix?: React.ReactNode;
   suffix?: React.ReactNode;
   formatter?: (value: any) => React.ReactNode;
   valueStyle?: React.CSSProperties;
+  loading?: boolean;
 }
 
 const TONES: PastelVariant[] = [
@@ -37,9 +39,10 @@ const TONES: PastelVariant[] = [
   "pastelGreen",
   "lightPeach",
   "softLavender",
+  "pastelBlue",
 ];
 
-// Optimized hashing function
+// Hash function for "auto" tone assignment
 function hashString(seed: string): number {
   let h = 0;
   for (let i = 0; i < seed.length; i++) {
@@ -49,22 +52,18 @@ function hashString(seed: string): number {
   return Math.abs(h);
 }
 
-// Improved tone resolution
-function resolveTone(
-  tone: PastelStatCardProps["tone"],
-  seed?: string
-): PastelVariant {
+function resolveTone(tone: StateCardProps["tone"], seed?: string): PastelVariant {
   if (tone && tone !== "auto") return tone;
-  if (!seed) return TONES[0]; // Default to first tone if no seed
+  if (!seed) return TONES[0];
   return TONES[hashString(seed) % TONES.length];
 }
 
-// Icon rendering with existence check
-function renderIcon(icon: PastelStatCardProps["icon"], iconSize?: number) {
+function renderIcon(icon: StateCardProps["icon"], iconSize?: number) {
   const size = iconSize ?? 30;
   if (!icon) return null;
 
   if (React.isValidElement(icon)) {
+    // Clone react element to enforce consistent sizing
     return React.cloneElement(icon as React.ReactElement<any>, {
       size: (icon as any).props?.size ?? size,
     });
@@ -73,7 +72,7 @@ function renderIcon(icon: PastelStatCardProps["icon"], iconSize?: number) {
   return <IconComp size={size} />;
 }
 
-export const StateCard = ({
+export const StateCard: React.FC<StateCardProps> = ({
   label,
   value,
   icon,
@@ -91,15 +90,14 @@ export const StateCard = ({
   suffix,
   formatter,
   valueStyle,
-}: PastelStatCardProps) => {
+  loading = false,
+}) => {
   const { isDarkMode } = useTheme();
+
   const resolvedTone =
     tone !== "auto"
       ? tone
-      : resolveTone(
-          tone,
-          colorKey ?? (typeof label === "string" ? label : undefined)
-        );
+      : resolveTone(tone, colorKey ?? (typeof label === "string" ? label : undefined));
 
   const labelNode = label && (
     <Text
@@ -123,41 +121,55 @@ export const StateCard = ({
       onClick={onClick}
       isDarkMode={isDarkMode}
     >
-      <Flex
-        align="center"
-        justify="space-between"
-        style={{ width: "100%", gap: 12 }}
-      >
-        {labelNode && <div style={{ flex: 1, minWidth: 0 }}>{labelNode}</div>}
-        {icon && (
-          <IconWrapper $variant={resolvedTone} isDarkMode={isDarkMode}>
-            {renderIcon(icon, iconSize)}
-          </IconWrapper>
-        )}
-      </Flex>
-      
-      {value != null && (
-        <Statistic
-          value={value}
-          precision={precision}
-          prefix={prefix}
-          suffix={suffix}
-          formatter={formatter}
-          valueStyle={{
-            margin: "8px 0 0",
-            fontSize: titleLevel === 1 ? "38px" : 
-                     titleLevel === 2 ? "30px" : 
-                     titleLevel === 3 ? "24px" : 
-                     titleLevel === 4 ? "20px" : "16px",
-            fontWeight: "bold",
-            color: isDarkMode ? "white" : "rgba(0, 0, 0, 0.88)",
-            ...valueStyle,
-          }}
-        />
-      )}
-      
-      {description != null && (
-        <Text style={{ margin: "15px 0px" }}>{description}</Text>
+      {loading ? (
+        <Flex align="center" justify="center" style={{ flex: 1, minHeight: 80 }}>
+          <Spin />
+        </Flex>
+      ) : (
+        <>
+          <Flex
+            align="center"
+            justify="space-between"
+            style={{ width: "100%", gap: 12 }}
+          >
+            {labelNode && <div style={{ flex: 1, minWidth: 0 }}>{labelNode}</div>}
+            {icon && (
+              <IconWrapper $variant={resolvedTone} isDarkMode={isDarkMode}>
+                {renderIcon(icon, iconSize)}
+              </IconWrapper>
+            )}
+          </Flex>
+
+          {value != null && (
+            <Statistic
+              value={value}
+              precision={precision}
+              prefix={prefix}
+              suffix={suffix}
+              formatter={formatter}
+              valueStyle={{
+                margin: "8px 0 0",
+                fontSize:
+                  titleLevel === 1
+                    ? "38px"
+                    : titleLevel === 2
+                    ? "30px"
+                    : titleLevel === 3
+                    ? "24px"
+                    : titleLevel === 4
+                    ? "20px"
+                    : "16px",
+                fontWeight: "bold",
+                color: isDarkMode ? "white" : pastelPalette[resolvedTone].icon,
+                ...valueStyle,
+              }}
+            />
+          )}
+
+          {description && (
+            <Text style={{ margin: "15px 0px" }}>{description}</Text>
+          )}
+        </>
       )}
     </CardRoot>
   );

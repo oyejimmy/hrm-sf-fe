@@ -50,6 +50,7 @@ export const CardRoot = styled.div<{
       ? "0 2px 8px rgba(255, 255, 255, 0.08)"
       : "0 2px 8px rgba(0, 0, 0, 0.06)"};
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: ${({ isDarkMode }) =>
