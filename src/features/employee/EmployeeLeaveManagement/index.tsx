@@ -298,7 +298,7 @@ const EmployeeLeaveManagement: React.FC = () => {
         title="Leave Management" // Title of the page
         subtitle="Manage your leave requests and track your leave balance" // Subtitle of the page
         breadcrumbItems={[ // Breadcrumb navigation items
-          { title: 'Home', href: '/' },
+          { title: 'Dashboard', href: '/' },
           { title: 'Leave Management' },
         ]}
         extraButtons={[ // Extra buttons in the header

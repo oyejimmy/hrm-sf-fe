@@ -72,7 +72,7 @@ const EmployeeRequestContent = () => {
         title="Employee Requests"
         subtitle="Create, track, and manage your workplace requests"
         breadcrumbItems={[
-          { title: "Home", href: "/" },
+          { title: "Dashboard", href: "/" },
           { title: "Employee Requests" }
         ]}
         extraButtons={[

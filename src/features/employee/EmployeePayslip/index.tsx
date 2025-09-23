@@ -224,7 +224,7 @@ const EmployeePayslip: React.FC = () => {
         subtitle="Manage your all Documents"
         breadcrumbItems={[
           {
-            title: "Home",
+            title: "Dashboard",
             href: "/",
           },
           {
