@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Card,
   Button,
@@ -9,9 +9,6 @@ import {
   Tabs,
   Table,
   Input,
-  Typography,
-  Modal,
-  Spin,
 } from "antd";
 import {
   PlusOutlined,
@@ -23,7 +20,6 @@ import {
   PhoneOutlined,
   SafetyOutlined,
   DollarOutlined,
-  LoadingOutlined,
 } from "@ant-design/icons";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { StateCard } from "../../../components/StateCard";
@@ -77,12 +73,21 @@ const EmployeeHealthInsurance: React.FC = () => {
     approvedClaims: 0,
     totalClaims: 0,
   };
-  const filteredHospitals =
-    hospitals?.filter(
+  const filteredHospitals = useMemo(() => {
+    if (!hospitals || !Array.isArray(hospitals)) {
+      return [];
+    }
+    
+    if (!searchText.trim()) {
+      return hospitals;
+    }
+    
+    return hospitals.filter(
       (hospital: any) =>
-        hospital.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        hospital.city.toLowerCase().includes(searchText.toLowerCase())
-    ) || [];
+        hospital.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+        hospital.city?.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }, [hospitals, searchText]);
 
   const hospitalColumns = [
     {
@@ -104,6 +109,30 @@ const EmployeeHealthInsurance: React.FC = () => {
       key: "minimum_room_entitlement",
       render: (amount: number) =>
         amount ? `PKR ${amount.toLocaleString()}` : "N/A",
+    },
+    {
+      title: "Status",
+      dataIndex: "is_non_reimbursable",
+      key: "is_non_reimbursable",
+      render: (isNonReimbursable: boolean) => (
+        <span
+          style={{
+            padding: "4px 8px",
+            borderRadius: "4px",
+            fontSize: "12px",
+            fontWeight: "bold",
+            color: "white",
+            backgroundColor: isNonReimbursable ? "#ff4d4f" : "#52c41a",
+          }}
+        >
+          {isNonReimbursable ? "Non-Reimbursable" : "Panel Hospital"}
+        </span>
+      ),
+      filters: [
+        { text: "Panel Hospital", value: false },
+        { text: "Non-Reimbursable", value: true },
+      ],
+      onFilter: (value: any, record: any) => record.is_non_reimbursable === value,
     },
   ];
 
@@ -271,8 +300,15 @@ const EmployeeHealthInsurance: React.FC = () => {
               columns={hospitalColumns}
               dataSource={filteredHospitals}
               loading={hospitalsLoading}
-              rowKey="id"
-              pagination={{ pageSize: 10 }}
+              rowKey={(record) => record.id || record.name}
+              pagination={{
+                pageSize: 10,
+                showSizeChanger: true,
+                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} hospitals`,
+                pageSizeOptions: ['10', '20', '50', '100'],
+              }}
+              scroll={{ x: 800 }}
+              size="middle"
             />
           </TabPane>
           <TabPane
