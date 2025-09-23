@@ -61,9 +61,7 @@ const MyRequestsTable = ({
     });
   }, [requests, searchText]);
 
-
-
-  const columns = [
+  const columns: any = [
     {
       title: 'Subject',
       dataIndex: 'subject',

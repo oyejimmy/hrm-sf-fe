@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Card,
   Row,
@@ -13,8 +13,8 @@ import {
   Space,
   message,
   Tooltip,
-  Collapse
-} from 'antd';
+  Collapse,
+} from "antd";
 import {
   BookOpen,
   Video,
@@ -32,11 +32,11 @@ import {
   Star,
   CheckCircle,
   ArrowRight,
-} from 'lucide-react';
-import styled, { createGlobalStyle } from 'styled-components';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { Wrapper } from '../../../components/Wrapper';
-import HeaderComponent from '../../../components/PageHeader';
+} from "lucide-react";
+import styled, { createGlobalStyle } from "styled-components";
+import { useTheme } from "../../../contexts/ThemeContext";
+import { Wrapper } from "../../../components/Wrapper";
+import HeaderComponent from "../../../components/PageHeader";
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -54,11 +54,11 @@ const IconWrapper = styled.span<{ $color?: string; $size?: string }>`
   justify-content: center;
   padding: 8px;
   border-radius: 50%;
-  background: ${props => props.$color ? `${props.$color}15` : '#1890ff15'};
-  color: ${props => props.$color || '#1890ff'};
+  background: ${(props) => (props.$color ? `${props.$color}15` : "#1890ff15")};
+  color: ${(props) => props.$color || "#1890ff"};
   margin-right: 12px;
-  width: ${props => props.$size || '40px'};
-  height: ${props => props.$size || '40px'};
+  width: ${(props) => props.$size || "40px"};
+  height: ${(props) => props.$size || "40px"};
 `;
 
 const FilterSection = styled.div`
@@ -68,16 +68,16 @@ const FilterSection = styled.div`
   margin-bottom: 16px;
   padding: 16px;
   border-radius: 8px;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
-    
+
     .search-section {
       width: 100%;
       margin-bottom: 12px;
     }
-    
+
     .filter-section {
       width: 100%;
     }
@@ -104,9 +104,9 @@ interface TrainingModule {
   duration: string;
   category: string;
   progress: number;
-  status: 'not_started' | 'in_progress' | 'completed';
-  type: 'video' | 'reading' | 'interactive';
-  level: 'beginner' | 'intermediate' | 'advanced';
+  status: "not_started" | "in_progress" | "completed";
+  type: "video" | "reading" | "interactive";
+  level: "beginner" | "intermediate" | "advanced";
   rating: number;
   enrolled: number;
   thumbnail?: string;
@@ -123,15 +123,15 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
   module,
   onEnroll,
   onResume,
-  onViewCertificate
+  onViewCertificate,
 }) => {
   const getStatusIcon = () => {
     switch (module.status) {
-      case 'not_started':
+      case "not_started":
         return <BookOpen size={16} />;
-      case 'in_progress':
+      case "in_progress":
         return <Loader size={16} />;
-      case 'completed':
+      case "completed":
         return <CheckCircle size={16} />;
       default:
         return <BookOpen size={16} />;
@@ -140,24 +140,24 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
 
   const getStatusColor = () => {
     switch (module.status) {
-      case 'not_started':
-        return 'default';
-      case 'in_progress':
-        return 'blue';
-      case 'completed':
-        return 'green';
+      case "not_started":
+        return "default";
+      case "in_progress":
+        return "blue";
+      case "completed":
+        return "green";
       default:
-        return 'default';
+        return "default";
     }
   };
 
   const getTypeIcon = () => {
     switch (module.type) {
-      case 'video':
+      case "video":
         return <Video size={16} />;
-      case 'reading':
+      case "reading":
         return <BookOpen size={16} />;
-      case 'interactive':
+      case "interactive":
         return <BarChart3 size={16} />;
       default:
         return <BookOpen size={16} />;
@@ -166,7 +166,7 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
 
   const renderActionButton = () => {
     switch (module.status) {
-      case 'not_started':
+      case "not_started":
         return (
           <Button
             type="primary"
@@ -176,7 +176,7 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
             Enroll
           </Button>
         );
-      case 'in_progress':
+      case "in_progress":
         return (
           <Button
             type="default"
@@ -186,7 +186,7 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
             Resume
           </Button>
         );
-      case 'completed':
+      case "completed":
         return (
           <Button
             type="default"
@@ -203,64 +203,100 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
 
   return (
     <StyledCard>
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', marginBottom: '12px' }}>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", marginBottom: "12px" }}>
           {module.thumbnail ? (
             <img
               src={module.thumbnail}
               alt={module.title}
-              style={{ width: '100px', height: '60px', objectFit: 'cover', borderRadius: '4px', marginRight: '12px' }}
+              style={{
+                width: "100px",
+                height: "60px",
+                objectFit: "cover",
+                borderRadius: "4px",
+                marginRight: "12px",
+              }}
             />
           ) : (
-            <div style={{
-              width: '100px',
-              height: '60px',
-              backgroundColor: '#f0f0f0',
-              borderRadius: '4px',
-              marginRight: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
+            <div
+              style={{
+                width: "100px",
+                height: "60px",
+                backgroundColor: "#f0f0f0",
+                borderRadius: "4px",
+                marginRight: "12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               {getTypeIcon()}
             </div>
           )}
           <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <Title level={5} style={{ margin: 0 }}>{module.title}</Title>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+              }}
+            >
+              <Title level={5} style={{ margin: 0 }}>
+                {module.title}
+              </Title>
               <StatusTag color={getStatusColor()} icon={getStatusIcon()}>
-                {module.status.replace('_', ' ')}
+                {module.status.replace("_", " ")}
               </StatusTag>
             </div>
-            <Text type="secondary" style={{ fontSize: '12px' }}>
+            <Text type="secondary" style={{ fontSize: "12px" }}>
               By {module.instructor} • {module.duration} • {module.category}
             </Text>
           </div>
         </div>
 
-        <Paragraph ellipsis={{ rows: 2 }} style={{ fontSize: '14px', marginBottom: '12px' }}>
+        <Paragraph
+          ellipsis={{ rows: 2 }}
+          style={{ fontSize: "14px", marginBottom: "12px" }}
+        >
           {module.description}
         </Paragraph>
 
-        {module.status !== 'not_started' && (
+        {module.status !== "not_started" && (
           <ProgressContainer>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-              <Text type="secondary" style={{ fontSize: '12px' }}>Progress</Text>
-              <Text type="secondary" style={{ fontSize: '12px' }}>{module.progress}%</Text>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "4px",
+              }}
+            >
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                Progress
+              </Text>
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                {module.progress}%
+              </Text>
             </div>
             <Progress
               percent={module.progress}
               size="small"
-              status={module.status === 'completed' ? 'success' : 'active'}
+              status={module.status === "completed" ? "success" : "active"}
             />
           </ProgressContainer>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Tag icon={<Clock size={12} />} >{module.duration}</Tag>
-            <Tag icon={<User size={12} />} >{module.enrolled} enrolled</Tag>
-            <Tag icon={<Star size={12} />} >{module.rating}/5</Tag>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: "12px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Tag icon={<Clock size={12} />}>{module.duration}</Tag>
+            <Tag icon={<User size={12} />}>{module.enrolled} enrolled</Tag>
+            <Tag icon={<Star size={12} />}>{module.rating}/5</Tag>
           </div>
           {renderActionButton()}
         </div>
@@ -272,166 +308,185 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
 // Mock Data
 const trainingModules: TrainingModule[] = [
   {
-    id: '1',
-    title: 'Advanced React Development',
-    description: 'Learn advanced React patterns, state management, and performance optimization techniques.',
-    instructor: 'Jane Smith',
-    duration: '8 hours',
-    category: 'Software Development',
+    id: "1",
+    title: "Advanced React Development",
+    description:
+      "Learn advanced React patterns, state management, and performance optimization techniques.",
+    instructor: "Jane Smith",
+    duration: "8 hours",
+    category: "Software Development",
     progress: 0,
-    status: 'not_started',
-    type: 'video',
-    level: 'advanced',
+    status: "not_started",
+    type: "video",
+    level: "advanced",
     rating: 4.8,
-    enrolled: 245
+    enrolled: 245,
   },
   {
-    id: '2',
-    title: 'Leadership Fundamentals',
-    description: 'Develop essential leadership skills to effectively manage teams and drive organizational success.',
-    instructor: 'Michael Johnson',
-    duration: '6 hours',
-    category: 'Leadership',
+    id: "2",
+    title: "Leadership Fundamentals",
+    description:
+      "Develop essential leadership skills to effectively manage teams and drive organizational success.",
+    instructor: "Michael Johnson",
+    duration: "6 hours",
+    category: "Leadership",
     progress: 45,
-    status: 'in_progress',
-    type: 'interactive',
-    level: 'intermediate',
+    status: "in_progress",
+    type: "interactive",
+    level: "intermediate",
     rating: 4.6,
-    enrolled: 189
+    enrolled: 189,
   },
   {
-    id: '3',
-    title: 'Data Visualization with D3.js',
-    description: 'Master the art of creating interactive and engaging data visualizations using D3.js library.',
-    instructor: 'Sarah Williams',
-    duration: '10 hours',
-    category: 'Data Science',
+    id: "3",
+    title: "Data Visualization with D3.js",
+    description:
+      "Master the art of creating interactive and engaging data visualizations using D3.js library.",
+    instructor: "Sarah Williams",
+    duration: "10 hours",
+    category: "Data Science",
     progress: 100,
-    status: 'completed',
-    type: 'video',
-    level: 'intermediate',
+    status: "completed",
+    type: "video",
+    level: "intermediate",
     rating: 4.9,
-    enrolled: 312
+    enrolled: 312,
   },
   {
-    id: '4',
-    title: 'Effective Communication Skills',
-    description: 'Improve your communication skills for better workplace collaboration and professional relationships.',
-    instructor: 'David Brown',
-    duration: '4 hours',
-    category: 'Soft Skills',
+    id: "4",
+    title: "Effective Communication Skills",
+    description:
+      "Improve your communication skills for better workplace collaboration and professional relationships.",
+    instructor: "David Brown",
+    duration: "4 hours",
+    category: "Soft Skills",
     progress: 0,
-    status: 'not_started',
-    type: 'reading',
-    level: 'beginner',
+    status: "not_started",
+    type: "reading",
+    level: "beginner",
     rating: 4.5,
-    enrolled: 421
+    enrolled: 421,
   },
   {
-    id: '5',
-    title: 'Cloud Infrastructure with AWS',
-    description: 'Learn to design, deploy, and manage scalable and reliable applications on AWS cloud platform.',
-    instructor: 'Emily Chen',
-    duration: '12 hours',
-    category: 'Cloud Computing',
+    id: "5",
+    title: "Cloud Infrastructure with AWS",
+    description:
+      "Learn to design, deploy, and manage scalable and reliable applications on AWS cloud platform.",
+    instructor: "Emily Chen",
+    duration: "12 hours",
+    category: "Cloud Computing",
     progress: 75,
-    status: 'in_progress',
-    type: 'interactive',
-    level: 'advanced',
+    status: "in_progress",
+    type: "interactive",
+    level: "advanced",
     rating: 4.7,
-    enrolled: 198
+    enrolled: 198,
   },
   {
-    id: '6',
-    title: 'Agile Project Management',
-    description: 'Master Agile methodologies to deliver projects efficiently and adapt to changing requirements.',
-    instructor: 'Robert Taylor',
-    duration: '7 hours',
-    category: 'Project Management',
+    id: "6",
+    title: "Agile Project Management",
+    description:
+      "Master Agile methodologies to deliver projects efficiently and adapt to changing requirements.",
+    instructor: "Robert Taylor",
+    duration: "7 hours",
+    category: "Project Management",
     progress: 100,
-    status: 'completed',
-    type: 'video',
-    level: 'intermediate',
+    status: "completed",
+    type: "video",
+    level: "intermediate",
     rating: 4.8,
-    enrolled: 276
-  }
+    enrolled: 276,
+  },
 ];
 
 const certifications: any = [
   {
-    id: '1',
-    title: 'AWS Certified Solutions Architect',
-    issueDate: '2023-06-15',
-    expiryDate: '2025-06-15',
-    status: 'active'
+    id: "1",
+    title: "AWS Certified Solutions Architect",
+    issueDate: "2023-06-15",
+    expiryDate: "2025-06-15",
+    status: "active",
   },
   {
-    id: '2',
-    title: 'Google Cloud Professional Developer',
-    issueDate: '2023-03-10',
-    expiryDate: '2025-03-10',
-    status: 'active'
+    id: "2",
+    title: "Google Cloud Professional Developer",
+    issueDate: "2023-03-10",
+    expiryDate: "2025-03-10",
+    status: "active",
   },
   {
-    id: '3',
-    title: 'React Developer Certification',
-    issueDate: '2022-11-20',
-    expiryDate: '2024-11-20',
-    status: 'active'
-  }
+    id: "3",
+    title: "React Developer Certification",
+    issueDate: "2022-11-20",
+    expiryDate: "2024-11-20",
+    status: "active",
+  },
 ];
 
 const learningPaths: any = [
   {
-    id: '1',
-    title: 'Frontend Developer Path',
-    description: 'Become a proficient frontend developer with this comprehensive learning path',
+    id: "1",
+    title: "Frontend Developer Path",
+    description:
+      "Become a proficient frontend developer with this comprehensive learning path",
     courses: 8,
-    duration: '60 hours',
-    progress: 60
+    duration: "60 hours",
+    progress: 60,
   },
   {
-    id: '2',
-    title: 'Cloud Architect Path',
-    description: 'Master cloud architecture concepts and implementation strategies',
+    id: "2",
+    title: "Cloud Architect Path",
+    description:
+      "Master cloud architecture concepts and implementation strategies",
     courses: 10,
-    duration: '80 hours',
-    progress: 25
+    duration: "80 hours",
+    progress: 25,
   },
   {
-    id: '3',
-    title: 'Leadership Development Path',
-    description: 'Develop essential leadership skills for management roles',
+    id: "3",
+    title: "Leadership Development Path",
+    description: "Develop essential leadership skills for management roles",
     courses: 6,
-    duration: '40 hours',
-    progress: 0
-  }
+    duration: "40 hours",
+    progress: 0,
+  },
 ];
 
 // Main Component
 const EmployeeTrainingDevelopment = () => {
   const { isDarkMode } = useTheme();
-  const [selectedCategory, setSelectedCategory] = useState<any>('all');
-  const [searchText, setSearchText] = useState<any>('');
+  const [selectedCategory, setSelectedCategory] = useState<any>("all");
+  const [searchText, setSearchText] = useState<any>("");
   const [filteredModules, setFilteredModules] = useState<any>(trainingModules);
-  const [selectedTab, setSelectedTab] = useState<any>('all');
-
+  const [selectedTab, setSelectedTab] = useState<any>("all");
 
   const handleEnroll = (id: any) => {
-    message.success(`Enrolled in course: ${trainingModules.find((m: any) => m.id === id)?.title}`);
+    message.success(
+      `Enrolled in course: ${
+        trainingModules.find((m: any) => m.id === id)?.title
+      }`
+    );
     // Update module status to in_progress
     setFilteredModules((prev: any) =>
-      prev.map((m: any) => m.id === id ? { ...m, status: 'in_progress', progress: 5 } : m)
+      prev.map((m: any) =>
+        m.id === id ? { ...m, status: "in_progress", progress: 5 } : m
+      )
     );
   };
 
   const handleResume = (id: any) => {
-    message.info(`Resuming course: ${trainingModules.find((m: any) => m.id === id)?.title}`);
+    message.info(
+      `Resuming course: ${trainingModules.find((m: any) => m.id === id)?.title}`
+    );
     // Navigate to course content (would be implemented in a real app)
   };
 
   const handleViewCertificate = (id: any) => {
-    message.success(`Viewing certificate for: ${trainingModules.find((m: any) => m.id === id)?.title}`);
+    message.success(
+      `Viewing certificate for: ${
+        trainingModules.find((m: any) => m.id === id)?.title
+      }`
+    );
     // Open certificate modal or page (would be implemented in a real app)
   };
 
@@ -455,21 +510,22 @@ const EmployeeTrainingDevelopment = () => {
 
     // Filter by search text
     if (search) {
-      filtered = filtered.filter(module =>
-        module.title.toLowerCase().includes(search.toLowerCase()) ||
-        module.description.toLowerCase().includes(search.toLowerCase()) ||
-        module.instructor.toLowerCase().includes(search.toLowerCase())
+      filtered = filtered.filter(
+        (module) =>
+          module.title.toLowerCase().includes(search.toLowerCase()) ||
+          module.description.toLowerCase().includes(search.toLowerCase()) ||
+          module.instructor.toLowerCase().includes(search.toLowerCase())
       );
     }
 
     // Filter by category
-    if (category !== 'all') {
-      filtered = filtered.filter(module => module.category === category);
+    if (category !== "all") {
+      filtered = filtered.filter((module) => module.category === category);
     }
 
     // Filter by tab
-    if (tab !== 'all') {
-      filtered = filtered.filter(module => module.status === tab);
+    if (tab !== "all") {
+      filtered = filtered.filter((module) => module.status === tab);
     }
 
     setFilteredModules(filtered);
@@ -479,7 +535,15 @@ const EmployeeTrainingDevelopment = () => {
     filterData(searchText, selectedCategory, selectedTab);
   }, []);
 
-  const categories = ['all', 'Software Development', 'Leadership', 'Data Science', 'Soft Skills', 'Cloud Computing', 'Project Management'];
+  const categories = [
+    "all",
+    "Software Development",
+    "Leadership",
+    "Data Science",
+    "Soft Skills",
+    "Cloud Computing",
+    "Project Management",
+  ];
 
   return (
     <Wrapper isDarkMode={isDarkMode}>
@@ -489,21 +553,26 @@ const EmployeeTrainingDevelopment = () => {
         subtitle="Manage your Training & Development"
         breadcrumbItems={[
           {
-            title: 'Home',
-            href: '/'
+            title: "Dashboard",
+            href: "/",
+          },
+          {
+            title: "Training & Development",
           },
         ]}
       />
-      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
         <Col xs={24} sm={12} lg={6}>
           <StyledCard>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
               <IconWrapper $color="#1890ff">
                 <BookOpen size={20} />
               </IconWrapper>
               <div>
                 <Text type="secondary">Enrolled Courses</Text>
-                <Title level={3} style={{ margin: 0 }}>4</Title>
+                <Title level={3} style={{ margin: 0 }}>
+                  4
+                </Title>
               </div>
             </div>
           </StyledCard>
@@ -511,13 +580,15 @@ const EmployeeTrainingDevelopment = () => {
 
         <Col xs={24} sm={12} lg={6}>
           <StyledCard>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
               <IconWrapper $color="#52c41a">
                 <CheckCircle size={20} />
               </IconWrapper>
               <div>
                 <Text type="secondary">Completed</Text>
-                <Title level={3} style={{ margin: 0 }}>2</Title>
+                <Title level={3} style={{ margin: 0 }}>
+                  2
+                </Title>
               </div>
             </div>
           </StyledCard>
@@ -525,13 +596,15 @@ const EmployeeTrainingDevelopment = () => {
 
         <Col xs={24} sm={12} lg={6}>
           <StyledCard>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
               <IconWrapper $color="#faad14">
                 <Award size={20} />
               </IconWrapper>
               <div>
                 <Text type="secondary">Certifications</Text>
-                <Title level={3} style={{ margin: 0 }}>3</Title>
+                <Title level={3} style={{ margin: 0 }}>
+                  3
+                </Title>
               </div>
             </div>
           </StyledCard>
@@ -539,13 +612,15 @@ const EmployeeTrainingDevelopment = () => {
 
         <Col xs={24} sm={12} lg={6}>
           <StyledCard>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
               <IconWrapper $color="#ff4d4f">
                 <Clock size={20} />
               </IconWrapper>
               <div>
                 <Text type="secondary">Learning Hours</Text>
-                <Title level={3} style={{ margin: 0 }}>26</Title>
+                <Title level={3} style={{ margin: 0 }}>
+                  26
+                </Title>
               </div>
             </div>
           </StyledCard>
@@ -575,10 +650,14 @@ const EmployeeTrainingDevelopment = () => {
               <div className="filter-section">
                 <Space>
                   <Text>Category:</Text>
-                  <Select defaultValue="all" style={{ width: 180 }} onChange={handleCategoryFilter}>
-                    {categories.map(category => (
+                  <Select
+                    defaultValue="all"
+                    style={{ width: 180 }}
+                    onChange={handleCategoryFilter}
+                  >
+                    {categories.map((category) => (
                       <Option key={category} value={category}>
-                        {category === 'all' ? 'All Categories' : category}
+                        {category === "all" ? "All Categories" : category}
                       </Option>
                     ))}
                   </Select>
@@ -600,10 +679,23 @@ const EmployeeTrainingDevelopment = () => {
             </Row>
 
             {filteredModules.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <BookOpen size={48} style={{ color: 'var(--text-color-secondary)', marginBottom: '16px' }} />
-                <Title level={4} style={{ color: 'var(--text-color-secondary)' }}>No courses found</Title>
-                <Text type="secondary">Try adjusting your search or filters</Text>
+              <div style={{ textAlign: "center", padding: "40px 0" }}>
+                <BookOpen
+                  size={48}
+                  style={{
+                    color: "var(--text-color-secondary)",
+                    marginBottom: "16px",
+                  }}
+                />
+                <Title
+                  level={4}
+                  style={{ color: "var(--text-color-secondary)" }}
+                >
+                  No courses found
+                </Title>
+                <Text type="secondary">
+                  Try adjusting your search or filters
+                </Text>
               </div>
             )}
           </StyledCard>
@@ -612,43 +704,126 @@ const EmployeeTrainingDevelopment = () => {
         <Col xs={24} lg={8}>
           <StyledCard title="Learning Paths" extra={<Lightbulb size={16} />}>
             {learningPaths.map((path: any) => (
-              <div key={path.id} style={{ marginBottom: '16px', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '6px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                  <Title level={5} style={{ margin: 0 }}>{path.title}</Title>
+              <div
+                key={path.id}
+                style={{
+                  marginBottom: "16px",
+                  padding: "12px",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "6px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <Title level={5} style={{ margin: 0 }}>
+                    {path.title}
+                  </Title>
                   <Tag icon={<Route size={12} />}>{path.courses} courses</Tag>
                 </div>
-                <Text type="secondary" style={{ fontSize: '14px', display: 'block', marginBottom: '12px' }}>
+                <Text
+                  type="secondary"
+                  style={{
+                    fontSize: "14px",
+                    display: "block",
+                    marginBottom: "12px",
+                  }}
+                >
                   {path.description}
                 </Text>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <Text type="secondary" style={{ fontSize: '12px' }}>{path.duration}</Text>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <Text type="secondary" style={{ fontSize: "12px" }}>
+                    {path.duration}
+                  </Text>
                   {path.progress > 0 ? (
-                    <Text type="secondary" style={{ fontSize: '12px' }}>{path.progress}% complete</Text>
+                    <Text type="secondary" style={{ fontSize: "12px" }}>
+                      {path.progress}% complete
+                    </Text>
                   ) : (
-                    <Text type="secondary" style={{ fontSize: '12px' }}>Not started</Text>
+                    <Text type="secondary" style={{ fontSize: "12px" }}>
+                      Not started
+                    </Text>
                   )}
                 </div>
                 <Progress percent={path.progress} size="small" />
-                <Button type="link" size="small" style={{ padding: 0, marginTop: '8px' }}>
+                <Button
+                  type="link"
+                  size="small"
+                  style={{ padding: 0, marginTop: "8px" }}
+                >
                   View Path <ArrowRight size={14} />
                 </Button>
               </div>
             ))}
           </StyledCard>
 
-          <StyledCard title="Certifications" extra={<Award size={16} />} style={{ marginTop: '16px' }}>
+          <StyledCard
+            title="Certifications"
+            extra={<Award size={16} />}
+            style={{ marginTop: "16px" }}
+          >
             {certifications.map((cert: any) => (
-              <div key={cert.id} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                  <Title level={5} style={{ margin: 0 }}>{cert.title}</Title>
+              <div
+                key={cert.id}
+                style={{
+                  marginBottom: "16px",
+                  paddingBottom: "16px",
+                  borderBottom: "1px solid var(--border-color)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <Title level={5} style={{ margin: 0 }}>
+                    {cert.title}
+                  </Title>
                   <StatusTag color="green">Active</StatusTag>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
                   <div>
-                    <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>Issued: {cert.issueDate}</Text>
-                    <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>Expires: {cert.expiryDate}</Text>
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: "12px", display: "block" }}
+                    >
+                      Issued: {cert.issueDate}
+                    </Text>
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: "12px", display: "block" }}
+                    >
+                      Expires: {cert.expiryDate}
+                    </Text>
                   </div>
-                  <Button type="text" icon={<Download size={14} />} size="small">Download</Button>
+                  <Button
+                    type="text"
+                    icon={<Download size={14} />}
+                    size="small"
+                  >
+                    Download
+                  </Button>
                 </div>
               </div>
             ))}
