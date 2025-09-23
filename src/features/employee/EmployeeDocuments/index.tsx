@@ -109,7 +109,7 @@ const EmployeeDocuments = () => {
         title="Document Management"
         subtitle="Manage and organize your documents efficiently"
         breadcrumbItems={[
-          { title: "Home", href: "/" },
+          { title: "Dashboard", href: "/" },
           { title: "Document Management" },
         ]}
         extraButtons={[

@@ -318,7 +318,7 @@ const EmployeeAssets = () => {
         title="Asset Management"
         subtitle="Manage your Assets"
         breadcrumbItems={[
-          { title: "Home", href: "/" },
+          { title: "Dashboard", href: "/" },
           { title: "Asset Management" },
         ]}
       />

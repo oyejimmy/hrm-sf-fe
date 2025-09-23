@@ -67,7 +67,10 @@ const EmployeeComplain = () => {
         isDarkMode={isDarkMode}
         title="Complaint Management"
         subtitle="Submit and track your workplace complaints"
-        breadcrumbItems={[{ title: 'Home', href: '/' }]}
+        breadcrumbItems={[
+          { title: 'Dashboard', href: '/' },
+          {title: "Complaint Management",}
+        ]}
         extraButtons={[
           <Button
             key="new-complaint"

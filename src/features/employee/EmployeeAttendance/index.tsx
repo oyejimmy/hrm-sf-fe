@@ -1,26 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import {  message, Button, Modal } from 'antd';
-import { LucideEye } from 'lucide-react';
-import HeaderComponent from '../../../components/PageHeader';
-import { Wrapper } from '../../../components/Wrapper';
-import AttendanceClockPanel from './components/AttendanceClockPanel';
-import AttendanceHistoryTable from './components/AttendanceHistoryTable';
-import AttendanceCalendar from './components/AttendanceCalendar';
+import React, { useState, useEffect } from "react";
+import { message, Button, Modal } from "antd";
+import { LucideEye } from "lucide-react";
+import HeaderComponent from "../../../components/PageHeader";
+import { Wrapper } from "../../../components/Wrapper";
+import AttendanceClockPanel from "./components/AttendanceClockPanel";
+import AttendanceHistoryTable from "./components/AttendanceHistoryTable";
+import AttendanceCalendar from "./components/AttendanceCalendar";
 import {
   TodayAttendance,
   AttendanceRecord,
   AttendanceNotification,
-  AttendanceSummary
-} from './types';
-import { useAttendance } from '../../../hooks/useAttendance';
-import { useTheme } from '../../../contexts/ThemeContext';
-import AttendanceNotificationPanel from './components/AttendanceNotificationPanel';
-import AttendanceOverviewPanel from './components/AttendanceOverviewPanel';
-import { ResponsiveCol, ResponsiveRow, StyledCard } from './components/styles';
+  AttendanceSummary,
+} from "./types";
+import { useAttendance } from "../../../hooks/useAttendance";
+import { useTheme } from "../../../contexts/ThemeContext";
+import AttendanceNotificationPanel from "./components/AttendanceNotificationPanel";
+import AttendanceOverviewPanel from "./components/AttendanceOverviewPanel";
+import { ResponsiveCol, ResponsiveRow, StyledCard } from "./components/styles";
 
 // Mock data
 const mockTodayAttendance: TodayAttendance = {
-  date: new Date().toISOString().split('T')[0],
+  date: new Date().toISOString().split("T")[0],
   checkIn: undefined,
   checkOut: undefined,
   breakStart: undefined,
@@ -28,57 +28,57 @@ const mockTodayAttendance: TodayAttendance = {
   totalHours: 0,
   breakMinutes: 0,
   workingHours: 0,
-  status: 'Pending',
-  isOnBreak: false
+  status: "Pending",
+  isOnBreak: false,
 };
 
 const mockAttendanceRecords: AttendanceRecord[] = [
   {
-    id: '1',
-    employeeId: 'emp1',
-    employeeName: 'Current User',
-    department: 'Engineering',
-    date: '2024-01-15',
-    checkIn: '2024-01-15T09:00:00Z',
-    checkOut: '2024-01-15T18:00:00Z',
-    breakStart: '2024-01-15T12:00:00Z',
-    breakEnd: '2024-01-15T13:00:00Z',
+    id: "1",
+    employeeId: "emp1",
+    employeeName: "Current User",
+    department: "Engineering",
+    date: "2024-01-15",
+    checkIn: "2024-01-15T09:00:00Z",
+    checkOut: "2024-01-15T18:00:00Z",
+    breakStart: "2024-01-15T12:00:00Z",
+    breakEnd: "2024-01-15T13:00:00Z",
     totalHours: 9,
     breakMinutes: 60,
     workingHours: 8,
-    status: 'Present',
-    notes: 'Regular day'
+    status: "Present",
+    notes: "Regular day",
   },
   {
-    id: '2',
-    employeeId: 'emp1',
-    employeeName: 'Current User',
-    department: 'Engineering',
-    date: '2025-01-15',
-    checkIn: '2025-01-15T09:00:00Z',
-    checkOut: '2025-01-15T18:00:00Z',
-    breakStart: '2025-01-15T12:00:00Z',
-    breakEnd: '2025-01-15T13:00:00Z',
+    id: "2",
+    employeeId: "emp1",
+    employeeName: "Current User",
+    department: "Engineering",
+    date: "2025-01-15",
+    checkIn: "2025-01-15T09:00:00Z",
+    checkOut: "2025-01-15T18:00:00Z",
+    breakStart: "2025-01-15T12:00:00Z",
+    breakEnd: "2025-01-15T13:00:00Z",
     totalHours: 9,
     breakMinutes: 60,
     workingHours: 8,
-    status: 'Absent',
-    notes: 'Regular day'
-  }
+    status: "Absent",
+    notes: "Regular day",
+  },
 ];
 
 const mockNotifications: AttendanceNotification[] = [
   {
-    id: '1',
-    type: 'check_in',
-    employeeId: 'emp1',
-    employeeName: 'Current User',
-    department: 'Engineering',
-    message: 'You checked in at 9:00 AM',
-    timestamp: '2 hours ago',
+    id: "1",
+    type: "check_in",
+    employeeId: "emp1",
+    employeeName: "Current User",
+    department: "Engineering",
+    message: "You checked in at 9:00 AM",
+    timestamp: "2 hours ago",
     read: false,
-    priority: 'low'
-  }
+    priority: "low",
+  },
 ];
 
 const mockSummary: AttendanceSummary = {
@@ -88,7 +88,7 @@ const mockSummary: AttendanceSummary = {
   lateDays: 3,
   totalWorkingHours: 160,
   averageWorkingHours: 8,
-  attendancePercentage: 90.9
+  attendancePercentage: 90.9,
 };
 
 const EmployeeAttendance: React.FC = () => {
@@ -98,7 +98,7 @@ const EmployeeAttendance: React.FC = () => {
     notifications,
     isLoading,
     logAttendance,
-    markNotificationAsRead
+    markNotificationAsRead,
   } = useAttendance();
 
   const [summary, setSummary] = useState<AttendanceSummary>(mockSummary);
@@ -124,18 +124,23 @@ const EmployeeAttendance: React.FC = () => {
   const handleAutoAbsence = async () => {
     try {
       // This would be handled by the API
-      message.warning('You have been marked absent for today. Please contact HR if this is incorrect.');
+      message.warning(
+        "You have been marked absent for today. Please contact HR if this is incorrect."
+      );
     } catch (error) {
-      console.error('Failed to auto-mark absent:', error);
+      console.error("Failed to auto-mark absent:", error);
     }
   };
 
   const handleAttendanceUpdate = (updatedAttendance: TodayAttendance) => {
     // This will be handled by the mutation in useAttendance hook
     const attendanceData = {
-      action: updatedAttendance.checkOut ? 'check_out' :
-        updatedAttendance.isOnBreak ? 'break_start' : 'check_in',
-      timestamp: new Date().toISOString()
+      action: updatedAttendance.checkOut
+        ? "check_out"
+        : updatedAttendance.isOnBreak
+        ? "break_start"
+        : "check_in",
+      timestamp: new Date().toISOString(),
     };
     logAttendance(attendanceData as any);
   };
@@ -145,10 +150,14 @@ const EmployeeAttendance: React.FC = () => {
   };
 
   const handleMarkAllAsRead = async () => {
-    const unreadNotifications = currentNotifications.filter((n: AttendanceNotification) => !n.read);
-    const promises = unreadNotifications.map((n: AttendanceNotification) => markNotificationAsRead(n.id));
+    const unreadNotifications = currentNotifications.filter(
+      (n: AttendanceNotification) => !n.read
+    );
+    const promises = unreadNotifications.map((n: AttendanceNotification) =>
+      markNotificationAsRead(n.id)
+    );
     await Promise.all(promises);
-    message.success('All notifications marked as read');
+    message.success("All notifications marked as read");
   };
 
   const showCalendarModal = () => {
@@ -166,11 +175,16 @@ const EmployeeAttendance: React.FC = () => {
         title="Employee Attendance System"
         subtitle="Track your daily attendance with real-time clock and comprehensive history"
         breadcrumbItems={[
-          { title: 'Home', href: '/' },
-          { title: 'Employee Attendance', href: '/employee' }
+          { title: "Dashboard", href: "/" },
+          { title: "Employee Attendance" },
         ]}
         extraButtons={[
-          <Button key="view-calendar" type='primary' icon={<LucideEye />} onClick={showCalendarModal}>
+          <Button
+            key="view-calendar"
+            type="primary"
+            icon={<LucideEye />}
+            onClick={showCalendarModal}
+          >
             View Attendance Summary
           </Button>,
         ]}
@@ -185,8 +199,11 @@ const EmployeeAttendance: React.FC = () => {
             onAttendanceUpdate={(action: string) => {
               const updatedAttendance = {
                 ...currentTodayAttendance,
-                checkOut: action === 'check_out' ? new Date().toISOString() : currentTodayAttendance.checkOut,
-                isOnBreak: action === 'break_start'
+                checkOut:
+                  action === "check_out"
+                    ? new Date().toISOString()
+                    : currentTodayAttendance.checkOut,
+                isOnBreak: action === "break_start",
               };
               handleAttendanceUpdate(updatedAttendance);
             }}
@@ -194,10 +211,7 @@ const EmployeeAttendance: React.FC = () => {
           />
         </ResponsiveCol>
         <ResponsiveCol xs={24} lg={8}>
-          <AttendanceOverviewPanel
-            summary={summary}
-            loading={isLoading}
-          />
+          <AttendanceOverviewPanel summary={summary} loading={isLoading} />
         </ResponsiveCol>
         <ResponsiveCol xs={24} lg={8}>
           <AttendanceNotificationPanel
@@ -210,7 +224,7 @@ const EmployeeAttendance: React.FC = () => {
 
       {/* History Section */}
       <StyledCard isDarkMode={isDarkMode} title="Recent Attendance Records">
-        <div style={{ padding: '24px' }}>
+        <div style={{ padding: "24px" }}>
           <AttendanceHistoryTable
             records={currentAttendanceRecords}
             loading={isLoading}
@@ -233,7 +247,10 @@ const EmployeeAttendance: React.FC = () => {
         width={1000}
         centered
       >
-        <AttendanceCalendar isDarkMode={isDarkMode} records={currentAttendanceRecords} />
+        <AttendanceCalendar
+          isDarkMode={isDarkMode}
+          records={currentAttendanceRecords}
+        />
       </Modal>
     </Wrapper>
   );
