@@ -46,6 +46,7 @@ import EmployeeProfile from './features/profile/Profile';
 import EditProfile from './features/profile/EditProfile';
 import EmployeeComplain from './features/employee/EmployeeComplain';
 import EmployeeRequest from './features/employee/EmployeeRequest';
+import EmployeeHealthInsurance from './features/employee/EmployeeHealthInsurance';
 
 // Team Lead Components
 import { TeamLeadDashboard } from './features/teamLead/Dashboard';
@@ -116,6 +117,7 @@ const AppContent: React.FC = () => {
             <Route path="leave" element={<LeaveManagement />} />
             <Route path="training" element={<TrainingAndDevelopment />} />
             <Route path="payslip" element={<Payslip />} />
+            <Route path="health-insurance" element={<EmployeeHealthInsurance />} />
             <Route path="assets" element={<Assets />} />
             <Route path="documents" element={<Documents />} />
             <Route path="profile" element={<EmployeeProfile />} />
