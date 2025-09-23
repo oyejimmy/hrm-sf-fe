@@ -31,6 +31,7 @@ import {
   SunOutlined,
   MoonOutlined,
   MenuOutlined,
+  MedicineBoxOutlined,
 } from "@ant-design/icons";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import type { MenuProps } from "antd";
@@ -464,6 +465,11 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             key: "/employee/payslip",
             icon: <DollarOutlined />,
             label: "Payslip",
+          },
+          {
+            key: "/employee/health-insurance",
+            icon: <MedicineBoxOutlined />,
+            label: "Health Insurance",
           },
           {
             key: "/employee/assets",
