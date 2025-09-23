@@ -59,7 +59,7 @@ function resolveTone(tone: StateCardProps["tone"], seed?: string): PastelVariant
 }
 
 function renderIcon(icon: StateCardProps["icon"], iconSize?: number) {
-  const size = iconSize ?? 30;
+  const size = iconSize ?? 48;
   if (!icon) return null;
 
   if (React.isValidElement(icon)) {
