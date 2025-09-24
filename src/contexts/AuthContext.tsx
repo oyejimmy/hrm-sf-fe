@@ -9,8 +9,10 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (credentials: { email: string; password: string }) => void;
   logout: () => void;
+  signup: (userData: { email: string; password: string; first_name: string; last_name: string; role: string; }) => void;
   isLoginLoading: boolean;
   isLogoutLoading: boolean;
+  isSignupLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,6 +21,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { data: user, isLoading, error } = useCurrentUser();
   const loginMutation = useLogin();
   const logoutMutation = useLogout();
+  const signupMutation = { mutate: () => {}, isPending: false }; // Placeholder
 
   const authValue: AuthContextType = {
     user,
@@ -27,8 +30,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAuthenticated: !!user,
     login: loginMutation.mutate,
     logout: logoutMutation.mutate,
+    signup: signupMutation.mutate,
     isLoginLoading: loginMutation.isPending,
     isLogoutLoading: logoutMutation.isPending,
+    isSignupLoading: signupMutation.isPending,
   };
 
   return (

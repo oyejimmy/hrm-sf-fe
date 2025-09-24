@@ -4,15 +4,16 @@ import { tokenStorage } from '../utils/security';
 import { message } from 'antd';
 
 export interface User {
-  id: string;
+  id: number;
   email: string;
   first_name: string;
   last_name: string;
-  role: string;
-  status: string;
-  team_id?: string;
   phone?: string;
+  role: 'admin' | 'hr' | 'team_lead' | 'employee';
+  is_active: boolean;
+  is_profile_complete: boolean;
   profile_picture?: string;
+  status: string;
   created_at: string;
   updated_at: string;
   last_login?: string;

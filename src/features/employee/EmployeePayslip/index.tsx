@@ -110,7 +110,7 @@ const EmployeePayslip: React.FC = () => {
   };
 
   const handleDownload = (record: Payslip) => {
-    message.success(`Downloading payslip for ${record.payPeriod}`);
+    message.success(`Downloading payslip for ${record.pay_period}`);
     // Here you would typically download the PDF
   };
 
@@ -162,18 +162,9 @@ const EmployeePayslip: React.FC = () => {
             />
 
             <PayslipTable
-              data={filteredData.map(payslip => ({
-                key: payslip.id.toString(),
-                payPeriod: payslip.pay_period,
-                issueDate: payslip.generated_at,
-                grossPay: payslip.gross_pay,
-                netPay: payslip.net_pay,
-                status: payslip.status,
-                deductions: payslip.total_deductions,
-              }))}
+              data={filteredData}
               onView={(record) => {
-                const originalPayslip = payslipData?.find(p => p.id.toString() === record.key);
-                if (originalPayslip) showModal(originalPayslip as any);
+                showModal(record as any);
               }}
               onDownload={handleDownload}
               loading={isLoading}

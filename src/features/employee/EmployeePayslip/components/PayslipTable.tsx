@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button, Space, Tag, Typography, Empty } from 'antd';
 import { Eye, Download } from 'lucide-react';
-import { Payslip } from '../types';
+import { Payslip } from '../../../../services/api/types';
 import { StyledTable } from './styles';
 
 const { Text } = Typography;
@@ -23,42 +23,42 @@ const PayslipTable: React.FC<PayslipTableProps> = ({
   const columns: any = [
     {
       title: 'Pay Period',
-      dataIndex: 'payPeriod',
-      key: 'payPeriod',
+      dataIndex: 'pay_period',
+      key: 'pay_period',
       sorter: (a: Payslip, b: Payslip) =>
-        a.payPeriod.localeCompare(b.payPeriod),
+        a.pay_period.localeCompare(b.pay_period),
       responsive: ['xs', 'sm', 'md'],
     },
     {
       title: 'Issue Date',
-      dataIndex: 'issueDate',
-      key: 'issueDate',
+      dataIndex: 'generated_at',
+      key: 'generated_at',
       sorter: (a: Payslip, b: Payslip) =>
-        new Date(a.issueDate).getTime() - new Date(b.issueDate).getTime(),
+        new Date(a.generated_at).getTime() - new Date(b.generated_at).getTime(),
       responsive: ['sm', 'md'],
     },
     {
       title: 'Gross Pay',
-      dataIndex: 'grossPay',
-      key: 'grossPay',
+      dataIndex: 'gross_pay',
+      key: 'gross_pay',
       render: (amount: number) => `PKR${amount.toFixed(2)}`,
-      sorter: (a: Payslip, b: Payslip) => a.grossPay - b.grossPay,
+      sorter: (a: Payslip, b: Payslip) => a.gross_pay - b.gross_pay,
       responsive: ['md'],
     },
     {
       title: 'Deductions',
-      dataIndex: 'deductions',
-      key: 'deductions',
+      dataIndex: 'total_deductions',
+      key: 'total_deductions',
       render: (amount: number) => `PKR${amount.toFixed(2)}`,
-      sorter: (a: Payslip, b: Payslip) => a.deductions - b.deductions,
+      sorter: (a: Payslip, b: Payslip) => a.total_deductions - b.total_deductions,
       responsive: ['lg'],
     },
     {
       title: 'Net Pay',
-      dataIndex: 'netPay',
-      key: 'netPay',
+      dataIndex: 'net_pay',
+      key: 'net_pay',
       render: (amount: number) => <Text strong>PKR{amount.toFixed(2)}</Text>,
-      sorter: (a: Payslip, b: Payslip) => a.netPay - b.netPay,
+      sorter: (a: Payslip, b: Payslip) => a.net_pay - b.net_pay,
       responsive: ['sm', 'md', 'lg'],
     },
     {
@@ -99,6 +99,7 @@ const PayslipTable: React.FC<PayslipTableProps> = ({
     <StyledTable
       columns={columns}
       dataSource={data}
+      rowKey="id"
       pagination={{ pageSize: 5 }}
       scroll={{ x: true }}
       loading={loading}
