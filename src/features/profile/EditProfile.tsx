@@ -18,7 +18,8 @@ import {
   Progress,
   List,
   Menu,
-  Dropdown
+  Dropdown,
+  Spin
 } from 'antd';
 import {
   User,
@@ -43,6 +44,8 @@ import {
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '../../services/api/api';
 import * as S from './styles';
 
 const { Title, Text } = Typography;
@@ -114,14 +117,33 @@ const EditProfile: React.FC = () => {
   const { isDarkMode } = useTheme();
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [avatarImage, setAvatarImage] = useState<string | null>(null);
-  const [employeeData, setEmployeeData] = useState(initialEmployeeData);
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [editingContact, setEditingContact] = useState<any>(null);
   const [form] = Form.useForm();
   const [emergencyForm] = Form.useForm();
   const navigate = useNavigate();
   const location = useLocation();
-
+  const queryClient = useQueryClient();
+  
+  // Fetch current profile data
+  const { data: employeeData, isLoading } = useQuery({
+    queryKey: ['employee-profile'],
+    queryFn: () => api.get('/api/employees/me/profile').then(res => res.data),
+  });
+  
+  // Update profile mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: (data: any) => api.put('/auth/profile/update', data),
+    onSuccess: () => {
+      message.success('Profile updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['employee-profile'] });
+      navigate(getProfilePath());
+    },
+    onError: () => {
+      message.error('Failed to update profile');
+    }
+  });
+  
   // Check if we're editing an existing contact
   React.useEffect(() => {
     if (location.state && location.state.editingContact) {
@@ -130,6 +152,18 @@ const EditProfile: React.FC = () => {
       setActiveTab('emergency');
     }
   }, [location.state]);
+  
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>
+        <Spin size="large" tip="Loading profile..." />
+      </div>
+    );
+  }
+  
+  if (!employeeData) {
+    return <div>Error loading profile data</div>;
+  }
 
   const handleCoverUpload = (info: any) => {
     if (info.file.status === 'done') {
@@ -160,54 +194,51 @@ const EditProfile: React.FC = () => {
 
   const handleSave = () => {
     form.validateFields().then(values => {
-      console.log('Form values:', values);
-      // Update the employee data with form values
-      setEmployeeData(prev => ({
-        ...prev,
-        personalInfo: { ...prev.personalInfo, ...values }
-      }));
-      message.success('Profile updated successfully');
-      navigate(getProfilePath());
+      // Flatten nested form values
+      const flatValues = {
+        ...values,
+        ...(values.jobInfo || {}),
+        ...(values.compensation || {})
+      };
+      
+      // Add image URLs if changed
+      if (coverImage) flatValues.cover_image_url = coverImage;
+      if (avatarImage) flatValues.avatar_url = avatarImage;
+      
+      updateProfileMutation.mutate(flatValues);
     }).catch(errorInfo => {
       console.log('Validation failed:', errorInfo);
     });
   };
 
   const handleAddEmergencyContact = (values: any) => {
-    const newContact = {
-      id: editingContact ? editingContact.id : Date.now(),
-      ...values
+    // Update emergency contact fields in profile
+    const updateData = {
+      emergency_contact_name: values.name,
+      emergency_contact_phone: values.mobile,
+      emergency_contact_relationship: values.relationship,
+      emergency_contact_work_phone: values.workPhone,
+      emergency_contact_home_phone: values.homePhone,
+      emergency_contact_address: values.address
     };
-
-    if (editingContact) {
-      // Update existing contact
-      setEmployeeData(prev => ({
-        ...prev,
-        emergencyContacts: prev.emergencyContacts.map(contact =>
-          contact.id === editingContact.id ? newContact : contact
-        )
-      }));
-      message.success('Emergency contact updated successfully');
-    } else {
-      // Add new contact
-      setEmployeeData(prev => ({
-        ...prev,
-        emergencyContacts: [...prev.emergencyContacts, newContact]
-      }));
-      message.success('Emergency contact added successfully');
-    }
-
+    
+    updateProfileMutation.mutate(updateData);
     setIsEditingContact(false);
     setEditingContact(null);
     emergencyForm.resetFields();
   };
 
   const handleDeleteContact = (contactId: number) => {
-    setEmployeeData(prev => ({
-      ...prev,
-      emergencyContacts: prev.emergencyContacts.filter(contact => contact.id !== contactId)
-    }));
-    message.success('Emergency contact deleted successfully');
+    const updateData = {
+      emergency_contact_name: null,
+      emergency_contact_phone: null,
+      emergency_contact_relationship: null,
+      emergency_contact_work_phone: null,
+      emergency_contact_home_phone: null,
+      emergency_contact_address: null
+    };
+    
+    updateProfileMutation.mutate(updateData);
   };
 
   const handleEditContact = (contact: any) => {
@@ -462,7 +493,7 @@ const EditProfile: React.FC = () => {
                         </Form>
                       ) : (
                         <>
-                          {employeeData.emergencyContacts.map((contact) => (
+                          {(employeeData?.emergencyContacts || []).map((contact: any) => (
                             <S.ContactInfoContainer key={contact.id} isDarkMode={isDarkMode}>
                               <Row align="middle">
                                 <Col flex="auto">
@@ -491,7 +522,7 @@ const EditProfile: React.FC = () => {
                               </S.ContactDetails>
                             </S.ContactInfoContainer>
                           ))}
-                          {employeeData.emergencyContacts.length === 0 && (
+                          {(!employeeData?.emergencyContacts || employeeData.emergencyContacts.length === 0) && (
                             <div style={{ textAlign: 'center', padding: '20px' }}>
                               <Heart size={48} color="#d9d9d9" />
                               <p>No emergency contacts added yet</p>
@@ -587,7 +618,7 @@ const EditProfile: React.FC = () => {
                     key="skills"
                   >
                     <S.StyledCard title="Skills & Competencies" isDarkMode={isDarkMode}>
-                      {employeeData.skills.map((skill, index) => (
+                      {(employeeData?.skills || []).map((skill: any, index: number) => (
                         <S.SideInfoItem key={index} isDarkMode={isDarkMode}>
                           <div className="label">{skill.name}</div>
                           <Progress percent={skill.level} showInfo={true} />

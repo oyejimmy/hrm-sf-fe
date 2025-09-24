@@ -5,7 +5,7 @@ import { getDashboardRoute } from '../../utils/authHelpers';
 import { LoadingSpinner } from './LoadingSpinner';
 
 export const DashboardRedirect: React.FC = () => {
-  const { user, isAuthenticated, isLoading } = useAuthContext();
+  const { user, isAuthenticated, isLoading, isProfileComplete } = useAuthContext();
 
   if (isLoading) {
     return <LoadingSpinner tip="Redirecting to dashboard..." />;
@@ -15,6 +15,11 @@ export const DashboardRedirect: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
-  const dashboardRoute = getDashboardRoute(user.role);
+  if (!isProfileComplete) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // Admin users go to admin dashboard, others to their role-based dashboard
+  const dashboardRoute = user.role === 'admin' ? '/admin/dashboard' : getDashboardRoute(user.role);
   return <Navigate to={dashboardRoute} replace />;
 };

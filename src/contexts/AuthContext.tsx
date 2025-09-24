@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from 'react';
-import { useCurrentUser, useLogin, useLogout } from '../hooks/api/useAuth';
+import { useCurrentUser, useLogin, useLogout, useCompleteProfile, useProfileStatus } from '../hooks/api/useAuth';
 import { User } from '../services/api/types';
 
 interface AuthContextType {
@@ -7,20 +7,25 @@ interface AuthContextType {
   isLoading: boolean;
   error: any;
   isAuthenticated: boolean;
+  isProfileComplete: boolean;
   login: (credentials: { email: string; password: string }) => void;
   logout: () => void;
   signup: (userData: { email: string; password: string; first_name: string; last_name: string; role: string; }) => void;
+  completeProfile: (profileData: any) => void;
   isLoginLoading: boolean;
   isLogoutLoading: boolean;
   isSignupLoading: boolean;
+  isCompleteProfileLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { data: user, isLoading, error } = useCurrentUser();
+  const { data: profileStatus } = useProfileStatus();
   const loginMutation = useLogin();
   const logoutMutation = useLogout();
+  const completeProfileMutation = useCompleteProfile();
   const signupMutation = { mutate: () => {}, isPending: false }; // Placeholder
 
   const authValue: AuthContextType = {
@@ -28,12 +33,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isLoading,
     error,
     isAuthenticated: !!user,
+    isProfileComplete: user?.is_profile_complete || false,
     login: loginMutation.mutate,
     logout: logoutMutation.mutate,
     signup: signupMutation.mutate,
+    completeProfile: completeProfileMutation.mutate,
     isLoginLoading: loginMutation.isPending,
     isLogoutLoading: logoutMutation.isPending,
     isSignupLoading: signupMutation.isPending,
+    isCompleteProfileLoading: completeProfileMutation.isPending,
   };
 
   return (

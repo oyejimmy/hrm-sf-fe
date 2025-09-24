@@ -43,12 +43,12 @@ export interface User {
   last_name: string;
   phone?: string;
   role: 'admin' | 'hr' | 'team_lead' | 'employee';
-  is_active: boolean;
-  is_profile_complete: boolean;
+  is_active?: boolean;
+  is_profile_complete?: boolean;
   profile_picture?: string;
   status: string;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
   last_login?: string;
   redirect_url?: string;
 }

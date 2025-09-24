@@ -12,6 +12,8 @@ import {
   Progress,
   Dropdown,
   Menu,
+  Spin,
+  Alert,
 } from 'antd';
 import {
   User,
@@ -33,6 +35,8 @@ import {
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../services/api/api';
 import * as S from './styles';
 
 const { Title, Text } = Typography;
@@ -95,12 +99,59 @@ const employeeData: any = {
   ]
 };
 
-const Profile: React.FC = () => {
+interface ProfileProps {
+  userData?: any;
+  profileData?: any;
+}
+
+const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
   const [activeTab, setActiveTab] = useState('personal');
   const { isDarkMode } = useTheme();
-  const [emergencyContacts, setEmergencyContacts] = useState(employeeData.emergencyContacts);
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Fetch profile data if not provided
+  const { data: apiProfileData, isLoading, error } = useQuery({
+    queryKey: ['employee-profile'],
+    queryFn: () => api.get('/api/employees/me/profile').then(res => res.data),
+    enabled: !profileData,
+  });
+  
+  // Use provided data or fetched data or fallback
+  const employeeData = profileData || apiProfileData || {
+    personalInfo: { name: 'Loading...', position: 'N/A', department: 'N/A', location: 'N/A', email: 'N/A', phone: 'N/A', hireDate: 'N/A', employmentType: 'N/A', employeeId: 'N/A', manager: 'N/A', qualification: 'N/A', bloodGroup: 'N/A' },
+    emergencyContacts: [],
+    jobInfo: { title: 'N/A', department: 'N/A', reportsTo: 'N/A', teamSize: 0, startDate: 'N/A', employmentType: 'N/A', workSchedule: 'N/A', location: 'N/A' },
+    compensation: { salary: 'N/A', bonus: 'N/A', stockOptions: 'N/A', lastIncrease: 'N/A', nextReview: 'N/A' },
+    skills: [],
+    documents: []
+  };
+  
+  const [emergencyContacts, setEmergencyContacts] = useState(employeeData.emergencyContacts || []);
+  
+  React.useEffect(() => {
+    setEmergencyContacts(employeeData.emergencyContacts || []);
+  }, [employeeData]);
+  
+  if (isLoading && !profileData) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>
+        <Spin size="large" tip="Loading profile..." />
+      </div>
+    );
+  }
+  
+  if (error && !profileData) {
+    return (
+      <Alert
+        message="Error Loading Profile"
+        description="Unable to load profile data. Please try again later."
+        type="error"
+        showIcon
+        style={{ margin: '20px' }}
+      />
+    );
+  }
 
   const getEditProfilePath = () => {
     const currentPath = location.pathname;

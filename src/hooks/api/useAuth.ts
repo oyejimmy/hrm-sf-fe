@@ -50,6 +50,44 @@ export const useCurrentUser = () => {
     },
     enabled: !!localStorage.getItem('access_token'),
     retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+export const useProfileStatus = () => {
+  return useQuery({
+    queryKey: ['profile-status'],
+    queryFn: async () => {
+      const response = await api.get('/auth/profile/me');
+      return response.data;
+    },
+    enabled: !!localStorage.getItem('access_token'),
+  });
+};
+
+export const useCompleteProfile = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (profileData: {
+      first_name: string;
+      last_name: string;
+      phone: string;
+      department: string;
+      position: string;
+      role: string;
+    }) => {
+      const response = await api.put(API_ENDPOINTS.AUTH.PROFILE, profileData);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ['profile-status'] });
+      message.success('Profile completed successfully');
+    },
+    onError: (error: any) => {
+      message.error(error.response?.data?.detail || 'Failed to complete profile');
+    },
   });
 };
 

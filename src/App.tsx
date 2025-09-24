@@ -37,6 +37,7 @@ import NotificationManagement from './features/admin/NotificationManagement';
 
 // Employee Components
 import EmployeeDashboard from './features/employee/EmployeeDashboard';
+import { EmployeeDashboardEnhanced } from './features/employee/EmployeeDashboardEnhanced';
 import Attendance from './features/employee/EmployeeAttendance';
 import LeaveManagement from './features/employee/EmployeeLeaveManagement';
 import TrainingAndDevelopment from './features/employee/EmployeeTrainingDevelopment';
@@ -56,6 +57,7 @@ import { TeamLeaveRequests } from './features/teamLead/TeamLeaveRequests';
 import { TeamPerformance } from './features/teamLead/TeamPerformance';
 import { TrainingAssignments } from './features/teamLead/TrainingAssignments';
 import { AuthTest } from './features/auth/AuthTest';
+import { MinimalOnboarding } from './components/onboarding/MinimalOnboarding';
 import isBetween from "dayjs/plugin/isBetween";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
@@ -76,6 +78,7 @@ const AppContent: React.FC = () => {
           {/* Public Routes */}
           <Route path="/login" element={<AuthGuard><Login /></AuthGuard>} />
           <Route path="/signup" element={<AuthGuard><Signup /></AuthGuard>} />
+          <Route path="/onboarding" element={<AuthGuard requireAuth><MinimalOnboarding /></AuthGuard>} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
           {/* Protected Routes */}
@@ -113,7 +116,7 @@ const AppContent: React.FC = () => {
             }
           >
             <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<EmployeeDashboard />} />
+            <Route path="dashboard" element={<EmployeeDashboardEnhanced />} />
             <Route path="attendance" element={<Attendance />} />
             <Route path="leave" element={<LeaveManagement />} />
             <Route path="training" element={<TrainingAndDevelopment />} />
