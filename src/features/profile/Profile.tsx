@@ -274,38 +274,46 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                       <Row gutter={16}>
                         <Col span={12}>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
-                            <div className="label">Full Name</div>
-                            <div className="value">{employeeData.personalInfo.name}</div>
+                            <div className="label">Gender</div>
+                            <div className="value">{employeeData.personalInfo?.gender || 'N/A'}</div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
-                            <div className="label">Personal Email</div>
-                            <div className="value">{employeeData.personalInfo.email}</div>
+                            <div className="label">Date of Birth</div>
+                            <div className="value">{employeeData.personalInfo?.dateOfBirth || 'N/A'}</div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
-                            <div className="label">Phone</div>
-                            <div className="value">{employeeData.personalInfo.phone}</div>
+                            <div className="label">Marital Status</div>
+                            <div className="value">{employeeData.personalInfo?.maritalStatus || 'N/A'}</div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
-                            <div className="label">Qualification</div>
-                            <div className="value">{employeeData.personalInfo.qualification} --</div>
+                            <div className="label">Blood Group</div>
+                            <div className="value">{employeeData.personalInfo?.bloodGroup || 'N/A'}</div>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
+                            <div className="label">Nationality</div>
+                            <div className="value">{employeeData.personalInfo?.nationality || 'N/A'}</div>
                           </S.SideInfoItem>
                         </Col>
                         <Col span={12}>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
-                            <div className="label">Location</div>
-                            <div className="value">{employeeData.personalInfo.location}</div>
+                            <div className="label">Religion</div>
+                            <div className="value">{employeeData.personalInfo?.religion || 'N/A'}</div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
-                            <div className="label">Blood Group</div>
-                            <div className="value">{employeeData.personalInfo.employeeId}</div>
+                            <div className="label">Languages Known</div>
+                            <div className="value">{employeeData.personalInfo?.languagesKnown || 'N/A'}</div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
-                            <div className="label">Employee ID</div>
-                            <div className="value">{employeeData.personalInfo.employeeId}</div>
+                            <div className="label">Hobbies</div>
+                            <div className="value">{employeeData.personalInfo?.hobbies || 'N/A'}</div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
-                            <div className="label">Department</div>
-                            <div className="value">{employeeData.personalInfo.department}</div>
+                            <div className="label">Address</div>
+                            <div className="value">{employeeData.personalInfo?.address || 'N/A'}</div>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
+                            <div className="label">Personal Email</div>
+                            <div className="value">{employeeData.personalInfo?.personalEmail || 'N/A'}</div>
                           </S.SideInfoItem>
                         </Col>
                       </Row>
@@ -371,30 +379,30 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                       <Row gutter={16}>
                         <Col span={12}>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
-                            <div className="label">Title</div>
-                            <div className="value">{employeeData.jobInfo.title}</div>
+                            <div className="label">Employment Status</div>
+                            <div className="value">{employeeData.jobInfo?.employmentStatus || 'N/A'}</div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
-                            <div className="label">Department</div>
-                            <div className="value">{employeeData.jobInfo.department}</div>
+                            <div className="label">Work Location</div>
+                            <div className="value">{employeeData.jobInfo?.workLocation || 'N/A'}</div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
-                            <div className="label">Reports To</div>
-                            <div className="value">{employeeData.jobInfo.reportsTo}</div>
+                            <div className="label">Team Size</div>
+                            <div className="value">{employeeData.jobInfo?.teamSize || 0} people</div>
                           </S.SideInfoItem>
                         </Col>
                         <Col span={12}>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
-                            <div className="label">Team Size</div>
-                            <div className="value">{employeeData.jobInfo.teamSize} people</div>
-                          </S.SideInfoItem>
-                          <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Work Schedule</div>
-                            <div className="value">{employeeData.jobInfo.workSchedule}</div>
+                            <div className="value">{employeeData.jobInfo?.workSchedule || 'N/A'}</div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
-                            <div className="label">Location</div>
-                            <div className="value">{employeeData.jobInfo.location}</div>
+                            <div className="label">Qualification</div>
+                            <div className="value">{employeeData.personalInfo?.qualification || 'N/A'}</div>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
+                            <div className="label">Education Level</div>
+                            <div className="value">{employeeData.personalInfo?.educationLevel || 'N/A'}</div>
                           </S.SideInfoItem>
                         </Col>
                       </Row>
@@ -440,18 +448,43 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                     tab={
                       <span>
                         <Award size={16} style={{ marginRight: 8, color: '#722ed1' }} />
-                        Skills
+                        Education & Skills
                       </span>
                     }
-                    key="skills"
+                    key="education"
                   >
-                    <S.StyledCard title="Skills & Competencies" isDarkMode={isDarkMode}>
-                      {employeeData.skills.map((skill: any, index: any) => (
-                        <S.SideInfoItem key={index} isDarkMode={isDarkMode}>
-                          <div className="label">{skill.name}</div>
-                          <Progress percent={skill.level} showInfo={true} />
-                        </S.SideInfoItem>
-                      ))}
+                    <S.StyledCard title="Education & Skills" isDarkMode={isDarkMode}>
+                      <Row gutter={16}>
+                        <Col span={12}>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
+                            <div className="label">University</div>
+                            <div className="value">{employeeData.personalInfo?.university || 'N/A'}</div>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
+                            <div className="label">Graduation Year</div>
+                            <div className="value">{employeeData.personalInfo?.graduationYear || 'N/A'}</div>
+                          </S.SideInfoItem>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
+                            <div className="label">Certifications</div>
+                            <div className="value">{employeeData.personalInfo?.certifications || 'N/A'}</div>
+                          </S.SideInfoItem>
+                        </Col>
+                        <Col span={12}>
+                          <S.SideInfoItem isDarkMode={isDarkMode}>
+                            <div className="label">Skills Summary</div>
+                            <div className="value">{employeeData.personalInfo?.skillsSummary || 'N/A'}</div>
+                          </S.SideInfoItem>
+                        </Col>
+                      </Row>
+                      <div style={{ marginTop: 16 }}>
+                        <Text strong>Technical Skills:</Text>
+                        {(employeeData?.skills || []).map((skill: any, index: number) => (
+                          <S.SideInfoItem key={index} isDarkMode={isDarkMode}>
+                            <div className="label">{skill.name}</div>
+                            <Progress percent={skill.level} showInfo={true} />
+                          </S.SideInfoItem>
+                        ))}
+                      </div>
                     </S.StyledCard>
                   </TabPane>
                 </S.StyledTabs>

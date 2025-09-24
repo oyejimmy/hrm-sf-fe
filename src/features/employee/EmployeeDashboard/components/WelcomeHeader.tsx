@@ -1,6 +1,9 @@
-import { Avatar, Button, Typography, Badge, Flex } from "antd";
+import { Avatar, Button, Typography, Badge, Flex, Spin, Tag } from "antd";
 import { User, MapPin, Briefcase, Bell, Smile } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../../../services/api/api';
+import { useAuthContext } from '../../../../contexts/AuthContext';
 import styled from "styled-components";
 
 const { Title, Text } = Typography;
@@ -21,10 +24,13 @@ const HeaderContainer = styled.div<{ isDarkMode: boolean }>`
     props.isDarkMode ? "rgba(255, 255, 255, 0.85)" : "rgba(0, 0, 0, 0.85)"};
 `;
 
-const CoverSection = styled.div<{ isDarkMode: boolean }>`
+const CoverSection = styled.div<{ isDarkMode: boolean; coverImage?: string }>`
   height: 160px;
-  background: url("https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3")
-    center/cover no-repeat;
+  background: ${(props) => 
+    props.coverImage 
+      ? `url("${props.coverImage}") center/cover no-repeat`
+      : `url("https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3") center/cover no-repeat`
+  };
   position: relative;
 
   @media (max-width: 768px) {
@@ -137,19 +143,32 @@ const StyledIconWrapper = styled.span<{ color: string }>`
   margin-right: 6px;
 `;
 
-const CenterMessage = styled.div<{ isDarkMode: boolean }>`
+const WelcomeTag = styled(Tag)<{ isDarkMode: boolean }>`
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 1.1rem;
   font-weight: 600;
-  color: ${(props) =>
-    props.isDarkMode ? "rgba(255, 255, 255, 0.85)" : "#333"};
-  text-align: center;
-  width: 100%;
-  padding: 0 20px;
-  box-sizing: border-box;
+  padding: 12px 24px;
+  border-radius: 20px;
+  border: none;
+  background: ${(props) => props.isDarkMode ? "rgba(41, 88, 196, 0.9)" : "rgba(41, 88, 196, 0.1)"};
+  color: ${(props) => props.isDarkMode ? "white" : "#2958C4"};
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: fadeInUp 0.6s ease-out;
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -40%) translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) translateY(0);
+    }
+  }
 
   @media (max-width: 768px) {
     position: relative;
@@ -158,6 +177,12 @@ const CenterMessage = styled.div<{ isDarkMode: boolean }>`
     transform: none;
     margin-top: 12px;
     order: 3;
+    animation: fadeIn 0.6s ease-out;
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
   }
 `;
 
@@ -217,24 +242,42 @@ const ProfileInfoContainer = styled.div`
   }
 `;
 
-// Mock user data
-const userData = {
-  name: "Jami Ur Rahman",
-  role: "COO",
-  location: "London",
-  welcomeMessage: "Welcome back, Jamil Ur Rahman!",
-  position: "Senior UX Designer",
-  avatarUrl:
-    "https://images.unsplash.com/photo-1623170909888-4e97ff277186?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fEJveXxlbnwwfHwwfHx8MA%3D%3D",
-};
+
 
 const WelcomeHeader = ({ isDarkMode }: { isDarkMode: boolean }) => {
   const navigate = useNavigate();
-  // const userRole: any = "admin" | "hr" | "employee" | "team_lead";
+  const { user } = useAuthContext();
+  
+  // Fetch profile data
+  const { data: profileData, isLoading } = useQuery({
+    queryKey: ['employee-profile'],
+    queryFn: () => api.get('/api/employees/me/profile').then(res => res.data),
+    enabled: !!user,
+  });
+  
+  if (isLoading) {
+    return (
+      <HeaderContainer isDarkMode={isDarkMode}>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>
+          <Spin size="large" />
+        </div>
+      </HeaderContainer>
+    );
+  }
+  
+  const userData = {
+    name: profileData?.personalInfo?.name || `${user?.first_name} ${user?.last_name}` || "User",
+    role: profileData?.personalInfo?.position || "Employee",
+    location: profileData?.personalInfo?.location || "N/A",
+    welcomeMessage: `Welcome back, ${profileData?.personalInfo?.name || user?.first_name || "User"}!`,
+    position: profileData?.jobInfo?.title || profileData?.personalInfo?.position || "Employee",
+    avatarUrl: profileData?.personalInfo?.avatar_url || profileData?.personalInfo?.avatar || user?.profile_picture,
+    coverImageUrl: profileData?.personalInfo?.cover_image_url || profileData?.personalInfo?.coverImage,
+  };
 
   return (
     <HeaderContainer isDarkMode={isDarkMode}>
-      <CoverSection isDarkMode={isDarkMode} />
+      <CoverSection isDarkMode={isDarkMode} coverImage={userData.coverImageUrl} />
 
       <ProfileContent isDarkMode={isDarkMode}>
         <AvatarContainer isDarkMode={isDarkMode}>
@@ -242,9 +285,9 @@ const WelcomeHeader = ({ isDarkMode }: { isDarkMode: boolean }) => {
         </AvatarContainer>
 
         {/* Centered Welcome Message */}
-        <CenterMessage isDarkMode={isDarkMode}>
+        <WelcomeTag isDarkMode={isDarkMode}>
           {userData.welcomeMessage}
-        </CenterMessage>
+        </WelcomeTag>
 
         {/* Profile info near the profile picture */}
         <ProfileInfoContainer>
@@ -291,11 +334,11 @@ const WelcomeHeader = ({ isDarkMode }: { isDarkMode: boolean }) => {
               icon={<User size={16} />}
               onClick={() => {
                 let profilePath = "/employee/profile";
-                // if (userRole === "admin" || userRole === "hr") {
-                //   profilePath = "/admin/profile";
-                // } else if (userRole === "team_lead") {
-                //   profilePath = "/team-lead/profile";
-                // }
+                if (user?.role === "admin" || user?.role === "hr") {
+                  profilePath = "/admin/profile";
+                } else if (user?.role === "team_lead") {
+                  profilePath = "/team-lead/profile";
+                }
                 navigate(profilePath);
               }}
             >

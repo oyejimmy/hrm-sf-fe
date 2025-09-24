@@ -165,8 +165,10 @@ const UserProfile = styled.div`
 `;
 
 const UserAvatar = styled(Avatar)`
-  background: linear-gradient(135deg, #2958c4 0%, #c49629 100%);
-  margin-bottom: 8px;
+  background: transparent;
+  border: 2px solid ${(props) => props.theme?.colors?.border || "#d9d9d9"};
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 `;
 
 const UserName = styled.div`
@@ -326,6 +328,8 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
     queryKey: ['employee-profile'],
     queryFn: () => api.get('/api/employees/me/profile').then(res => res.data),
     enabled: !!user,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 
   const siderWidth = userRole === "employee" ? 300 : 250;
@@ -606,11 +610,11 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             </CollapseButton>
           )}
           <UserAvatar
-            size={64}
+            size={96}
             icon={<UserOutlined />}
             src={profileData?.personalInfo?.avatar_url || profileData?.personalInfo?.avatar || user?.profile_picture}
           />
-          <UserName>{user?.first_name || "User"}</UserName>
+          <UserName>{profileData?.personalInfo?.name || `${user?.first_name} ${user?.last_name}` || "User"}</UserName>
           <Tag color={isDarkMode ? currentTheme?.colors?.secondary : "purple"}>
             Welcome Back
           </Tag>
@@ -698,7 +702,7 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
               />
               {!isMobile && (
                 <span>
-                  {user?.first_name} {user?.last_name}
+                  {profileData?.personalInfo?.name || `${user?.first_name} ${user?.last_name}` || "User"}
                 </span>
               )}
             </UserDropdownButton>
