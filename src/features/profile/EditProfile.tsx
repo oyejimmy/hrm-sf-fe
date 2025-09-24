@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import {
-  Card,
   Row,
   Col,
   Typography,
   Tabs,
-  Avatar,
   Button,
   Upload,
   message,
@@ -14,11 +12,7 @@ import {
   Input,
   Select,
   DatePicker,
-  Modal,
   Progress,
-  List,
-  Menu,
-  Dropdown,
   Spin
 } from 'antd';
 import dayjs from 'dayjs';
@@ -30,9 +24,6 @@ import {
   MapPin,
   Briefcase,
   Clock,
-  FileText,
-  Plus,
-  Edit,
   Camera,
   Heart,
   DollarSign,
@@ -49,79 +40,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../services/api/api';
 import * as S from './styles';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { TabPane } = Tabs;
 const { Option } = Select;
 const { TextArea } = Input;
-
-// Mock data for HRM employee profile
-const initialEmployeeData = {
-  personalInfo: {
-    name: "Simona Clapan",
-    position: "COO",
-    department: "Executive",
-    location: "Kyiv, Ukraine",
-    email: "simona.clapan@company.com",
-    phone: "+380950830332",
-    hireDate: "Mar 05, 2021",
-    employmentType: "Full Time",
-    employeeId: "EMP-0234",
-    manager: "Michael Johnson (CEO)",
-    coverImage: "",
-    avatar: ""
-  },
-  emergencyContacts: [
-    {
-      id: 1,
-      name: "Yulia Kitsmans",
-      relationship: "Sister",
-      mobile: "+380 95 083 03 22",
-      workPhone: "+322 095 083 03 21",
-      homePhone: "71-22-22",
-      address: "Ukraine, Kyiv, Velyka Vasilikvska str. 30, 3d floor, ap. 4"
-    }
-  ],
-  jobInfo: {
-    title: "Chief Operating Officer",
-    department: "Executive",
-    reportsTo: "CEO",
-    teamSize: 45,
-    startDate: "Mar 05, 2021",
-    employmentType: "Full Time",
-    workSchedule: "Standard (9:00 AM - 6:00 PM)",
-    location: "Kyiv Office"
-  },
-  compensation: {
-    salary: "$12,500 monthly",
-    bonus: "15% annual target",
-    stockOptions: "10,000 shares",
-    lastIncrease: "Jun 15, 2023 (5%)",
-    nextReview: "Jun 15, 2024"
-  },
-  skills: [
-    { name: "Strategic Planning", level: 95 },
-    { name: "Operations Management", level: 90 },
-    { name: "Team Leadership", level: 92 },
-    { name: "Budget Management", level: 88 },
-    { name: "Process Improvement", level: 85 }
-  ],
-  documents: [
-    { name: "Employment Contract", date: "Mar 01, 2021", type: "Contract" },
-    { name: "NDA Agreement", date: "Mar 02, 2021", type: "Legal" },
-    { name: "Performance Review 2023", date: "Dec 15, 2023", type: "Review" },
-    { name: "Compensation Plan", date: "Jun 15, 2023", type: "Compensation" }
-  ]
-};
 
 const EditProfile: React.FC = () => {
   const [activeTab, setActiveTab] = useState('personal');
   const { isDarkMode } = useTheme();
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [avatarImage, setAvatarImage] = useState<string | null>(null);
-  const [isEditingContact, setIsEditingContact] = useState(false);
-  const [editingContact, setEditingContact] = useState<any>(null);
   const [form] = Form.useForm();
-  const [emergencyForm] = Form.useForm();
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -152,15 +81,6 @@ const EditProfile: React.FC = () => {
       message.error(`Failed to update profile: ${error.response?.data?.detail || error.message}`);
     }
   });
-  
-  // Check if we're editing an existing contact
-  React.useEffect(() => {
-    if (location.state && location.state.editingContact) {
-      setEditingContact(location.state.editingContact);
-      setIsEditingContact(true);
-      setActiveTab('emergency');
-    }
-  }, [location.state]);
   
   if (isLoading) {
     return (
@@ -294,46 +214,15 @@ const EditProfile: React.FC = () => {
     });
   };
 
-  const handleAddEmergencyContact = (values: any) => {
-    // Update emergency contact fields in profile
-    const updateData = {
-      emergency_contact_name: values.name,
-      emergency_contact_phone: values.mobile,
-      emergency_contact_relationship: values.relationship,
-      emergency_contact_work_phone: values.workPhone,
-      emergency_contact_home_phone: values.homePhone,
-      emergency_contact_address: values.address
-    };
-    
-    updateProfileMutation.mutate(updateData);
-    setIsEditingContact(false);
-    setEditingContact(null);
-    emergencyForm.resetFields();
-  };
-
-  const handleDeleteContact = (contactId: number) => {
-    const updateData = {
-      emergency_contact_name: null,
-      emergency_contact_phone: null,
-      emergency_contact_relationship: null,
-      emergency_contact_work_phone: null,
-      emergency_contact_home_phone: null,
-      emergency_contact_address: null
-    };
-    
-    updateProfileMutation.mutate(updateData);
-  };
-
-  const handleEditContact = (contact: any) => {
-    setEditingContact(contact);
-    setIsEditingContact(true);
-    emergencyForm.setFieldsValue(contact);
-  };
-
-  const handleCancelEditContact = () => {
-    setIsEditingContact(false);
-    setEditingContact(null);
-    emergencyForm.resetFields();
+  const handleClearEmergencyContact = () => {
+    form.setFieldsValue({
+      emergencyContactName: '',
+      emergencyContactPhone: '',
+      emergencyContactRelationship: '',
+      emergencyContactWorkPhone: '',
+      emergencyContactHomePhone: '',
+      emergencyContactAddress: ''
+    });
   };
 
   const uploadProps = {
@@ -354,29 +243,20 @@ const EditProfile: React.FC = () => {
     customRequest: () => {}, // Prevent default upload
   };
 
-  const dropdownMenu = (contact: any) => (
-    <Menu>
-      <Menu.Item key="edit" icon={<Edit size={16} />} onClick={() => handleEditContact(contact)}>
-        Edit
-      </Menu.Item>
-      <Menu.Item
-        key="delete"
-        icon={<Trash2 size={16} />}
-        danger
-        onClick={() => handleDeleteContact(contact.id)}
-      >
-        Delete
-      </Menu.Item>
-    </Menu>
-  );
-
   return (
     <S.PageContainer isDarkMode={isDarkMode}>
       <Form form={form} layout="vertical" initialValues={{
         ...employeeData?.personalInfo,
         ...employeeData?.jobInfo,
         ...employeeData?.compensation,
-        dateOfBirth: employeeData?.personalInfo?.dateOfBirth ? dayjs(employeeData.personalInfo.dateOfBirth) : null
+        dateOfBirth: employeeData?.personalInfo?.dateOfBirth ? dayjs(employeeData.personalInfo.dateOfBirth) : null,
+        // Emergency contact fields
+        emergencyContactName: employeeData?.personalInfo?.emergency_contact_name,
+        emergencyContactPhone: employeeData?.personalInfo?.emergency_contact_phone,
+        emergencyContactRelationship: employeeData?.personalInfo?.emergency_contact_relationship,
+        emergencyContactWorkPhone: employeeData?.personalInfo?.emergency_contact_work_phone,
+        emergencyContactHomePhone: employeeData?.personalInfo?.emergency_contact_home_phone,
+        emergencyContactAddress: employeeData?.personalInfo?.emergency_contact_address
       }}>
         <S.StyledCard bodyStyle={{ padding: 0 }} isDarkMode={isDarkMode}>
         <S.CoverSection bgImage={coverImage || employeeData?.personalInfo?.coverImage || employeeData?.personalInfo?.cover_image_url || undefined} isDarkMode={isDarkMode}>
@@ -562,102 +442,39 @@ const EditProfile: React.FC = () => {
                     }
                     key="emergency"
                   >
-                    <S.EmergencyContactCard
-                      title="Emergency Contacts"
-                      isDarkMode={isDarkMode}
-                      extra={
-                        !isEditingContact && (
-                          <Button
-                            type="primary"
-                            icon={<Plus size={16} />}
-                            onClick={() => setIsEditingContact(true)}
-                          >
-                            Add Contact
-                          </Button>
-                        )
-                      }
-                    >
-                      {isEditingContact ? (
-                        <Form
-                          form={emergencyForm}
-                          layout="vertical"
-                          onFinish={handleAddEmergencyContact}
-                          initialValues={editingContact || {}}
-                        >
-                          <Form.Item name="name" label="Name" rules={[{ required: true }]}>
-                            <Input />
-                          </Form.Item>
-                          <Form.Item name="relationship" label="Relationship" >
-                            <Input />
-                          </Form.Item>
-                          <Form.Item name="mobile" label="Mobile Number" >
-                            <Input />
-                          </Form.Item>
-                          <Form.Item name="workPhone" label="Work Phone">
-                            <Input />
-                          </Form.Item>
-                          <Form.Item name="homePhone" label="Home Phone">
-                            <Input />
-                          </Form.Item>
-                          <Form.Item name="address" label="Address" >
+                    <S.StyledCard title="Emergency Contact Information" isDarkMode={isDarkMode}>
+                      <Row gutter={16}>
+                        <Col span={12}>
+                          <S.FormItem name="emergencyContactName" label="Contact Name" isDarkMode={isDarkMode}>
+                            <Input prefix={<User />} />
+                          </S.FormItem>
+                          <S.FormItem name="emergencyContactRelationship" label="Relationship" isDarkMode={isDarkMode}>
+                            <Select>
+                              <Option value="spouse">Spouse</Option>
+                              <Option value="parent">Parent</Option>
+                              <Option value="sibling">Sibling</Option>
+                              <Option value="child">Child</Option>
+                              <Option value="friend">Friend</Option>
+                              <Option value="other">Other</Option>
+                            </Select>
+                          </S.FormItem>
+                          <S.FormItem name="emergencyContactPhone" label="Mobile Number" isDarkMode={isDarkMode}>
+                            <Input prefix={<Phone />} />
+                          </S.FormItem>
+                        </Col>
+                        <Col span={12}>
+                          <S.FormItem name="emergencyContactWorkPhone" label="Work Phone" isDarkMode={isDarkMode}>
+                            <Input prefix={<Phone />} />
+                          </S.FormItem>
+                          <S.FormItem name="emergencyContactHomePhone" label="Home Phone" isDarkMode={isDarkMode}>
+                            <Input prefix={<Phone />} />
+                          </S.FormItem>
+                          <S.FormItem name="emergencyContactAddress" label="Address" isDarkMode={isDarkMode}>
                             <TextArea rows={3} />
-                          </Form.Item>
-                          <Form.Item>
-                            <Button type="primary" htmlType="submit" style={{ marginRight: 8 }}>
-                              {editingContact ? 'Update' : 'Add'} Contact
-                            </Button>
-                            <Button onClick={handleCancelEditContact}>
-                              Cancel
-                            </Button>
-                          </Form.Item>
-                        </Form>
-                      ) : (
-                        <>
-                          {(employeeData?.emergencyContacts || []).map((contact: any) => (
-                            <S.ContactInfoContainer key={contact.id} isDarkMode={isDarkMode}>
-                              <Row align="middle">
-                                <Col flex="auto">
-                                  <Title level={4} style={{ marginBottom: 0 }}>{contact.name}</Title>
-                                </Col>
-                                <Col>
-                                  <Dropdown overlay={dropdownMenu(contact)} trigger={['click']}>
-                                    <Button type="text" icon={<MoreVertical />} />
-                                  </Dropdown>
-                                </Col>
-                              </Row>
-                              <S.ContactDetails>
-                                <Text strong>Relationship:</Text> {contact.relationship} <br />
-                                <Text strong>Mobile Number:</Text> {contact.mobile} <br />
-                                {contact.workPhone && (
-                                  <>
-                                    <Text strong>Work Phone:</Text> {contact.workPhone} <br />
-                                  </>
-                                )}
-                                {contact.homePhone && (
-                                  <>
-                                    <Text strong>Home Phone:</Text> {contact.homePhone} <br />
-                                  </>
-                                )}
-                                <Text strong>Address:</Text> {contact.address}
-                              </S.ContactDetails>
-                            </S.ContactInfoContainer>
-                          ))}
-                          {(!employeeData?.emergencyContacts || employeeData.emergencyContacts.length === 0) && (
-                            <div style={{ textAlign: 'center', padding: '20px' }}>
-                              <Heart size={48} color="#d9d9d9" />
-                              <p>No emergency contacts added yet</p>
-                              <Button
-                                type="primary"
-                                icon={<Plus size={16} />}
-                                onClick={() => setIsEditingContact(true)}
-                              >
-                                Add Contact
-                              </Button>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </S.EmergencyContactCard>
+                          </S.FormItem>
+                        </Col>
+                      </Row>
+                    </S.StyledCard>
                   </TabPane>
 
                   <TabPane
