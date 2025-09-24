@@ -79,7 +79,10 @@ interface Holiday {
 }
 
 const StyledCard = styled(Card)<{ isDarkMode: boolean }>`
-  border-radius: 16px;
+  border-radius: 8px;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
   box-shadow: ${({ isDarkMode }) =>
     isDarkMode
       ? "0 8px 24px rgba(0, 0, 0, 0.4)"
@@ -100,6 +103,7 @@ const StyledCard = styled(Card)<{ isDarkMode: boolean }>`
     font-size: 1.1rem;
     padding: 14px 16px;
     font-weight: 600;
+    flex-shrink: 0;
 
     @media (max-width: 480px) {
       padding: 12px;
@@ -108,10 +112,19 @@ const StyledCard = styled(Card)<{ isDarkMode: boolean }>`
 
   .ant-card-body {
     padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 
     @media (max-width: 480px) {
       padding: 16px;
     }
+  }
+  
+  @media (max-width: 768px) {
+    height: auto;
+    min-height: 350px;
   }
 `;
 

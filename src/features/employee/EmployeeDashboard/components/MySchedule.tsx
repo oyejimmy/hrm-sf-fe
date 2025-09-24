@@ -19,7 +19,7 @@ const ScheduleIcon = styled(CalendarDays)<{ isDarkMode: boolean }>`
 
 // Scroll container with fixed height
 const ScrollContainer = styled.div<{ isDarkMode: boolean }>`
-  height: 270px; /* Fixed height to show exactly 3 items */
+  flex: 1;
   overflow-y: auto;
   padding: 4px 8px 4px 4px;
   border-radius: 8px;

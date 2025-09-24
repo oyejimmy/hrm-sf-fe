@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { Card, Button, Row, Col, Typography, Space, Tag, Modal, Calendar, Badge, message, Spin } from 'antd';
+import React from 'react';
+import { Card, Button, Row, Col, Typography, Space, Tag, message, Spin } from 'antd';
 import { CheckCircle, XCircle, Coffee } from 'lucide-react';
 import styled from 'styled-components';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../../../services/api/api';
-import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 
 const { Text } = Typography;
@@ -13,14 +12,30 @@ const StyledCard = styled(Card)<{ $isDarkMode: boolean }>`
   background: ${props => props.$isDarkMode ? '#1f1f1f' : '#ffffff'};
   border: 1px solid ${props => props.$isDarkMode ? '#444' : '#f0f0f0'};
   border-radius: 8px;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
   
   .ant-card-head {
     background: ${props => props.$isDarkMode ? '#1f1f1f' : '#ffffff'};
     border-bottom: 1px solid ${props => props.$isDarkMode ? '#444' : '#f0f0f0'};
+    flex-shrink: 0;
   }
   
   .ant-card-head-title {
     color: ${props => props.$isDarkMode ? '#f0f0f0' : 'rgba(0, 0, 0, 0.85)'};
+  }
+  
+  .ant-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  @media (max-width: 768px) {
+    height: auto;
+    min-height: 350px;
   }
 `;
 
@@ -46,7 +61,6 @@ interface AttendanceTrackerProps {
 }
 
 const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({ isDarkMode }) => {
-  const [isCalendarVisible, setIsCalendarVisible] = useState(false);
   const queryClient = useQueryClient();
   
   // Fetch today's attendance
@@ -54,14 +68,6 @@ const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({ isDarkMode }) => 
     queryKey: ['attendance-today'],
     queryFn: () => api.get('/api/attendance/today').then(res => res.data),
     refetchInterval: 30000, // Refetch every 30 seconds
-  });
-  
-  // Fetch calendar data
-  const currentDate = dayjs();
-  const { data: calendarData } = useQuery({
-    queryKey: ['attendance-calendar', currentDate.year(), currentDate.month() + 1],
-    queryFn: () => api.get(`/api/attendance/calendar?year=${currentDate.year()}&month=${currentDate.month() + 1}`).then(res => res.data),
-    enabled: isCalendarVisible,
   });
 
   // Mutations
@@ -119,61 +125,13 @@ const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({ isDarkMode }) => 
     }
   };
 
-  const getListData = (value: Dayjs) => {
-    const dateStr = value.format('YYYY-MM-DD');
-    const dayData = calendarData?.[dateStr];
-    const listData = [];
-    
-    if (dayData) {
-      const statusMap = {
-        'present': { type: 'success', content: 'Present' },
-        'absent': { type: 'error', content: 'Absent' },
-        'late': { type: 'warning', content: 'Late' },
-        'half_day': { type: 'processing', content: 'Half Day' },
-        'on_leave': { type: 'default', content: 'On Leave' }
-      };
-      
-      const statusInfo = statusMap[dayData.status as keyof typeof statusMap];
-      if (statusInfo) {
-        listData.push(statusInfo);
-      }
-    }
-    
-    return listData;
-  };
 
-  const dateCellRender = (value: Dayjs) => {
-    const listData = getListData(value);
-    return (
-      <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-        {listData.map((item, index) => (
-          <li key={index}>
-            <Badge 
-              status={item.type as any} 
-              text={item.content}
-              style={{ fontSize: '10px' }}
-            />
-          </li>
-        ))}
-      </ul>
-    );
-  };
 
   return (
-    <>
-      <StyledCard 
-        title="Today's Attendance" 
-        $isDarkMode={isDarkMode}
-        extra={
-          <Button 
-            type="link" 
-            size="small"
-            onClick={() => setIsCalendarVisible(true)}
-          >
-            View Calendar
-          </Button>
-        }
-      >
+    <StyledCard 
+      title="Today's Attendance" 
+      $isDarkMode={isDarkMode}
+    >
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={8}>
             <TimeCard $isDarkMode={isDarkMode} $type="checkin">
@@ -287,34 +245,6 @@ const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({ isDarkMode }) => 
           </Col>
         </Row>
       </StyledCard>
-
-      <Modal
-        title="Attendance Calendar"
-        open={isCalendarVisible}
-        onCancel={() => setIsCalendarVisible(false)}
-        footer={null}
-        width="90%"
-        style={{ maxWidth: '800px' }}
-        styles={{
-          body: {
-            backgroundColor: isDarkMode ? '#1f1f1f' : '#fff',
-            color: isDarkMode ? '#f0f0f0' : 'rgba(0, 0, 0, 0.85)'
-          },
-          header: {
-            backgroundColor: isDarkMode ? '#1f1f1f' : '#fff',
-            borderBottom: `1px solid ${isDarkMode ? '#444' : '#f0f0f0'}`
-          },
-          content: { backgroundColor: isDarkMode ? '#1f1f1f' : '#fff' }
-        }}
-      >
-        <Calendar 
-          dateCellRender={dateCellRender}
-          style={{
-            background: isDarkMode ? '#1f1f1f' : '#fff'
-          }}
-        />
-      </Modal>
-    </>
   );
 };
 

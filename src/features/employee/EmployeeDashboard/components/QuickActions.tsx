@@ -28,25 +28,39 @@ interface Props {
 
 // Styled components
 const StyledCard = styled(Card)<{ $isDarkMode: boolean }>`
-  border-radius: 12px;
+  border-radius: 8px;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
   box-shadow: ${props => props.$isDarkMode 
     ? '0 4px 12px rgba(0, 0, 0, 0.3)' 
     : '0 4px 12px rgba(0, 0, 0, 0.1)'};
   background: ${props => props.$isDarkMode ? '#1f1f1f' : '#fff'};
+  border: ${props => props.$isDarkMode ? '1px solid #444' : '1px solid #f0f0f0'};
   
   .ant-card-head {
     border-bottom: 1px solid ${props => props.$isDarkMode ? '#333' : '#f0f0f0'};
     padding: 16px 20px;
+    flex-shrink: 0;
   }
   
   .ant-card-body {
     padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
   
   .ant-card-head-title {
     font-weight: 600;
     font-size: 16px;
     color: ${props => props.$isDarkMode ? '#f0f0f0' : '#262626'};
+  }
+  
+  @media (max-width: 768px) {
+    height: auto;
+    min-height: 350px;
   }
 `;
 

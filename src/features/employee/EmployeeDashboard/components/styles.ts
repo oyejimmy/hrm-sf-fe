@@ -14,6 +14,9 @@ export const PageContainer = styled.div<{ isDarkMode?: boolean }>`
 export const StyledCard = styled(Card) <{ $isDarkMode?: boolean; $isMobile?: boolean }>`
   border-radius: 8px;
   margin-bottom: 24px;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
   box-shadow: ${(props) =>
     props.$isDarkMode
       ? "0 4px 12px rgba(255, 255, 255, 0.05)"
@@ -24,6 +27,7 @@ export const StyledCard = styled(Card) <{ $isDarkMode?: boolean; $isMobile?: boo
   .ant-card-head {
     border-bottom: ${(props) => (props.$isDarkMode ? "1px solid #444" : "1px solid #f0f0f0")};
     padding: 0 16px;
+    flex-shrink: 0;
   }
   
   .ant-card-head-title {
@@ -31,18 +35,30 @@ export const StyledCard = styled(Card) <{ $isDarkMode?: boolean; $isMobile?: boo
     font-weight: 600;
     padding: 16px 0;
   }
+  
   .ant-card-body {
     padding: 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
   ${({ $isMobile }) =>
     $isMobile &&
     css`
       margin-bottom: 16px;
+      height: auto;
+      min-height: 350px;
       .ant-card-body {
         padding: 16px;
       }
     `}
+  
+  @media (max-width: 768px) {
+    height: auto;
+    min-height: 350px;
+  }
 `;
 
 export const GridRow = styled.div<{ minWidth?: number }>`

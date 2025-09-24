@@ -12,16 +12,23 @@ import {
 // Theme-aware styled components
 const StyledCard = styled.div<{ isDarkMode: boolean }>`
   background: ${(props) => (props.isDarkMode ? "#1f1f1f" : "#fff")};
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 20px;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
   box-shadow: ${(props) =>
     props.isDarkMode
       ? "0 4px 12px rgba(0, 0, 0, 0.4)"
       : "0 4px 12px rgba(0, 0, 0, 0.1)"};
   color: ${(props) => (props.isDarkMode ? "rgba(255, 255, 255, 0.85)" : "rgba(0, 0, 0, 0.85)")};
   width: 100%;
-  display: flex;
-  flex-direction: column;
+  border: ${(props) => (props.isDarkMode ? "1px solid #444" : "1px solid #f0f0f0")};
+  
+  @media (max-width: 768px) {
+    height: auto;
+    min-height: 350px;
+  }
 `;
 
 const CardHeader = styled.div<{ isDarkMode: boolean }>`
@@ -31,6 +38,7 @@ const CardHeader = styled.div<{ isDarkMode: boolean }>`
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid ${(props) => (props.isDarkMode ? "#444" : "#f0f0f0")};
+  flex-shrink: 0;
   
   h3 {
     margin: 0;
@@ -41,7 +49,7 @@ const CardHeader = styled.div<{ isDarkMode: boolean }>`
 `;
 
 const ScrollContainer = styled.div<{ isDarkMode: boolean }>`
-  height: 270px; /* Fixed height to show exactly 3 items */
+  flex: 1;
   overflow-y: auto;
   padding: 4px 8px 4px 4px;
   border-radius: 8px;
