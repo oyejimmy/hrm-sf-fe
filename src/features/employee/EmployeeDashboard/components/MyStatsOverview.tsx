@@ -8,6 +8,7 @@ const { Text } = Typography;
 
 interface Props {
   stats: StatCardType[];
+  dashboardData?: any;
 }
 
 const RESPONSIVE_SIZES = {
@@ -32,25 +33,42 @@ const getIconForTitle = (title: string) => {
   return map[title] || User;
 };
 
-const getCardDescription = (title: string) => {
+const getCardDescription = (title: string, dashboardData?: any) => {
   const baseStyle: React.CSSProperties = {
     marginTop: 8,
     fontSize: 12,
   };
 
   const contentMap: Record<string, React.ReactNode> = {
-    "Attendance Rate": <div style={baseStyle}>+2.3% from last month</div>,
+    "Attendance Rate": (
+      <div style={baseStyle}>
+        {dashboardData?.attendance?.attendance_rate >
+        (dashboardData?.attendance?.last_month_rate || 0)
+          ? `+${(
+              dashboardData?.attendance?.attendance_rate -
+              (dashboardData?.attendance?.last_month_rate || 0)
+            ).toFixed(1)}% from last month`
+          : dashboardData?.attendance?.last_month_rate
+          ? `${(
+              dashboardData?.attendance?.attendance_rate -
+              dashboardData?.attendance?.last_month_rate
+            ).toFixed(1)}% from last month`
+          : "This month"}
+      </div>
+    ),
     "Leave Balance": (
       <Space direction="vertical" size={2} style={baseStyle}>
-        <div>Personal: 12</div>
-        <div>Sick: 6</div>
+        <div>
+          Personal: {dashboardData?.leave_balance?.personal_remaining || 0}
+        </div>
+        <div>Sick: {dashboardData?.leave_balance?.sick_remaining || 0}</div>
       </Space>
     ),
-    "Work Hours": <div style={baseStyle}>This month</div>,
+    "Present Days": <div style={baseStyle}>This month</div>,
     "Pending Requests": (
       <Space direction="vertical" size={2} style={baseStyle}>
-        <div>1 leave</div>
-        <div>1 skill update</div>
+        <div>{dashboardData?.requests?.pending_leaves || 0} leave</div>
+        <div>{dashboardData?.requests?.pending_other || 0} other requests</div>
       </Space>
     ),
   };
@@ -58,7 +76,7 @@ const getCardDescription = (title: string) => {
   return contentMap[title] || null;
 };
 
-const MyStatsOverview: React.FC<Props> = ({ stats }) => {
+const MyStatsOverview: React.FC<Props> = ({ stats, dashboardData }) => {
   const isMobile =
     typeof window !== "undefined" ? window.innerWidth < 768 : false;
   const sizes = isMobile ? RESPONSIVE_SIZES.mobile : RESPONSIVE_SIZES.desktop;
@@ -90,7 +108,7 @@ const MyStatsOverview: React.FC<Props> = ({ stats }) => {
                   </Text>
                 ) : null
               }
-              description={getCardDescription(s.title)}
+              description={getCardDescription(s.title, dashboardData)}
             />
           </Col>
         );
