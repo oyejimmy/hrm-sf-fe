@@ -1,53 +1,21 @@
 import React from "react";
-import { List, Card } from "antd";
+import { List, Spin } from "antd";
 import type { Announcement } from "../types";
 import styled, { keyframes } from "styled-components";
-import { useTheme } from "../../../../contexts/ThemeContext";
 import { Bell } from "lucide-react";
 import { StyledCard } from "./styles";
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../../../services/api/api';
 
-const announcements: (Announcement & { isNew?: boolean })[] = [
-  {
-    id: "an1",
-    title: "Holiday Notice",
-    description: "Company will be closed on December 25th for Christmas",
-    date: "2025-12-20",
-    type: "Holiday",
-    isNew: true,
-  },
-  {
-    id: "an2",
-    title: "Policy Update",
-    description: "New Work-from-home policy effective January 1st",
-    date: "2025-12-15",
-    type: "Policy",
-    isNew: false,
-  },
-  {
-    id: "an3",
-    title: "Maintenance Window",
-    description: "Scheduled maintenance on Sunday 2AM-4AM",
-    date: "2025-12-10",
-    type: "Maintenance",
-    isNew: true,
-  },
-  {
-    id: "an4",
-    title: "Quarterly Meeting",
-    description: "All-hands meeting scheduled for January 5th",
-    date: "2025-12-08",
-    type: "Meeting",
-    isNew: false,
-  },
-  {
-    id: "an5",
-    title: "System Upgrade",
-    description: "Upgrading internal systems to v2.1 on December 18th",
-    date: "2025-12-05",
-    type: "Maintenance",
-    isNew: true,
-  },
-];
+interface AnnouncementData {
+  id: number;
+  title: string;
+  content: string;
+  announcement_type: string;
+  priority: string;
+  publish_date: string;
+  is_new: boolean;
+}
 
 // 🔔 Keyframes for bell animation
 const ring = keyframes`
@@ -174,7 +142,23 @@ const NewBadge = styled.div`
 `;
 
 const Announcements = ({ isDarkMode }: { isDarkMode: boolean }) => {
+  const { data: announcements = [], isLoading } = useQuery({
+    queryKey: ['announcements'],
+    queryFn: () => api.get('/api/announcements/').then(res => res.data),
+    refetchInterval: 3000000, 
+  });
+
   const loopItems = [...announcements, ...announcements];
+
+  if (isLoading) {
+    return (
+      <StyledCard title="Announcements" $isDarkMode={isDarkMode}>
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Spin size="large" />
+        </div>
+      </StyledCard>
+    );
+  }
 
   return (
     <StyledCard
@@ -196,10 +180,10 @@ const Announcements = ({ isDarkMode }: { isDarkMode: boolean }) => {
                   description={
                     <div>
                       <div style={{ marginBottom: "4px" }}>
-                        {item.description}
+                        {item.content}
                       </div>
                       <span style={{ fontSize: "12px" }}>
-                        {item.date}
+                        {item.publish_date}
                       </span>
                     </div>
                   }
