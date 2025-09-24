@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Card, Button, Row, Col, Typography, Space, Tag, Modal, Calendar, Badge } from 'antd';
-import { Clock, CheckCircle, XCircle, Coffee } from 'lucide-react';
+import { Card, Button, Row, Col, Typography, Space, Tag, Modal, Calendar, Badge, message, Spin } from 'antd';
+import { CheckCircle, XCircle, Coffee } from 'lucide-react';
 import styled from 'styled-components';
-import { useTheme } from '../../../../contexts/ThemeContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '../../../../services/api/api';
 import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 const StyledCard = styled(Card)<{ $isDarkMode: boolean }>`
   background: ${props => props.$isDarkMode ? '#1f1f1f' : '#ffffff'};
@@ -45,32 +47,96 @@ interface AttendanceTrackerProps {
 
 const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({ isDarkMode }) => {
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
-  const [checkedIn, setCheckedIn] = useState(false);
-  const [onBreak, setOnBreak] = useState(false);
+  const queryClient = useQueryClient();
+  
+  // Fetch today's attendance
+  const { data: todayAttendance, isLoading } = useQuery({
+    queryKey: ['attendance-today'],
+    queryFn: () => api.get('/api/attendance/today').then(res => res.data),
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+  
+  // Fetch calendar data
+  const currentDate = dayjs();
+  const { data: calendarData } = useQuery({
+    queryKey: ['attendance-calendar', currentDate.year(), currentDate.month() + 1],
+    queryFn: () => api.get(`/api/attendance/calendar?year=${currentDate.year()}&month=${currentDate.month() + 1}`).then(res => res.data),
+    enabled: isCalendarVisible,
+  });
 
-  const handleCheckIn = () => {
-    setCheckedIn(true);
-  };
-
-  const handleCheckOut = () => {
-    setCheckedIn(false);
-    setOnBreak(false);
-  };
-
+  // Mutations
+  const checkInMutation = useMutation({
+    mutationFn: () => api.post('/api/attendance/check-in'),
+    onSuccess: () => {
+      message.success('Checked in successfully!');
+      queryClient.invalidateQueries({ queryKey: ['attendance-today'] });
+    },
+    onError: (error: any) => {
+      message.error(error.response?.data?.detail || 'Failed to check in');
+    }
+  });
+  
+  const checkOutMutation = useMutation({
+    mutationFn: () => api.post('/api/attendance/check-out'),
+    onSuccess: () => {
+      message.success('Checked out successfully!');
+      queryClient.invalidateQueries({ queryKey: ['attendance-today'] });
+    },
+    onError: (error: any) => {
+      message.error(error.response?.data?.detail || 'Failed to check out');
+    }
+  });
+  
+  const startBreakMutation = useMutation({
+    mutationFn: () => api.post('/api/attendance/break/start'),
+    onSuccess: () => {
+      message.success('Break started!');
+      queryClient.invalidateQueries({ queryKey: ['attendance-today'] });
+    },
+    onError: (error: any) => {
+      message.error(error.response?.data?.detail || 'Failed to start break');
+    }
+  });
+  
+  const endBreakMutation = useMutation({
+    mutationFn: () => api.post('/api/attendance/break/end'),
+    onSuccess: () => {
+      message.success('Break ended!');
+      queryClient.invalidateQueries({ queryKey: ['attendance-today'] });
+    },
+    onError: (error: any) => {
+      message.error(error.response?.data?.detail || 'Failed to end break');
+    }
+  });
+  
+  const handleCheckIn = () => checkInMutation.mutate();
+  const handleCheckOut = () => checkOutMutation.mutate();
   const handleBreak = () => {
-    setOnBreak(!onBreak);
+    if (todayAttendance?.is_on_break) {
+      endBreakMutation.mutate();
+    } else {
+      startBreakMutation.mutate();
+    }
   };
 
   const getListData = (value: Dayjs) => {
-    const day = value.date();
+    const dateStr = value.format('YYYY-MM-DD');
+    const dayData = calendarData?.[dateStr];
     const listData = [];
     
-    if (day % 3 === 0) {
-      listData.push({ type: 'success', content: 'Present' });
-    } else if (day % 7 === 0) {
-      listData.push({ type: 'error', content: 'Absent' });
-    } else if (day % 5 === 0) {
-      listData.push({ type: 'warning', content: 'Late' });
+    if (dayData) {
+      const statusMap = {
+        'present': { type: 'success', content: 'Present' },
+        'absent': { type: 'error', content: 'Absent' },
+        'late': { type: 'warning', content: 'Late' },
+        'half_day': { type: 'processing', content: 'Half Day' },
+        'on_leave': { type: 'default', content: 'On Leave' }
+      };
+      
+      const statusInfo = statusMap[dayData.status as keyof typeof statusMap];
+      if (statusInfo) {
+        listData.push(statusInfo);
+      }
     }
     
     return listData;
@@ -117,7 +183,10 @@ const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({ isDarkMode }) => 
                   Check In
                 </Text>
                 <div style={{ fontSize: '12px', marginTop: 4 }}>
-                  {checkedIn ? '09:00 AM' : 'Not checked in'}
+                  {todayAttendance?.check_in 
+                    ? dayjs(todayAttendance.check_in, 'HH:mm:ss').format('hh:mm A')
+                    : 'Not checked in'
+                  }
                 </div>
               </div>
             </TimeCard>
@@ -131,7 +200,10 @@ const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({ isDarkMode }) => 
                   Break Time
                 </Text>
                 <div style={{ fontSize: '12px', marginTop: 4 }}>
-                  {onBreak ? '30 min' : 'Available'}
+                  {todayAttendance?.is_on_break 
+                    ? 'On Break' 
+                    : `${todayAttendance?.total_break_time || 0} min used`
+                  }
                 </div>
               </div>
             </TimeCard>
@@ -145,7 +217,10 @@ const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({ isDarkMode }) => 
                   Check Out
                 </Text>
                 <div style={{ fontSize: '12px', marginTop: 4 }}>
-                  Expected: 06:00 PM
+                  {todayAttendance?.check_out 
+                    ? dayjs(todayAttendance.check_out, 'HH:mm:ss').format('hh:mm A')
+                    : 'Expected: 06:00 PM'
+                  }
                 </div>
               </div>
             </TimeCard>
@@ -154,33 +229,59 @@ const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({ isDarkMode }) => 
 
         <Row style={{ marginTop: 16 }}>
           <Col span={24}>
-            <Space size="middle" style={{ width: '100%', justifyContent: 'center' }}>
-              {!checkedIn ? (
-                <Button type="primary" onClick={handleCheckIn}>
-                  Check In
-                </Button>
-              ) : (
-                <>
+            {isLoading ? (
+              <div style={{ textAlign: 'center' }}>
+                <Spin size="small" />
+              </div>
+            ) : (
+              <Space size="middle" style={{ width: '100%', justifyContent: 'center' }}>
+                {!todayAttendance?.check_in ? (
                   <Button 
-                    type={onBreak ? "default" : "primary"} 
-                    onClick={handleBreak}
+                    type="primary" 
+                    onClick={handleCheckIn}
+                    loading={checkInMutation.isPending}
                   >
-                    {onBreak ? 'End Break' : 'Take Break'}
+                    Check In
                   </Button>
-                  <Button type="primary" danger onClick={handleCheckOut}>
-                    Check Out
-                  </Button>
-                </>
-              )}
-            </Space>
+                ) : !todayAttendance?.check_out ? (
+                  <>
+                    <Button 
+                      type={todayAttendance?.is_on_break ? "default" : "primary"} 
+                      onClick={handleBreak}
+                      loading={startBreakMutation.isPending || endBreakMutation.isPending}
+                    >
+                      {todayAttendance?.is_on_break ? 'End Break' : 'Take Break'}
+                    </Button>
+                    <Button 
+                      type="primary" 
+                      danger 
+                      onClick={handleCheckOut}
+                      loading={checkOutMutation.isPending}
+                    >
+                      Check Out
+                    </Button>
+                  </>
+                ) : (
+                  <Tag color="green">Work day completed</Tag>
+                )}
+              </Space>
+            )}
           </Col>
         </Row>
 
         <Row style={{ marginTop: 16 }}>
           <Col span={24}>
             <div style={{ textAlign: 'center' }}>
-              <Tag color={checkedIn ? 'green' : 'orange'}>
-                Status: {checkedIn ? (onBreak ? 'On Break' : 'Working') : 'Not Checked In'}
+              <Tag color={
+                !todayAttendance?.check_in ? 'orange' :
+                todayAttendance?.check_out ? 'blue' :
+                todayAttendance?.is_on_break ? 'purple' : 'green'
+              }>
+                Status: {
+                  !todayAttendance?.check_in ? 'Not Checked In' :
+                  todayAttendance?.check_out ? `Completed (${todayAttendance.hours_worked || 'N/A'})` :
+                  todayAttendance?.is_on_break ? 'On Break' : 'Working'
+                }
               </Tag>
             </div>
           </Col>
