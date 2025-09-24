@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, Button, Spin } from "antd";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
+} from "lucide-react";
 import styled from "styled-components";
 import { useTheme } from "../../../../contexts/ThemeContext";
-import { useQuery } from '@tanstack/react-query';
-import { api } from '../../../../services/api/api';
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../../../services/api/api";
 
 // Fireworks component with 10-second animation
 const Fireworks = () => {
@@ -18,16 +22,18 @@ const Fireworks = () => {
   if (!visible) return null;
 
   return (
-    <div style={{
-      position: "absolute",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      pointerEvents: "none",
-      zIndex: 10,
-      overflow: "hidden"
-    }}>
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        zIndex: 10,
+        overflow: "hidden",
+      }}
+    >
       {[...Array(30)].map((_, i) => (
         <div
           key={i}
@@ -37,7 +43,7 @@ const Fireworks = () => {
             top: `${20 + Math.random() * 60}%`,
             left: `${Math.random() * 100}%`,
             animationDelay: `${i * 0.3}s`,
-            animationDuration: "1.5s"
+            animationDuration: "1.5s",
           }}
         />
       ))}
@@ -45,7 +51,9 @@ const Fireworks = () => {
         @keyframes firework {
           0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
           50% { opacity: 1; }
-          100% { transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) scale(2); opacity: 0; }
+          100% { transform: translate(${Math.random() * 100 - 50}px, ${
+        Math.random() * 100 - 50
+      }px) scale(2); opacity: 0; }
         }
         .firework {
           width: 5px;
@@ -70,12 +78,15 @@ interface Holiday {
   holiday_type: string;
 }
 
-const StyledCard = styled(Card) <{ isDarkMode: boolean }>`
+const StyledCard = styled(Card)<{ isDarkMode: boolean }>`
   border-radius: 16px;
   box-shadow: ${({ isDarkMode }) =>
-    isDarkMode ? "0 8px 24px rgba(0, 0, 0, 0.4)" : "0 8px 24px rgba(0, 0, 0, 0.1)"};
+    isDarkMode
+      ? "0 8px 24px rgba(0, 0, 0, 0.4)"
+      : "0 8px 24px rgba(0, 0, 0, 0.1)"};
   background: ${({ isDarkMode }) => (isDarkMode ? "#1f1f1f" : "#ffffff")};
-  border: ${({ isDarkMode }) => (isDarkMode ? "1px solid #444" : "1px solid #eaeaea")};
+  border: ${({ isDarkMode }) =>
+    isDarkMode ? "1px solid #444" : "1px solid #eaeaea"};
   width: 100%;
   margin: 0 auto;
   overflow: hidden;
@@ -83,12 +94,13 @@ const StyledCard = styled(Card) <{ isDarkMode: boolean }>`
   transition: all 0.3s ease;
 
   .ant-card-head {
-    border-bottom: ${({ isDarkMode }) => (isDarkMode ? "1px solid #444" : "1px solid #f0f0f0")};
+    border-bottom: ${({ isDarkMode }) =>
+      isDarkMode ? "1px solid #444" : "1px solid #f0f0f0"};
     color: ${({ isDarkMode }) => (isDarkMode ? "#e6f7ff" : "#333")};
     font-size: 1.1rem;
     padding: 14px 16px;
     font-weight: 600;
-    
+
     @media (max-width: 480px) {
       padding: 12px;
     }
@@ -96,7 +108,7 @@ const StyledCard = styled(Card) <{ isDarkMode: boolean }>`
 
   .ant-card-body {
     padding: 20px;
-    
+
     @media (max-width: 480px) {
       padding: 16px;
     }
@@ -113,7 +125,7 @@ const HolidayTitle = styled.h3<{ isDarkMode: boolean }>`
   @media (max-width: 768px) {
     font-size: 1.4rem;
   }
-  
+
   @media (max-width: 480px) {
     font-size: 1.2rem;
   }
@@ -142,12 +154,13 @@ const DayText = styled.p<{ isDarkMode: boolean }>`
   }
 `;
 
-const NavButton = styled(Button) <{ isDarkMode: boolean }>`
+const NavButton = styled(Button)<{ isDarkMode: boolean }>`
   border-radius: 50%;
   width: 44px;
   height: 44px;
   background: ${({ isDarkMode }) => (isDarkMode ? "#333" : "#f5f5f5")};
-  border: ${({ isDarkMode }) => (isDarkMode ? "1px solid #555" : "1px solid #d9d9d9")};
+  border: ${({ isDarkMode }) =>
+    isDarkMode ? "1px solid #555" : "1px solid #d9d9d9"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -187,11 +200,12 @@ const HolidayDescription = styled.div<{ isDarkMode: boolean }>`
   padding: 14px;
   margin-top: 16px;
   border-radius: 8px;
-  background: ${({ isDarkMode }) => (isDarkMode ? "rgba(255, 255, 255, 0.05)" : "rgba(24, 144, 255, 0.05)")};
+  background: ${({ isDarkMode }) =>
+    isDarkMode ? "rgba(255, 255, 255, 0.05)" : "rgba(24, 144, 255, 0.05)"};
   color: ${({ isDarkMode }) => (isDarkMode ? "#d9d9d9" : "#555")};
   font-size: 0.9rem;
   line-height: 1.5;
-  
+
   @media (max-width: 480px) {
     padding: 12px;
     font-size: 0.85rem;
@@ -204,13 +218,14 @@ const ThemeToggle = styled.div<{ isDarkMode: boolean }>`
   justify-content: center;
   margin-top: 24px;
   padding: 10px 16px;
-  background: ${({ isDarkMode }) => isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(24, 144, 255, 0.1)"};
+  background: ${({ isDarkMode }) =>
+    isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(24, 144, 255, 0.1)"};
   border-radius: 8px;
   gap: 10px;
   cursor: pointer;
-  
+
   span {
-    color: ${({ isDarkMode }) => isDarkMode ? "#69c0ff" : "#1890ff"};
+    color: ${({ isDarkMode }) => (isDarkMode ? "#69c0ff" : "#1890ff")};
     font-weight: 500;
   }
 `;
@@ -220,10 +235,41 @@ const UpcomingHolidays = ({ isDarkMode }: { isDarkMode: boolean }) => {
   const [showFireworks, setShowFireworks] = useState(false);
 
   const { data: holidays = [], isLoading } = useQuery({
-    queryKey: ['holidays'],
-    queryFn: () => api.get('/api/holidays/').then(res => res.data),
+    queryKey: ["holidays"],
+    queryFn: () => api.get("/api/holidays/").then((res) => res.data),
     staleTime: 24 * 60 * 60 * 1000, // 24 hours
   });
+
+  // Find nearest upcoming holiday and set as default
+  useEffect(() => {
+    if (holidays.length > 0) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Find the nearest upcoming holiday
+      let nearestIndex = 0;
+      let minDiff = Infinity;
+
+      holidays.forEach((holiday: any, index: any) => {
+        const holidayDate = new Date(holiday.date);
+        holidayDate.setHours(0, 0, 0, 0);
+        const diff = holidayDate.getTime() - today.getTime();
+
+        // If holiday is today or in the future and closer than current nearest
+        if (diff >= 0 && diff < minDiff) {
+          minDiff = diff;
+          nearestIndex = index;
+        }
+      });
+
+      // If no upcoming holidays found, show the first one
+      if (minDiff === Infinity) {
+        nearestIndex = 0;
+      }
+
+      setCurrentIndex(nearestIndex);
+    }
+  }, [holidays]);
 
   const currentHoliday = holidays[currentIndex];
 
@@ -238,7 +284,7 @@ const UpcomingHolidays = ({ isDarkMode }: { isDarkMode: boolean }) => {
   // Check if current holiday is today
   useEffect(() => {
     if (!currentHoliday) return;
-    
+
     const today = new Date();
     const holidayDate = new Date(currentHoliday.date);
     const isToday =
@@ -260,9 +306,11 @@ const UpcomingHolidays = ({ isDarkMode }: { isDarkMode: boolean }) => {
       <StyledCard
         title="Holiday Calendar"
         isDarkMode={isDarkMode}
-        extra={<CalendarIcon color={isDarkMode ? "#69c0ff" : "#1890ff"} size={18} />}
+        extra={
+          <CalendarIcon color={isDarkMode ? "#69c0ff" : "#1890ff"} size={18} />
+        }
       >
-        <div style={{ textAlign: 'center', padding: '40px' }}>
+        <div style={{ textAlign: "center", padding: "40px" }}>
           <Spin size="large" />
         </div>
       </StyledCard>
@@ -273,7 +321,9 @@ const UpcomingHolidays = ({ isDarkMode }: { isDarkMode: boolean }) => {
     <StyledCard
       title="Holiday Calendar"
       isDarkMode={isDarkMode}
-      extra={<CalendarIcon color={isDarkMode ? "#69c0ff" : "#1890ff"} size={18} />}
+      extra={
+        <CalendarIcon color={isDarkMode ? "#69c0ff" : "#1890ff"} size={18} />
+      }
     >
       {showFireworks && <Fireworks />}
 
@@ -287,7 +337,9 @@ const UpcomingHolidays = ({ isDarkMode }: { isDarkMode: boolean }) => {
         </NavButton>
 
         <ContentCenter>
-          <HolidayTitle isDarkMode={isDarkMode}>{currentHoliday.name}</HolidayTitle>
+          <HolidayTitle isDarkMode={isDarkMode}>
+            {currentHoliday.name}
+          </HolidayTitle>
           <DateText isDarkMode={isDarkMode}>{currentHoliday.date}</DateText>
           <DayText isDarkMode={isDarkMode}>{currentHoliday.day}</DayText>
         </ContentCenter>
