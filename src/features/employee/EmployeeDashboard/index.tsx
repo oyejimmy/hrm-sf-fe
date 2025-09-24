@@ -2,6 +2,7 @@ import React from 'react';
 import {
   Row,
   Col,
+  Spin
 } from 'antd';
 import {
   CheckCircle,
@@ -34,17 +35,40 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { theme } from '../../../styles/theme';
 import { useNavigate } from 'react-router-dom';
 import { Wrapper } from '../../../components/Wrapper';
+import { useEmployeeDashboard } from '../../../hooks/api/useReports';
 
 const EmployeeDashboard: React.FC = () => {
   const { isDarkMode } = useTheme();
   const navigate = useNavigate();
   const currentTheme = theme[isDarkMode ? 'dark' : 'light'];
+  const { data: dashboardStats, isLoading, error } = useEmployeeDashboard();
+
+  if (isLoading) {
+    return (
+      <Wrapper isDarkMode={isDarkMode}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+          <Spin size="large" />
+        </div>
+      </Wrapper>
+    );
+  }
+
+  if (error) {
+    return (
+      <Wrapper isDarkMode={isDarkMode}>
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <h3>Error loading dashboard data</h3>
+          <p>Please try refreshing the page</p>
+        </div>
+      </Wrapper>
+    );
+  }
 
   const stats: StatCard[] = [
     {
       id: "s1",
       title: "Attendance Rate",
-      value: 96.5,
+      value: dashboardStats?.attendance?.attendance_rate || 0,
       suffix: "%",
       color: "linear-gradient(135deg, #1890ff 0%, #096dd9 100%)",
       icon: <CheckCircle size={20} color="#fff" style={{ marginRight: '5px' }} />
@@ -52,23 +76,23 @@ const EmployeeDashboard: React.FC = () => {
     {
       id: "s2",
       title: "Leave Balance",
-      value: 18,
+      value: dashboardStats?.leave_balance?.remaining_days || 0,
       suffix: "days",
       color: "linear-gradient(135deg, #52c41a 0%, #389e0d 100%)",
       icon: <Calendar size={20} color="#fff" style={{ marginRight: '5px' }} />
     },
     {
       id: "s3",
-      title: "Work Hours",
-      value: 162.5,
-      suffix: "h",
+      title: "Present Days",
+      value: dashboardStats?.attendance?.present_days || 0,
+      suffix: "days",
       color: "linear-gradient(135deg, #fa8c16 0%, #d46b08 100%)",
       icon: <Clock size={20} color="#fff" style={{ marginRight: '5px' }} />
     },
     {
       id: "s4",
       title: "Pending Requests",
-      value: 2,
+      value: dashboardStats?.requests?.pending || 0,
       color: "linear-gradient(135deg, #f5222d 0%, #cf1322 100%)",
       icon: <AlertCircle size={20} color="#fff" style={{ marginRight: '5px' }} />
     }

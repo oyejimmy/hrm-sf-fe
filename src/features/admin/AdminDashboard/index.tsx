@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Layout, Card, Row, Col, Statistic, Progress, List, Avatar,
-  Tag, Button, Badge, Dropdown, Menu, Space
+  Tag, Button, Badge, Dropdown, Menu, Space, Spin
 } from 'antd';
 import {
   UserOutlined, TeamOutlined, CalendarOutlined,
@@ -13,6 +13,7 @@ import styled from 'styled-components';
 import HeaderComponent from '../../../components/PageHeader';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { Wrapper } from '../../../components/Wrapper';
+import { useAdminDashboard } from '../../../hooks/api/useReports';
 
 const StatsCard = styled(Card)`
   border-radius: 8px;
@@ -60,6 +61,28 @@ const QuickActionButton = styled(Button)`
 // Dashboard Component
 const AdminDashboard = () => {
   const { isDarkMode } = useTheme();
+  const { data: dashboardStats, isLoading, error } = useAdminDashboard();
+
+  if (isLoading) {
+    return (
+      <Wrapper isDarkMode={isDarkMode}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+          <Spin size="large" />
+        </div>
+      </Wrapper>
+    );
+  }
+
+  if (error) {
+    return (
+      <Wrapper isDarkMode={isDarkMode}>
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <h3>Error loading dashboard data</h3>
+          <p>Please try refreshing the page</p>
+        </div>
+      </Wrapper>
+    );
+  }
   // Mock data for charts
   const departmentData: any = {
     options: {
@@ -176,48 +199,61 @@ const AdminDashboard = () => {
           <StatsCard>
             <Statistic
               title="Total Employees"
-              value={158}
+              value={dashboardStats?.employees?.total || 0}
               valueStyle={{ color: '#1890ff' }}
               prefix={<TeamOutlined />}
             />
             <Progress percent={100} showInfo={false} status="active" />
-            <div style={{ color: '#8c8c8c', fontSize: '12px' }}>+5 from last week</div>
+            <div style={{ color: '#8c8c8c', fontSize: '12px' }}>
+              {dashboardStats?.employees?.active || 0} active
+            </div>
           </StatsCard>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <StatsCard>
             <Statistic
               title="Present Today"
-              value={142}
+              value={dashboardStats?.attendance?.present_today || 0}
               valueStyle={{ color: '#52c41a' }}
               prefix={<UserOutlined />}
             />
-            <Progress percent={90} showInfo={false} status="active" strokeColor="#52c41a" />
-            <div style={{ color: '#8c8c8c', fontSize: '12px' }}>16 on leave</div>
+            <Progress 
+              percent={dashboardStats?.attendance?.attendance_rate || 0} 
+              showInfo={false} 
+              status="active" 
+              strokeColor="#52c41a" 
+            />
+            <div style={{ color: '#8c8c8c', fontSize: '12px' }}>
+              {dashboardStats?.employees?.on_leave_today || 0} on leave
+            </div>
           </StatsCard>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <StatsCard>
             <Statistic
-              title="Open Positions"
-              value={12}
+              title="Pending Leaves"
+              value={dashboardStats?.leaves?.pending || 0}
               valueStyle={{ color: '#faad14' }}
-              prefix={<IdcardOutlined />}
+              prefix={<CalendarOutlined />}
             />
             <Progress percent={60} showInfo={false} status="active" strokeColor="#faad14" />
-            <div style={{ color: '#8c8c8c', fontSize: '12px' }}>4 new this week</div>
+            <div style={{ color: '#8c8c8c', fontSize: '12px' }}>
+              {dashboardStats?.leaves?.approved_this_month || 0} approved this month
+            </div>
           </StatsCard>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <StatsCard>
             <Statistic
-              title="Training Courses"
-              value={8}
+              title="Pending Requests"
+              value={dashboardStats?.requests?.pending || 0}
               valueStyle={{ color: '#722ed1' }}
-              prefix={<BookOutlined />}
+              prefix={<FileTextOutlined />}
             />
             <Progress percent={80} showInfo={false} status="active" strokeColor="#722ed1" />
-            <div style={{ color: '#8c8c8c', fontSize: '12px' }}>2 completed this month</div>
+            <div style={{ color: '#8c8c8c', fontSize: '12px' }}>
+              {dashboardStats?.complaints?.pending || 0} complaints pending
+            </div>
           </StatsCard>
         </Col>
       </Row>

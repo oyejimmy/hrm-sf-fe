@@ -10,8 +10,9 @@ import { LoadingProvider, useLoading } from './contexts/LoadingContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { PageLoader } from './components/common/PageLoader';
 import './styles/responsive.css';
-import { ProtectedRoute } from './features/auth/ProtectedRoute';
-import RoleBasedRedirect from './features/auth/RoleBasedRedirect';
+import { AuthGuard } from './providers/AuthGuard';
+import { SessionManager } from './providers/SessionManager';
+import { DashboardRedirect } from './components/common/DashboardRedirect';
 
 // Layout Components
 import { AdminLayout } from './components/Layout/AdminLayout';
@@ -65,16 +66,16 @@ dayjs.extend(localeData);
 
 const AppContent: React.FC = () => {
   const { isLoading } = useLoading();
-
+  
   return (
     <>
       {isLoading && <PageLoader />}
       <Router>
-        <Routes>
+        <SessionManager>
+          <Routes>
           {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/dashboard" element={<RoleBasedRedirect />} />
+          <Route path="/login" element={<AuthGuard><Login /></AuthGuard>} />
+          <Route path="/signup" element={<AuthGuard><Signup /></AuthGuard>} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
           {/* Protected Routes */}
@@ -82,9 +83,9 @@ const AppContent: React.FC = () => {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute allowedRoles={['admin', 'hr']}>
+              <AuthGuard requireAuth allowedRoles={['admin', 'hr']}>
                 <AdminLayout />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           >
             <Route index element={<Navigate to="dashboard" replace />} />
@@ -106,9 +107,9 @@ const AppContent: React.FC = () => {
           <Route
             path="/employee"
             element={
-              <ProtectedRoute allowedRoles={['employee']}>
+              <AuthGuard requireAuth allowedRoles={['employee']}>
                 <EmployeeLayout />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           >
             <Route index element={<Navigate to="dashboard" replace />} />
@@ -130,9 +131,9 @@ const AppContent: React.FC = () => {
           <Route
             path="/team-lead"
             element={
-              <ProtectedRoute allowedRoles={['team_lead']}>
+              <AuthGuard requireAuth allowedRoles={['team_lead']}>
                 <TeamLeadLayout />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           >
             <Route index element={<Navigate to="dashboard" replace />} />
@@ -151,15 +152,19 @@ const AppContent: React.FC = () => {
           <Route
             path="/auth-test"
             element={
-              <ProtectedRoute allowedRoles={['admin', 'hr', 'team_lead', 'employee']}>
+              <AuthGuard requireAuth allowedRoles={['admin', 'hr', 'team_lead', 'employee']}>
                 <AuthTest />
-              </ProtectedRoute>
+              </AuthGuard>
             }
           />
 
+          {/* Dashboard Route */}
+          <Route path="/dashboard" element={<DashboardRedirect />} />
+          
           {/* Default Route */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
+          <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </SessionManager>
       </Router>
     </>
   );

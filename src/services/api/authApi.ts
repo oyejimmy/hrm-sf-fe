@@ -84,6 +84,23 @@ export const authApi = {
     return response.data;
   },
 
+  getProfileStatus: async () => {
+    const response = await apiClient.get('/api/profile/me');
+    return response.data;
+  },
+
+  completeProfile: async (profileData: {
+    first_name: string;
+    last_name: string;
+    phone: string;
+    department: string;
+    position: string;
+    role: string;
+  }) => {
+    const response = await apiClient.put('/api/profile/me', profileData);
+    return response.data;
+  },
+
   refreshToken: async (refreshToken: string) => {
     const response = await apiClient.post('/auth/refresh', {
       refresh_token: refreshToken,

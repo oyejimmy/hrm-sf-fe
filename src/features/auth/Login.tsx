@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useAuthContext } from "../../contexts/AuthContext";
-import { Form, Input, notification } from "antd";
-import { getDashboardRoute } from "../../utils/authHelpers";
+import { Form, Input } from "antd";
 import { isValidEmail, validateFormData } from "../../utils/security";
 import { 
   AuthButton, AuthContainer, AuthFooter, AuthFooterText, 
@@ -13,20 +11,11 @@ import {
 import { EyeInvisibleOutlined, EyeTwoTone, MailOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
 
 const Login = () => {
-  const navigate = useNavigate();
-  const { isAuthenticated, user, login, isLoginLoading } = useAuthContext();
+  const { login, isLoginLoading } = useAuthContext();
   const { currentTheme } = useTheme();
   const [form] = Form.useForm();
   const [isFocused, setIsFocused] = useState({ email: false, password: false });
   const [shake, setShake] = useState(false);
-
-  useEffect(() => {
-    if (isAuthenticated && user?.redirect_url) {
-      navigate(user.redirect_url);
-    } else if (isAuthenticated && user?.role) {
-      navigate(getDashboardRoute(user.role));
-    }
-  }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (values: any) => {
     if (!isValidEmail(values.email)) {

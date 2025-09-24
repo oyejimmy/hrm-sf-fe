@@ -1,5 +1,6 @@
 import React, { createContext, useContext } from 'react';
-import { useAuth, User } from '../hooks/useAuth';
+import { useCurrentUser, useLogin, useLogout } from '../hooks/api/useAuth';
+import { User } from '../services/api/types';
 
 interface AuthContextType {
   user: User | undefined;
@@ -7,20 +8,31 @@ interface AuthContextType {
   error: any;
   isAuthenticated: boolean;
   login: (credentials: { email: string; password: string }) => void;
-  signup: (data: { email: string; password: string; first_name: string; last_name: string; role: string }) => void;
   logout: () => void;
   isLoginLoading: boolean;
-  isSignupLoading: boolean;
   isLogoutLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const auth = useAuth();
+  const { data: user, isLoading, error } = useCurrentUser();
+  const loginMutation = useLogin();
+  const logoutMutation = useLogout();
+
+  const authValue: AuthContextType = {
+    user,
+    isLoading,
+    error,
+    isAuthenticated: !!user,
+    login: loginMutation.mutate,
+    logout: logoutMutation.mutate,
+    isLoginLoading: loginMutation.isPending,
+    isLogoutLoading: logoutMutation.isPending,
+  };
 
   return (
-    <AuthContext.Provider value={auth}>
+    <AuthContext.Provider value={authValue}>
       {children}
     </AuthContext.Provider>
   );
@@ -33,3 +45,5 @@ export const useAuthContext = () => {
   }
   return context;
 };
+
+export { AuthContext };

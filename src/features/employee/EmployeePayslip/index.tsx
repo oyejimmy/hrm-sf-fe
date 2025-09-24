@@ -1,6 +1,5 @@
 // components/EmployeePayslip/index.tsx
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Card, Button, Typography, message, Spin, Alert } from "antd";
 import { Download } from "lucide-react";
 import { Wrapper } from "../../../components/Wrapper";
@@ -11,16 +10,12 @@ import PayslipStats from "./components/PayslipStats";
 import PayslipFilters from "./components/PayslipFilters";
 import PayslipTable from "./components/PayslipTable";
 import PayslipDetailsModal from "./components/PayslipDetailsModal";
+import { useMyPayslips } from "../../../hooks/api/usePayroll";
+import { Payslip } from "../../../services/api/types";
 
-// Types
-interface Payslip {
-  key: string;
-  payPeriod: string;
-  issueDate: string;
-  grossPay: number;
-  netPay: number;
-  status: string;
-  deductions: number;
+interface PayslipFilters {
+  searchText: string;
+  searchYear: string;
 }
 
 interface Earnings {
@@ -32,60 +27,6 @@ interface Deductions {
   type: string;
   amount: number;
 }
-
-interface PayslipFilters {
-  searchText: string;
-  searchYear: string;
-}
-
-// Mock Data
-const payslipData: Payslip[] = [
-  {
-    key: "1",
-    payPeriod: "October 2023",
-    issueDate: "2023-10-31",
-    grossPay: 6500.0,
-    netPay: 5200.5,
-    status: "Paid",
-    deductions: 1299.5,
-  },
-  {
-    key: "2",
-    payPeriod: "September 2023",
-    issueDate: "2023-09-30",
-    grossPay: 6500.0,
-    netPay: 5180.25,
-    status: "Paid",
-    deductions: 1319.75,
-  },
-  {
-    key: "3",
-    payPeriod: "August 2023",
-    issueDate: "2023-08-31",
-    grossPay: 6500.0,
-    netPay: 5215.75,
-    status: "Paid",
-    deductions: 1284.25,
-  },
-  {
-    key: "4",
-    payPeriod: "July 2023",
-    issueDate: "2023-07-31",
-    grossPay: 6200.0,
-    netPay: 4980.5,
-    status: "Paid",
-    deductions: 1219.5,
-  },
-  {
-    key: "5",
-    payPeriod: "June 2023",
-    issueDate: "2023-06-30",
-    grossPay: 6200.0,
-    netPay: 4972.25,
-    status: "Paid",
-    deductions: 1227.75,
-  },
-];
 
 const earningsData: Earnings[] = [
   { type: "Basic Salary", amount: 5000.0 },
@@ -103,19 +44,19 @@ const deductionsData: Deductions[] = [
 ];
 
 // Custom Hook for filtering
-const usePayslips = (payslipData: Payslip[]) => {
+const usePayslipFilters = (payslipData: Payslip[]) => {
   const [filteredData, setFilteredData] = useState<Payslip[]>(payslipData);
   const [filters, setFilters] = useState<PayslipFilters>({
     searchText: "",
-    searchYear: "2023",
+    searchYear: "2024",
   });
 
   const filterData = (searchText: string, year: string) => {
     const filtered = payslipData.filter((item: Payslip) => {
-      const matchesText = item.payPeriod
+      const matchesText = item.pay_period
         .toLowerCase()
         .includes(searchText.toLowerCase());
-      const matchesYear = item.issueDate.includes(year);
+      const matchesYear = item.pay_period.includes(year);
       return matchesText && matchesYear;
     });
     setFilteredData(filtered);
@@ -143,48 +84,18 @@ const usePayslips = (payslipData: Payslip[]) => {
   };
 };
 
-// TanStack Query Hook
-const usePayslipsQuery = () => {
-  // Simulate API delay for demonstration
-  const delay = (ms: number) =>
-    new Promise((resolve) => setTimeout(resolve, ms));
-
-  const fetchPayslips = async (): Promise<Payslip[]> => {
-    // Simulate API call delay
-    await delay(1000);
-
-    // For now, return mock data
-    // In a real application, you would replace this with an actual API call:
-    /*
-    const response = await fetch('/api/payslips');
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    return response.json();
-    */
-
-    return payslipData;
-  };
-
-  return useQuery({
-    queryKey: ["payslips"],
-    queryFn: fetchPayslips,
-    // Use mock data as initial data while the real data is loading
-    initialData: payslipData,
-  });
-};
-
 // Main Component
 const EmployeePayslip: React.FC = () => {
   const { isDarkMode } = useTheme();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedPayslip, setSelectedPayslip] = useState<Payslip | null>(null);
+  const [selectedYear, setSelectedYear] = useState<number>(2024);
 
   // Use TanStack Query to fetch payslips
-  const { data: payslipData, isLoading, error } = usePayslipsQuery();
+  const { data: payslipData, isLoading, error } = useMyPayslips(selectedYear);
 
   // Use our custom hook for filtering
-  const { filteredData, filters, handleSearch, handleYearFilter } = usePayslips(
+  const { filteredData, filters, handleSearch, handleYearFilter } = usePayslipFilters(
     payslipData || []
   );
 
@@ -251,8 +162,19 @@ const EmployeePayslip: React.FC = () => {
             />
 
             <PayslipTable
-              data={filteredData}
-              onView={showModal}
+              data={filteredData.map(payslip => ({
+                key: payslip.id.toString(),
+                payPeriod: payslip.pay_period,
+                issueDate: payslip.generated_at,
+                grossPay: payslip.gross_pay,
+                netPay: payslip.net_pay,
+                status: payslip.status,
+                deductions: payslip.total_deductions,
+              }))}
+              onView={(record) => {
+                const originalPayslip = payslipData?.find(p => p.id.toString() === record.key);
+                if (originalPayslip) showModal(originalPayslip as any);
+              }}
               onDownload={handleDownload}
               loading={isLoading}
             />
