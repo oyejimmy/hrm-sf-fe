@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, Button } from "antd";
+import { Card, Button, Spin } from "antd";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import styled from "styled-components";
 import { useTheme } from "../../../../contexts/ThemeContext";
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../../../services/api/api';
 
 // Fireworks component with 10-second animation
 const Fireworks = () => {
@@ -60,23 +62,13 @@ const Fireworks = () => {
 };
 
 interface Holiday {
-  id: string;
+  id: number;
   name: string;
   date: string;
   day: string;
   description: string;
+  holiday_type: string;
 }
-
-const holidays: Holiday[] = [
-  { id: "h1", name: "New Year's Day", date: "September 16, 2025", day: "Tuesday", description: "Celebration of the new year" },
-  { id: "h2", name: "Valentine's Day", date: "February 14, 2025", day: "Friday", description: "Day of love and romance" },
-  { id: "h3", name: "Eid Ul Fitr", date: "April 23, 2025", day: "Monday", description: "Islamic festival marking the end of Ramadan" },
-  { id: "h4", name: "Eid Ul Adha", date: "June 28, 2025", day: "Saturday", description: "Islamic festival of sacrifice" },
-  { id: "h5", name: "Independence Day", date: "July 4, 2025", day: "Friday", description: "Celebration of national independence" },
-  { id: "h6", name: "Labor Day", date: "September 1, 2025", day: "Monday", description: "Celebration of workers' rights" },
-  { id: "h7", name: "Thanksgiving", date: "November 27, 2025", day: "Thursday", description: "Day of gratitude and feasting" },
-  { id: "h8", name: "Christmas Day", date: "December 25, 2025", day: "Thursday", description: "Celebration of Christmas" }
-];
 
 const StyledCard = styled(Card) <{ isDarkMode: boolean }>`
   border-radius: 16px;
@@ -227,10 +219,26 @@ const UpcomingHolidays = ({ isDarkMode }: { isDarkMode: boolean }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showFireworks, setShowFireworks] = useState(false);
 
+  const { data: holidays = [], isLoading } = useQuery({
+    queryKey: ['holidays'],
+    queryFn: () => api.get('/api/holidays/').then(res => res.data),
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+  });
+
   const currentHoliday = holidays[currentIndex];
+
+  const goNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % holidays.length);
+  }, [holidays.length]);
+
+  const goPrev = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + holidays.length) % holidays.length);
+  }, [holidays.length]);
 
   // Check if current holiday is today
   useEffect(() => {
+    if (!currentHoliday) return;
+    
     const today = new Date();
     const holidayDate = new Date(currentHoliday.date);
     const isToday =
@@ -247,13 +255,19 @@ const UpcomingHolidays = ({ isDarkMode }: { isDarkMode: boolean }) => {
     }
   }, [currentHoliday]);
 
-  const goNext = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % holidays.length);
-  }, []);
-
-  const goPrev = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + holidays.length) % holidays.length);
-  }, []);
+  if (isLoading || !currentHoliday) {
+    return (
+      <StyledCard
+        title="Holiday Calendar"
+        isDarkMode={isDarkMode}
+        extra={<CalendarIcon color={isDarkMode ? "#69c0ff" : "#1890ff"} size={18} />}
+      >
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Spin size="large" />
+        </div>
+      </StyledCard>
+    );
+  }
 
   return (
     <StyledCard
