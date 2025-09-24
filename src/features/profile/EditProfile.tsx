@@ -136,10 +136,13 @@ const EditProfile: React.FC = () => {
     mutationFn: (data: any) => api.put('/auth/profile/update', data),
     onSuccess: () => {
       message.success('Profile updated successfully');
+      // Invalidate and refetch profile data
       queryClient.invalidateQueries({ queryKey: ['employee-profile'] });
+      queryClient.refetchQueries({ queryKey: ['employee-profile'] });
       navigate(getProfilePath());
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Profile update error:', error);
       message.error('Failed to update profile');
     }
   });
@@ -194,18 +197,39 @@ const EditProfile: React.FC = () => {
 
   const handleSave = () => {
     form.validateFields().then(values => {
-      // Flatten nested form values
-      const flatValues = {
-        ...values,
-        ...(values.jobInfo || {}),
-        ...(values.compensation || {})
+      // Get all form data including nested forms
+      const allFormData = form.getFieldsValue(true);
+      
+      // Flatten nested form values and merge with current data
+      const payload = {
+        // User fields
+        first_name: allFormData.name?.split(' ')[0] || employeeData?.personalInfo?.name?.split(' ')[0],
+        last_name: allFormData.name?.split(' ').slice(1).join(' ') || employeeData?.personalInfo?.name?.split(' ').slice(1).join(' '),
+        email: allFormData.email || employeeData?.personalInfo?.email,
+        phone: allFormData.phone || employeeData?.personalInfo?.phone,
+        
+        // Employee fields
+        position: allFormData.position || employeeData?.personalInfo?.position,
+        work_location: allFormData.location || employeeData?.personalInfo?.location,
+        qualification: allFormData.qualification || employeeData?.personalInfo?.qualification,
+        blood_group: allFormData.bloodGroup || employeeData?.personalInfo?.bloodGroup,
+        
+        // Job info
+        work_schedule: allFormData.jobInfo?.workSchedule || employeeData?.jobInfo?.workSchedule,
+        team_size: parseInt(allFormData.jobInfo?.teamSize) || employeeData?.jobInfo?.teamSize,
+        
+        // Compensation
+        salary: parseFloat(allFormData.compensation?.salary?.replace(/[^0-9.]/g, '')) || null,
+        bonus_target: allFormData.compensation?.bonus || employeeData?.compensation?.bonus,
+        stock_options: allFormData.compensation?.stockOptions || employeeData?.compensation?.stockOptions,
+        next_review_date: allFormData.compensation?.nextReview || employeeData?.compensation?.nextReview,
+        
+        // Images
+        avatar_url: avatarImage || employeeData?.personalInfo?.avatar,
+        cover_image_url: coverImage || employeeData?.personalInfo?.coverImage
       };
       
-      // Add image URLs if changed
-      if (coverImage) flatValues.cover_image_url = coverImage;
-      if (avatarImage) flatValues.avatar_url = avatarImage;
-      
-      updateProfileMutation.mutate(flatValues);
+      updateProfileMutation.mutate(payload);
     }).catch(errorInfo => {
       console.log('Validation failed:', errorInfo);
     });
