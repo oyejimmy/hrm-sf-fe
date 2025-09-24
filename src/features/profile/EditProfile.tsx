@@ -169,25 +169,29 @@ const EditProfile: React.FC = () => {
   }
 
   const handleCoverUpload = (info: any) => {
-    if (info.file.status === 'done') {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setCoverImage(e.target?.result as string);
-      };
-      reader.readAsDataURL(info.file.originFileObj);
-      message.success('Cover image uploaded successfully');
-    }
+    const file = info.file.originFileObj || info.file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string;
+      setCoverImage(base64);
+      // Immediately save to database
+      updateProfileMutation.mutate({ cover_image_url: base64 });
+    };
+    reader.readAsDataURL(file);
+    message.success('Cover image uploaded successfully');
   };
 
   const handleAvatarUpload = (info: any) => {
-    if (info.file.status === 'done') {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setAvatarImage(e.target?.result as string);
-      };
-      reader.readAsDataURL(info.file.originFileObj);
-      message.success('Profile picture updated successfully');
-    }
+    const file = info.file.originFileObj || info.file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string;
+      setAvatarImage(base64);
+      // Immediately save to database
+      updateProfileMutation.mutate({ avatar_url: base64 });
+    };
+    reader.readAsDataURL(file);
+    message.success('Profile picture updated successfully');
   };
 
   const getProfilePath = () => {
@@ -282,10 +286,17 @@ const EditProfile: React.FC = () => {
       const isImage = file.type.startsWith('image/');
       if (!isImage) {
         message.error('You can only upload image files!');
+        return false;
       }
-      return isImage;
+      const isLt2M = file.size / 1024 / 1024 < 2;
+      if (!isLt2M) {
+        message.error('Image must be smaller than 2MB!');
+        return false;
+      }
+      return false; // Prevent default upload, handle manually
     },
     showUploadList: false,
+    customRequest: () => {}, // Prevent default upload
   };
 
   const dropdownMenu = (contact: any) => (
@@ -307,9 +318,9 @@ const EditProfile: React.FC = () => {
   return (
     <S.PageContainer isDarkMode={isDarkMode}>
       <S.StyledCard bodyStyle={{ padding: 0 }} isDarkMode={isDarkMode}>
-        <S.CoverSection bgImage={coverImage || employeeData.personalInfo.coverImage || undefined} isDarkMode={isDarkMode}>
+        <S.CoverSection bgImage={coverImage || employeeData?.personalInfo?.coverImage || employeeData?.personalInfo?.cover_image_url || undefined} isDarkMode={isDarkMode}>
           <S.CoverOverlay>
-            <Upload {...uploadProps} onChange={handleCoverUpload}>
+            <Upload {...uploadProps} onChange={handleCoverUpload} accept="image/*">
               <Button type="primary" icon={<Camera size={16} />}>
                 Change Cover
               </Button>
@@ -323,9 +334,9 @@ const EditProfile: React.FC = () => {
               <S.AvatarContainer>
                 <S.AvatarImage
                   size={140}
-                  src={avatarImage || employeeData.personalInfo.avatar || "https://images.unsplash.com/photo-1580489944761-15a19d65463f?q=80&w=1961&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
+                  src={avatarImage || employeeData?.personalInfo?.avatar || employeeData?.personalInfo?.avatar_url || "https://images.unsplash.com/photo-1580489944761-15a19d65463f?q=80&w=1961&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
                 />
-                <Upload {...uploadProps} onChange={handleAvatarUpload}>
+                <Upload {...uploadProps} onChange={handleAvatarUpload} accept="image/*">
                   <S.AvatarEditOverlay>
                     <Camera size={16} color="white" />
                   </S.AvatarEditOverlay>
