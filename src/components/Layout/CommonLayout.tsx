@@ -36,6 +36,8 @@ import {
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import type { MenuProps } from "antd";
 import { useAuthContext } from "../../contexts/AuthContext";
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../services/api/api';
 import { useTheme } from "../../contexts/ThemeContext";
 import { useResponsive } from "../../hooks";
 import styled from "styled-components";
@@ -318,6 +320,13 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+  
+  // Fetch profile data for avatar
+  const { data: profileData } = useQuery({
+    queryKey: ['employee-profile'],
+    queryFn: () => api.get('/api/employees/me/profile').then(res => res.data),
+    enabled: !!user,
+  });
 
   const siderWidth = userRole === "employee" ? 300 : 250;
 
@@ -599,7 +608,7 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
           <UserAvatar
             size={64}
             icon={<UserOutlined />}
-            src={user?.profile_picture}
+            src={profileData?.personalInfo?.avatar_url || profileData?.personalInfo?.avatar || user?.profile_picture}
           />
           <UserName>{user?.first_name || "User"}</UserName>
           <Tag color={isDarkMode ? currentTheme?.colors?.secondary : "purple"}>
@@ -685,7 +694,7 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
               <Avatar
                 size={isMobile ? 24 : "small"}
                 icon={<UserOutlined />}
-                src={user?.profile_picture}
+                src={profileData?.personalInfo?.avatar_url || profileData?.personalInfo?.avatar || user?.profile_picture}
               />
               {!isMobile && (
                 <span>
