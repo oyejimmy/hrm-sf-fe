@@ -1,21 +1,10 @@
 import React from "react";
 import { List, Spin } from "antd";
-import type { Announcement } from "../types";
 import styled, { keyframes } from "styled-components";
 import { Bell } from "lucide-react";
 import { StyledCard } from "./styles";
-import { useQuery } from '@tanstack/react-query';
-import { api } from '../../../../services/api/api';
-
-interface AnnouncementData {
-  id: number;
-  title: string;
-  content: string;
-  announcement_type: string;
-  priority: string;
-  publish_date: string;
-  is_new: boolean;
-}
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../../../services/api/api";
 
 // 🔔 Keyframes for bell animation
 const ring = keyframes`
@@ -37,7 +26,7 @@ const AnimatedBell = styled(Bell)<{ isDarkMode: boolean }>`
   cursor: pointer;
   animation: ${ring} 2s ease-in-out infinite;
   transform-origin: top center;
-  color: ${props => props.isDarkMode ? '#f0f0f0' : '#000'};
+  color: ${(props) => (props.isDarkMode ? "#f0f0f0" : "#000")};
 `;
 
 // 🎨 Gradient backgrounds
@@ -76,12 +65,12 @@ const ScrollContent = styled.div`
 `;
 
 // 📋 Styled List Item with shadow + smooth hover
-const StyledListItem = styled(List.Item) <{ bg: string; isDarkMode: boolean }>`
+const StyledListItem = styled(List.Item)<{ bg: string; isDarkMode: boolean }>`
   border: 1px solid ${(props) => (props.isDarkMode ? "#444" : "#f0f0f0")};
   border-radius: 10px;
   padding: 16px;
   margin-bottom: 12px;
-    background: ${(props) => (props.isDarkMode ? "#2a2a2a" : props.bg)};
+  background: ${(props) => (props.isDarkMode ? "#2a2a2a" : props.bg)};
   box-shadow: ${(props) =>
     props.isDarkMode
       ? "0 2px 6px rgba(0, 0, 0, 0.2)"
@@ -91,9 +80,9 @@ const StyledListItem = styled(List.Item) <{ bg: string; isDarkMode: boolean }>`
   &:hover {
     transform: translateY(-2px);
     box-shadow: ${(props) =>
-    props.isDarkMode
-      ? "0 6px 14px rgba(0, 0, 0, 0.3)"
-      : "0 6px 14px rgba(0, 0, 0, 0.1)"};
+      props.isDarkMode
+        ? "0 6px 14px rgba(0, 0, 0, 0.3)"
+        : "0 6px 14px rgba(0, 0, 0, 0.1)"};
   }
 
   .ant-list-item-meta {
@@ -105,7 +94,7 @@ const StyledListItem = styled(List.Item) <{ bg: string; isDarkMode: boolean }>`
     margin-bottom: 4px;
     line-height: 1.4;
   }
-  
+
   .ant-list-item-meta-description {
     color: ${(props) => (props.isDarkMode ? "#bbb" : "#999")};
     font-size: 12px;
@@ -143,56 +132,47 @@ const NewBadge = styled.div`
 
 const Announcements = ({ isDarkMode }: { isDarkMode: boolean }) => {
   const { data: announcements = [], isLoading } = useQuery({
-    queryKey: ['announcements'],
-    queryFn: () => api.get('/api/announcements/').then(res => res.data),
-    refetchInterval: 3000000, 
+    queryKey: ["announcements"],
+    queryFn: () => api.get("/api/announcements/").then((res) => res.data),
+    refetchInterval: 3000000,
   });
 
   const loopItems = [...announcements, ...announcements];
 
-  if (isLoading) {
-    return (
-      <StyledCard title="Announcements" $isDarkMode={isDarkMode}>
-        <div style={{ textAlign: 'center', padding: '40px' }}>
-          <Spin size="large" />
-        </div>
-      </StyledCard>
-    );
-  }
-
   return (
     <StyledCard
       title="Announcements"
+      loading={isLoading}
       $isDarkMode={isDarkMode}
-      extra={<AnimatedBell isDarkMode={isDarkMode} />}
+      extra={!isLoading && <AnimatedBell isDarkMode={isDarkMode} />}
     >
-      <ScrollContainer>
-        <ScrollContent>
-          {loopItems.map((item, index) => (
-            <ItemWrapper key={`${item.id}-${index}`}>
-              {item.isNew && <NewBadge>NEW</NewBadge>}
-              <StyledListItem
-                bg={backgroundColors[index % backgroundColors.length]}
-                isDarkMode={isDarkMode}
-              >
-                <List.Item.Meta
-                  title={<strong>{item.title}</strong>}
-                  description={
-                    <div>
-                      <div style={{ marginBottom: "4px" }}>
-                        {item.content}
+      {!isLoading && (
+        <ScrollContainer>
+          <ScrollContent>
+            {loopItems.map((item, index) => (
+              <ItemWrapper key={`${item.id}-${index}`}>
+                {item.isNew && <NewBadge>NEW</NewBadge>}
+                <StyledListItem
+                  bg={backgroundColors[index % backgroundColors.length]}
+                  isDarkMode={isDarkMode}
+                >
+                  <List.Item.Meta
+                    title={<strong>{item.title}</strong>}
+                    description={
+                      <div>
+                        <div style={{ marginBottom: "4px" }}>{item.content}</div>
+                        <span style={{ fontSize: "12px" }}>
+                          {item.publish_date}
+                        </span>
                       </div>
-                      <span style={{ fontSize: "12px" }}>
-                        {item.publish_date}
-                      </span>
-                    </div>
-                  }
-                />
-              </StyledListItem>
-            </ItemWrapper>
-          ))}
-        </ScrollContent>
-      </ScrollContainer>
+                    }
+                  />
+                </StyledListItem>
+              </ItemWrapper>
+            ))}
+          </ScrollContent>
+        </ScrollContainer>
+      )}
     </StyledCard>
   );
 };

@@ -1,26 +1,22 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Card, Button, Spin } from "antd";
+import { useState, useEffect, useCallback } from "react";
+import { Card, Button } from "antd";
 import {
   ChevronLeft,
   ChevronRight,
   Calendar as CalendarIcon,
 } from "lucide-react";
 import styled from "styled-components";
-import { useTheme } from "../../../../contexts/ThemeContext";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../../../services/api/api";
 
 // Fireworks component with 10-second animation
 const Fireworks = () => {
   const [visible, setVisible] = useState(true);
-
   useEffect(() => {
     const timer = setTimeout(() => setVisible(false), 10000);
     return () => clearTimeout(timer);
   }, []);
-
   if (!visible) return null;
-
   return (
     <div
       style={{
@@ -69,15 +65,6 @@ const Fireworks = () => {
   );
 };
 
-interface Holiday {
-  id: number;
-  name: string;
-  date: string;
-  day: string;
-  description: string;
-  holiday_type: string;
-}
-
 const StyledCard = styled(Card)<{ isDarkMode: boolean }>`
   border-radius: 8px;
   height: 400px;
@@ -121,7 +108,7 @@ const StyledCard = styled(Card)<{ isDarkMode: boolean }>`
       padding: 16px;
     }
   }
-  
+
   @media (max-width: 768px) {
     height: auto;
     min-height: 350px;
@@ -225,24 +212,6 @@ const HolidayDescription = styled.div<{ isDarkMode: boolean }>`
   }
 `;
 
-const ThemeToggle = styled.div<{ isDarkMode: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 24px;
-  padding: 10px 16px;
-  background: ${({ isDarkMode }) =>
-    isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(24, 144, 255, 0.1)"};
-  border-radius: 8px;
-  gap: 10px;
-  cursor: pointer;
-
-  span {
-    color: ${({ isDarkMode }) => (isDarkMode ? "#69c0ff" : "#1890ff")};
-    font-weight: 500;
-  }
-`;
-
 const UpcomingHolidays = ({ isDarkMode }: { isDarkMode: boolean }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showFireworks, setShowFireworks] = useState(false);
@@ -258,28 +227,23 @@ const UpcomingHolidays = ({ isDarkMode }: { isDarkMode: boolean }) => {
     if (holidays.length > 0) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-
       // Find the nearest upcoming holiday
       let nearestIndex = 0;
       let minDiff = Infinity;
-
       holidays.forEach((holiday: any, index: any) => {
         const holidayDate = new Date(holiday.date);
         holidayDate.setHours(0, 0, 0, 0);
         const diff = holidayDate.getTime() - today.getTime();
-
         // If holiday is today or in the future and closer than current nearest
         if (diff >= 0 && diff < minDiff) {
           minDiff = diff;
           nearestIndex = index;
         }
       });
-
       // If no upcoming holidays found, show the first one
       if (minDiff === Infinity) {
         nearestIndex = 0;
       }
-
       setCurrentIndex(nearestIndex);
     }
   }, [holidays]);
@@ -287,24 +251,26 @@ const UpcomingHolidays = ({ isDarkMode }: { isDarkMode: boolean }) => {
   const currentHoliday = holidays[currentIndex];
 
   const goNext = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % holidays.length);
+    if (holidays.length > 0) {
+      setCurrentIndex((prev) => (prev + 1) % holidays.length);
+    }
   }, [holidays.length]);
 
   const goPrev = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + holidays.length) % holidays.length);
+    if (holidays.length > 0) {
+      setCurrentIndex((prev) => (prev - 1 + holidays.length) % holidays.length);
+    }
   }, [holidays.length]);
 
   // Check if current holiday is today
   useEffect(() => {
     if (!currentHoliday) return;
-
     const today = new Date();
     const holidayDate = new Date(currentHoliday.date);
     const isToday =
       today.getDate() === holidayDate.getDate() &&
       today.getMonth() === holidayDate.getMonth() &&
       today.getFullYear() === holidayDate.getFullYear();
-
     if (isToday) {
       setShowFireworks(true);
       const timer = setTimeout(() => setShowFireworks(false), 10000);
@@ -314,65 +280,63 @@ const UpcomingHolidays = ({ isDarkMode }: { isDarkMode: boolean }) => {
     }
   }, [currentHoliday]);
 
-  if (isLoading || !currentHoliday) {
-    return (
-      <StyledCard
-        title="Holiday Calendar"
-        isDarkMode={isDarkMode}
-        extra={
-          <CalendarIcon color={isDarkMode ? "#69c0ff" : "#1890ff"} size={18} />
-        }
-      >
-        <div style={{ textAlign: "center", padding: "40px" }}>
-          <Spin size="large" />
-        </div>
-      </StyledCard>
-    );
-  }
-
   return (
     <StyledCard
       title="Holiday Calendar"
+      loading={isLoading}
       isDarkMode={isDarkMode}
       extra={
         <CalendarIcon color={isDarkMode ? "#69c0ff" : "#1890ff"} size={18} />
       }
     >
       {showFireworks && <Fireworks />}
-
-      <ContentWrapper>
-        <NavButton
-          isDarkMode={isDarkMode}
-          onClick={goPrev}
-          aria-label="Previous holiday"
-        >
-          <ChevronLeft color={isDarkMode ? "#69c0ff" : "#1890ff"} size={20} />
-        </NavButton>
-
-        <ContentCenter>
-          <HolidayTitle isDarkMode={isDarkMode}>
-            {currentHoliday.name}
-          </HolidayTitle>
-          <DateText isDarkMode={isDarkMode}>{currentHoliday.date}</DateText>
-          <DayText isDarkMode={isDarkMode}>{currentHoliday.day}</DayText>
-        </ContentCenter>
-
-        <NavButton
-          isDarkMode={isDarkMode}
-          onClick={goNext}
-          aria-label="Next holiday"
-        >
-          <ChevronRight color={isDarkMode ? "#69c0ff" : "#1890ff"} size={20} />
-        </NavButton>
-      </ContentWrapper>
-
-      <HolidayCounter isDarkMode={isDarkMode}>
-        {currentIndex + 1} of {holidays.length}
-      </HolidayCounter>
-
-      <HolidayDescription isDarkMode={isDarkMode}>
-        {currentHoliday.description}
-      </HolidayDescription>
+      {currentHoliday ? (
+        <>
+          <ContentWrapper>
+            <NavButton
+              isDarkMode={isDarkMode}
+              onClick={goPrev}
+              aria-label="Previous holiday"
+            >
+              <ChevronLeft
+                color={isDarkMode ? "#69c0ff" : "#1890ff"}
+                size={20}
+              />
+            </NavButton>
+            <ContentCenter>
+              <HolidayTitle isDarkMode={isDarkMode}>
+                {currentHoliday.name}
+              </HolidayTitle>
+              <DateText isDarkMode={isDarkMode}>{currentHoliday.date}</DateText>
+              <DayText isDarkMode={isDarkMode}>{currentHoliday.day}</DayText>
+            </ContentCenter>
+            <NavButton
+              isDarkMode={isDarkMode}
+              onClick={goNext}
+              aria-label="Next holiday"
+            >
+              <ChevronRight
+                color={isDarkMode ? "#69c0ff" : "#1890ff"}
+                size={20}
+              />
+            </NavButton>
+          </ContentWrapper>
+          <HolidayCounter isDarkMode={isDarkMode}>
+            {currentIndex + 1} of {holidays.length}
+          </HolidayCounter>
+          <HolidayDescription isDarkMode={isDarkMode}>
+            {currentHoliday.description}
+          </HolidayDescription>
+        </>
+      ) : (
+        <div>
+          <CalendarIcon
+            size={48}
+            style={{ marginBottom: "16px", opacity: 0.5 }}
+          />
+          <p>No holidays available</p>
+        </div>
+      )}
     </StyledCard>
   );
 };

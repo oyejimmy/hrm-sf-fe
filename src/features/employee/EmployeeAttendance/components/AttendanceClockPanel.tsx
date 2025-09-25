@@ -188,7 +188,7 @@ const AttendanceClockPanel = ({
         </Text>
 
         <Space size="large" wrap style={{ justifyContent: "center" }}>
-          {canCheckIn && (
+          {/* {canCheckIn && ( */}
             <ActionButton
               $variant="check-in"
               icon={<LogIn size={20} />}
@@ -197,9 +197,9 @@ const AttendanceClockPanel = ({
             >
               Check In
             </ActionButton>
-          )}
+          {/* )} */}
 
-          {canCheckOut && (
+          {/* {canCheckOut && ( */}
             <ActionButton
               $variant="check-out"
               icon={<LogOut size={20} />}
@@ -208,9 +208,9 @@ const AttendanceClockPanel = ({
             >
               Check Out
             </ActionButton>
-          )}
+          {/* )}
 
-          {canStartBreak && (
+          {canStartBreak && ( */}
             <ActionButton
               $variant="break"
               icon={<Coffee size={20} />}
@@ -219,9 +219,9 @@ const AttendanceClockPanel = ({
             >
               Start Break
             </ActionButton>
-          )}
+          {/* )} */}
 
-          {canEndBreak && (
+          {/* {canEndBreak && ( */}
             <ActionButton
               $variant="break"
               icon={<Coffee size={20} />}
@@ -230,7 +230,7 @@ const AttendanceClockPanel = ({
             >
               End Break
             </ActionButton>
-          )}
+          {/* )} */}
         </Space>
 
           {todayAttendance?.check_in && (
