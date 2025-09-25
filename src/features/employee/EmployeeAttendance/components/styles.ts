@@ -581,24 +581,19 @@ export const StatisticWrapper = styled.div`
 export const EqualHeightContainer = styled.div`
   height: 480px;
   width: 100%;
-  
   .ant-card {
     height: 100%;
     width: 100%;
-    
     .ant-card-body {
-      padding: 0;
       height: 100%;
       display: flex;
       flex-direction: column;
     }
   }
-  
   @media (max-width: 768px) {
     height: auto;
     min-height: 400px;
   }
-  
   @media (max-width: 480px) {
     min-height: 350px;
   }
