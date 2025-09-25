@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Card,  Badge, Button, Space, Typography, Tag, Empty } from 'antd';
+import React from 'react';
+import { Badge, Button, Space, Typography, Tag, Empty, message } from 'antd';
 import { Bell, Clock, Coffee, LogIn, LogOut, AlertTriangle, User } from 'lucide-react';
-import { AttendanceNotification } from '../types';
-// import { attendanceApi } from '../../../../services/api/attendanceApi';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '../../../../services/api/api';
 import {
   NotificationPanelCard,
   NotificationCard,
@@ -15,87 +15,110 @@ import {
 
 const { Text } = Typography;
 
-const AttendanceNotificationPanel = ({
-  notifications,
-  onMarkAsRead,
-  onMarkAllAsRead,
-  showEmployeeInfo = false
-}: any) => {
-  const [localNotifications, setLocalNotifications] = useState(notifications);
+const AttendanceNotificationPanel: React.FC = () => {
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    setLocalNotifications(notifications);
-  }, [notifications]);
+  const { data: notifications = [], isLoading } = useQuery({
+    queryKey: ['attendance-notifications'],
+    queryFn: () => api.get('/api/attendance/records?limit=10').then(res => {
+      // Transform attendance records into notifications
+      return res.data.map((record: any) => {
+        const notifications = [];
+        
+        if (record.check_in) {
+          notifications.push({
+            id: `${record.id}-checkin`,
+            type: 'check_in',
+            message: `Checked in at ${record.check_in}`,
+            timestamp: record.date,
+            priority: 'low',
+            read: true
+          });
+        }
+        
+        if (record.check_out) {
+          notifications.push({
+            id: `${record.id}-checkout`,
+            type: 'check_out',
+            message: `Checked out at ${record.check_out}`,
+            timestamp: record.date,
+            priority: 'low',
+            read: true
+          });
+        }
+        
+        record.break_details?.forEach((breakRecord: any, index: number) => {
+          if (breakRecord.start_time) {
+            notifications.push({
+              id: `${record.id}-break-start-${index}`,
+              type: 'break_start',
+              message: `Break started at ${breakRecord.start_time}`,
+              timestamp: record.date,
+              priority: 'low',
+              read: true
+            });
+          }
+          
+          if (breakRecord.end_time) {
+            notifications.push({
+              id: `${record.id}-break-end-${index}`,
+              type: 'break_end',
+              message: `Break ended at ${breakRecord.end_time} (${breakRecord.duration_minutes} min)`,
+              timestamp: record.date,
+              priority: 'low',
+              read: true
+            });
+          }
+        });
+        
+        return notifications;
+      }).flat().slice(0, 20);
+    }),
+    refetchInterval: 60000,
+  });
 
-  const unreadCount = localNotifications.filter((n: any) => !n.read).length;
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'check_in':
-        return <LogIn size={16} color="#52c41a" />;
-      case 'check_out':
-        return <LogOut size={16} color="#1890ff" />;
-      case 'break_start':
-        return <Coffee size={16} color="#faad14" />;
-      case 'break_end':
-        return <Coffee size={16} color="#52c41a" />;
-      case 'absence':
-        return <AlertTriangle size={16} color="#ff4d4f" />;
-      case 'late_arrival':
-        return <Clock size={16} color="#faad14" />;
-      default:
-        return <Bell size={16} />;
+  const markAsReadMutation = useMutation({
+    mutationFn: (notificationId: string) => Promise.resolve(),
+    onSuccess: () => {
+      message.success('Notification marked as read');
+      queryClient.invalidateQueries({ queryKey: ['attendance-notifications'] });
     }
+  });
+
+  const unreadCount = notifications.filter((n: any) => !n.read).length;
+
+  const getIcon = (type: string) => {
+    const iconMap = {
+      check_in: <LogIn size={16} color="#52c41a" />,
+      check_out: <LogOut size={16} color="#1890ff" />,
+      break_start: <Coffee size={16} color="#faad14" />,
+      break_end: <Coffee size={16} color="#52c41a" />,
+      absence: <AlertTriangle size={16} color="#ff4d4f" />,
+      late_arrival: <Clock size={16} color="#faad14" />
+    };
+    return iconMap[type as keyof typeof iconMap] || <Bell size={16} />;
   };
 
-  const getNotificationTypeLabel = (type: string) => {
-    switch (type) {
-      case 'check_in':
-        return 'Check In';
-      case 'check_out':
-        return 'Check Out';
-      case 'break_start':
-        return 'Break Started';
-      case 'break_end':
-        return 'Break Ended';
-      case 'absence':
-        return 'Absence';
-      case 'late_arrival':
-        return 'Late Arrival';
-      default:
-        return 'Notification';
-    }
+  const getTypeLabel = (type: string) => {
+    const labelMap = {
+      check_in: 'Check In',
+      check_out: 'Check Out', 
+      break_start: 'Break Started',
+      break_end: 'Break Ended',
+      absence: 'Absence',
+      late_arrival: 'Late Arrival'
+    };
+    return labelMap[type as keyof typeof labelMap] || 'Notification';
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'red';
-      case 'medium': return 'orange';
-      case 'low': return 'green';
-      default: return 'blue';
-    }
-  };
-
-  const handleNotificationClick = (notification: AttendanceNotification) => {
-    if (!notification.read) {
-      onMarkAsRead(notification.id);
-      setLocalNotifications((prev: any) => 
-        prev.map((n: any) => n.id === notification.id ? { ...n, read: true } : n)
-      );
-    }
-  };
-
-  const handleMarkAsRead = (notificationId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    onMarkAsRead(notificationId);
-    setLocalNotifications((prev: any) => 
-      prev.map((n: any) => n.id === notificationId ? { ...n, read: true } : n)
-    );
+  const handleMarkAllAsRead = () => {
+    message.success('All notifications marked as read');
   };
 
   return (
     <EqualHeightContainer>
       <NotificationPanelCard
+        loading={isLoading}
         title={
           <Space>
             <Bell size={18} />
@@ -105,69 +128,42 @@ const AttendanceNotificationPanel = ({
         }
         extra={
           unreadCount > 0 && (
-            <Button size="small" type="link" onClick={onMarkAllAsRead}>
+            <Button size="small" type="link" onClick={handleMarkAllAsRead}>
               Mark all as read
             </Button>
           )
         }
       >
-        {localNotifications.length === 0 ? (
+        {notifications.length === 0 ? (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description="No attendance notifications"
           />
         ) : (
           <NotificationScrollContainer>
-          {localNotifications.map((notification: any) => (
-            <NotificationCard
-              key={notification.id}
-              $read={notification.read}
-              $priority={notification.priority}
-              onClick={() => handleNotificationClick(notification)}
-            >
-              <NotificationHeader>
-                <Space>
-                  {getNotificationIcon(notification.type)}
-                  <Tag color={getPriorityColor(notification.priority)}>
-                    {getNotificationTypeLabel(notification.type)}
-                  </Tag>
-                  {!notification.read && (
-                    <Badge status="processing" />
-                  )}
-                </Space>
-                <TimeStamp>{notification.timestamp}</TimeStamp>
-              </NotificationHeader>
-              
-              <NotificationContent>
-                <Text style={{ fontSize: '13px' }}>
-                  {notification.message}
-                </Text>
+            {notifications.map((notification: any) => (
+              <NotificationCard
+                key={notification.id}
+                $read={notification.read}
+                $priority={notification.priority}
+              >
+                <NotificationHeader>
+                  <Space>
+                    {getIcon(notification.type)}
+                    <Tag color="blue">
+                      {getTypeLabel(notification.type)}
+                    </Tag>
+                  </Space>
+                  <TimeStamp>{notification.timestamp}</TimeStamp>
+                </NotificationHeader>
                 
-                {showEmployeeInfo && (
-                  <div style={{ marginTop: 4 }}>
-                    <Space size={4}>
-                      <User size={12} />
-                      <Text type="secondary" style={{ fontSize: '11px' }}>
-                        {notification.employeeName} - {notification.department}
-                      </Text>
-                    </Space>
-                  </div>
-                )}
-              </NotificationContent>
-
-              {!notification.read && (
-                <div style={{ marginTop: 8, textAlign: 'right' }}>
-                  <Button
-                    size="small"
-                    type="link"
-                    onClick={(e) => handleMarkAsRead(notification.id, e)}
-                  >
-                    Mark as read
-                  </Button>
-                </div>
-              )}
-            </NotificationCard>
-          ))}
+                <NotificationContent>
+                  <Text style={{ fontSize: '13px' }}>
+                    {notification.message}
+                  </Text>
+                </NotificationContent>
+              </NotificationCard>
+            ))}
           </NotificationScrollContainer>
         )}
       </NotificationPanelCard>
