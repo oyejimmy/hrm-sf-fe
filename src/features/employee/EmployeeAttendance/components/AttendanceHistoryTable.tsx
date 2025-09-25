@@ -34,14 +34,14 @@ const AttendanceHistoryTable = ({
   const [form] = Form.useForm();
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Present":
+    switch (status.toLowerCase()) {
+      case "present":
         return "green";
-      case "Absent":
+      case "absent":
         return "red";
-      case "Late":
+      case "late":
         return "orange";
-      case "On Leave":
+      case "on leave":
         return "blue";
       default:
         return "default";
@@ -211,7 +211,7 @@ const AttendanceHistoryTable = ({
       key: "status",
       render: (status: string, record: AttendanceRecord) => (
         <Space direction="vertical" size={4}>
-          <Tag color={getStatusColor(status)}>{status}</Tag>
+          <Tag color={getStatusColor(status)}>{status.charAt(0).toUpperCase() + status.slice(1)}</Tag>
           {record.isManualEntry && <Tag color="purple">Manual</Tag>}
         </Space>
       ),
@@ -231,10 +231,10 @@ const AttendanceHistoryTable = ({
           allowClear
           onChange={(status) => handleFilter({ status })}
         >
-          <Option value="Present">Present</Option>
-          <Option value="Absent">Absent</Option>
-          <Option value="Late">Late</Option>
-          <Option value="On Leave">On Leave</Option>
+          <Option value="present">Present</Option>
+          <Option value="absent">Absent</Option>
+          <Option value="late">Late</Option>
+          <Option value="on leave">On Leave</Option>
         </Select>
         <Button icon={<Download size={16} />} onClick={handleExport}>
           Export
@@ -273,10 +273,10 @@ const AttendanceHistoryTable = ({
             </Form.Item>
             <Form.Item label="Status" name="status">
               <Select>
-                <Option value="Present">Present</Option>
-                <Option value="Absent">Absent</Option>
-                <Option value="Late">Late</Option>
-                <Option value="On Leave">On Leave</Option>
+                <Option value="present">Present</Option>
+                <Option value="absent">Absent</Option>
+                <Option value="late">Late</Option>
+                <Option value="on leave">On Leave</Option>
               </Select>
             </Form.Item>
             <Form.Item

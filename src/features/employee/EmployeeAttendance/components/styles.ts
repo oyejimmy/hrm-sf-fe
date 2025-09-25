@@ -16,25 +16,29 @@ export const pulse = keyframes`
 `;
 
 // Common Components
-export const StyledCard = styled(Card) <{ isDarkMode?: boolean }>`
+export const CommonCard = styled(Card) <{ isDarkMode?: boolean }>`
   background: ${(props: any) => props.isDarkMode ? '#1f1f1f' : 'white'};
   border: none;
   border-radius: 16px;
   margin-bottom: 24px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.08);
   overflow: hidden;
+  
   .ant-card-head {
     border-bottom: 1px solid ${(props: any) => props.isDarkMode ? '#2a2a2a' : '#f0f0f0'};
     background: ${(props: any) => props.isDarkMode ? '#1a1a1a' : '#fafafa'};
   }
+  
   .ant-card-head-title {
     color: var(--text-color);
     font-weight: 600;
     font-size: 18px;
   }
+  
   .ant-card-body {
     padding: 0;
   }
+  
   @media (max-width: 768px) {
     border-radius: 12px;
     margin-bottom: 16px;
@@ -43,50 +47,80 @@ export const StyledCard = styled(Card) <{ isDarkMode?: boolean }>`
 
 export const ResponsiveRow = styled(Row)`
   margin-bottom: 24px;
+  
   @media (max-width: 768px) {
-    margin: 0 -8px 16px -8px;
-  }
-`;
-
-export const ResponsiveCol = styled(Col)`
-  @media (max-width: 768px) {
-    padding: 0 8px;
     margin-bottom: 16px;
   }
 `;
 
+export const ResponsiveCol = styled(Col)`
+  display: flex;
+  
+  @media (max-width: 992px) {
+    margin-bottom: 16px;
+  }
+  
+  .ant-card {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    
+    .ant-card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+`;
+
 // AttendanceClockPanel Styles
+export const ClockPanelCard = styled(Card)`
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  overflow: hidden;
+`;
+
 export const ClockContainer = styled.div<{ isDarkMode: boolean; }>`
   display: flex;
   flex-direction: column;
   align-items: center;
   animation: ${fadeIn} 0.6s ease-out;
+  flex: 1;
+  justify-content: center;
   padding: 16px;
+  
   @media (max-width: 768px) {
     padding: 12px;
   }
 `;
 
 export const DigitalClock = styled.div<{ isDarkMode: boolean; }>`
-  font-size: 56px;
+  font-size: 42px;
   font-weight: 700;
   color: ${props => props.isDarkMode ? '#ffffff' : '#1a237e'};
   font-family: 'Inter', sans-serif;
   margin: 20px 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   animation: ${pulse} 2s infinite;
+  text-align: center;
   @media (max-width: 768px) {
-    font-size: 40px;
+    font-size: 32px;
     margin: 16px 0;
   }
   @media (max-width: 480px) {
-    font-size: 32px;
+    font-size: 24px;
   }
 `;
 
 export const AnalogClock = styled.div<{ isDarkMode: boolean; }>`
-  width: 240px;
-  height: 240px;
+  width: 180px;
+  height: 180px;
   border: 4px solid ${props => props.isDarkMode ? '#ffffff' : '#455a64'};
   border-radius: 50%;
   position: relative;
@@ -94,12 +128,12 @@ export const AnalogClock = styled.div<{ isDarkMode: boolean; }>`
   background: ${props => props.isDarkMode ? '#1a237e' : 'linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%)'};
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   @media (max-width: 768px) {
-    width: 200px;
-    height: 200px;
+    width: 150px;
+    height: 150px;
   }
   @media (max-width: 480px) {
-    width: 160px;
-    height: 160px;
+    width: 120px;
+    height: 120px;
   }
 `;
 
@@ -164,12 +198,12 @@ export const ClockNumber = styled.div<{ $position: number; }>`
 `;
 
 export const ActionButton = styled(Button) <{ $variant: string; }>`
-  min-width: 140px;
-  height: 52px;
-  border-radius: 26px;
+  min-width: 120px;
+  height: 44px;
+  border-radius: 22px;
   font-weight: 600;
-  font-size: 16px;
-  margin: 0 8px;
+  font-size: 14px;
+  margin: 0 4px 12px 4px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   ${props => {
@@ -214,31 +248,33 @@ export const ActionButton = styled(Button) <{ $variant: string; }>`
   @media (max-width: 768px) {
     min-width: 120px;
     height: 48px;
-    margin: 4px;
+    margin: 4px 4px 12px 4px;
     font-size: 14px;
   }
   @media (max-width: 480px) {
     min-width: 100px;
     height: 44px;
     font-size: 12px;
-    margin: 2px;
+    margin: 2px 2px 8px 2px;
   }
 `;
 
 export const StatusCard = styled.div`
   background: white;
-  padding: 20px;
+  padding: 16px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   border: 1px solid #e0e0e0;
-  margin-top: 24px;
+  margin-top: 20px;
   width: 100%;
+  position: relative;
+  z-index: 1;
+  
   @media (max-width: 768px) {
-    padding: 16px;
-    margin-top: 16px;
+    padding: 12px;
   }
   @media (max-width: 480px) {
-    padding: 12px;
+    padding: 8px;
   }
 `;
 
@@ -273,6 +309,12 @@ export const TimeText = styled.span<{ $type: 'primary' | 'secondary' }>`
 `;
 
 // AttendanceNotificationPanel Styles
+export const NotificationPanelCard = styled(Card)`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+`;
+
 export const NotificationCard = styled.div<{ $read: boolean; $priority: string }>`
   padding: 12px;
   border-radius: 6px;
@@ -312,6 +354,16 @@ export const NotificationContent = styled.div`
   }
 `;
 
+export const NotificationScrollContainer = styled.div`
+  flex: 1;
+  max-height: 350px;
+  overflow-y: auto;
+  
+  @media (max-width: 768px) {
+    max-height: 280px;
+  }
+`;
+
 export const TimeStamp = styled(Text)`
   font-size: 11px;
   color: var(--text-secondary);
@@ -324,20 +376,18 @@ export const OverviewCard = styled(Card)`
   box-shadow: 0 8px 32px rgba(0,0,0,0.1);
   overflow: hidden;
   height: 100%;
-  .ant-card-body {
-    padding: 24px;
-  }
-  @media (max-width: 768px) {
-    .ant-card-body {
-      padding: 16px;
-    }
-  }
+  display: flex;
+  flex-direction: column;
 `;
 
 export const StatsCard = styled(Card)`
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  
   .ant-card-body {
     padding: 12px;
+    flex: 1;
   }
 `;
 
@@ -350,6 +400,14 @@ export const OverviewTitle = styled.h2`
     font-size: 18px;
     margin-bottom: 16px;
   }
+`;
+
+export const OverviewContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
 `;
 
 // AttendanceCalendar Styles
@@ -517,4 +575,31 @@ export const IconWrapper = styled.div<{ $color: string }>`
 
 export const StatisticWrapper = styled.div`
   text-align: center;
+`;
+
+// Equal height container for main panels
+export const EqualHeightContainer = styled.div`
+  height: 480px;
+  width: 100%;
+  
+  .ant-card {
+    height: 100%;
+    width: 100%;
+    
+    .ant-card-body {
+      padding: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    height: auto;
+    min-height: 400px;
+  }
+  
+  @media (max-width: 480px) {
+    min-height: 350px;
+  }
 `;

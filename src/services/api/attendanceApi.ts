@@ -7,6 +7,15 @@ const api = axios.create({
   timeout: 10000,
 });
 
+// Add auth interceptor
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('access_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const attendanceApi = {
   // Employee Actions
   logAttendance: async (action: AttendanceAction, data?: any) => {
@@ -24,13 +33,13 @@ export const attendanceApi = {
     return response.data;
   },
 
-  startBreak: async (type: string = 'personal') => {
-    const response = await api.post('/attendance/break-start', { type });
+  startBreak: async (type: string = 'general') => {
+    const response = await api.post('/attendance/break/start', { break_type: type });
     return response.data;
   },
 
   endBreak: async () => {
-    const response = await api.post('/attendance/break-end');
+    const response = await api.post('/attendance/break/end');
     return response.data;
   },
 
@@ -40,12 +49,17 @@ export const attendanceApi = {
     return response.data;
   },
 
-  getUserAttendance: async (userId: string, startDate?: string, endDate?: string) => {
-    const params = new URLSearchParams();
-    if (startDate) params.append('start_date', startDate);
-    if (endDate) params.append('end_date', endDate);
+  getAttendanceRecords: async (limit: number = 30) => {
+    const response = await api.get(`/api/attendance/records?limit=${limit}`);
+    return response.data;
+  },
+
+  getUserAttendance: async (year?: number, month?: number) => {
+    const currentDate = new Date();
+    const targetYear = year || currentDate.getFullYear();
+    const targetMonth = month || (currentDate.getMonth() + 1);
     
-    const response = await api.get(`/attendance/user/${userId}?${params.toString()}`);
+    const response = await api.get(`/attendance/calendar?year=${targetYear}&month=${targetMonth}`);
     return response.data;
   },
 

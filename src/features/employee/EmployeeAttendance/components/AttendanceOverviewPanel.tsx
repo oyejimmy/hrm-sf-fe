@@ -8,6 +8,7 @@ import {
   Coffee,
 } from "lucide-react";
 import { StateCard } from "../../../../components/StateCard";
+import { OverviewCard, OverviewContent, EqualHeightContainer } from "./styles";
 
 const { Text } = Typography;
 
@@ -55,16 +56,18 @@ const AttendanceOverviewPanel: React.FC<Props> = ({ summary, loading }) => {
   const attendancePct = Number(summary?.attendancePercentage ?? 0);
 
   return (
-    <Card
-      loading={loading}
-      title={
-        <Space>
-          <TrendingUp size={18} />
-          Attendance Overview
-        </Space>
-      }
-    >
-      <Row gutter={[12, 12]}>
+    <EqualHeightContainer>
+      <OverviewCard
+        loading={loading}
+        title={
+          <Space>
+            <TrendingUp size={18} />
+            Attendance Overview
+          </Space>
+        }
+      >
+        <OverviewContent>
+          <Row gutter={[12, 12]}>
         {stats.map((s: any) => (
           <Col xs={12} sm={12} md={12} lg={12} xl={12} key={s.label}>
             <StateCard
@@ -88,9 +91,9 @@ const AttendanceOverviewPanel: React.FC<Props> = ({ summary, loading }) => {
             />
           </Col>
         ))}
-      </Row>
+          </Row>
 
-      <Row gutter={[16, 16]} style={{ marginTop: 8 }}>
+          <Row gutter={[16, 16]} style={{ marginTop: 8 }}>
         <Col xs={24}>
           <Text
             style={{
@@ -114,9 +117,11 @@ const AttendanceOverviewPanel: React.FC<Props> = ({ summary, loading }) => {
               />
             </div>
           </div>
-        </Col>
-      </Row>
-    </Card>
+          </Col>
+          </Row>
+        </OverviewContent>
+      </OverviewCard>
+    </EqualHeightContainer>
   );
 };
 

@@ -4,10 +4,13 @@ import { Bell, Clock, Coffee, LogIn, LogOut, AlertTriangle, User } from 'lucide-
 import { AttendanceNotification } from '../types';
 // import { attendanceApi } from '../../../../services/api/attendanceApi';
 import {
+  NotificationPanelCard,
   NotificationCard,
   NotificationHeader,
   NotificationContent,
-  TimeStamp
+  NotificationScrollContainer,
+  TimeStamp,
+  EqualHeightContainer
 } from './styles';
 
 const { Text } = Typography;
@@ -91,29 +94,30 @@ const AttendanceNotificationPanel = ({
   };
 
   return (
-    <Card
-      title={
-        <Space>
-          <Bell size={18} />
-          Attendance Notifications
-          {unreadCount > 0 && <Badge count={unreadCount} />}
-        </Space>
-      }
-      extra={
-        unreadCount > 0 && (
-          <Button size="small" type="link" onClick={onMarkAllAsRead}>
-            Mark all as read
-          </Button>
-        )
-      }
-    >
-      {localNotifications.length === 0 ? (
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description="No attendance notifications"
-        />
-      ) : (
-        <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+    <EqualHeightContainer>
+      <NotificationPanelCard
+        title={
+          <Space>
+            <Bell size={18} />
+            Attendance Notifications
+            {unreadCount > 0 && <Badge count={unreadCount} />}
+          </Space>
+        }
+        extra={
+          unreadCount > 0 && (
+            <Button size="small" type="link" onClick={onMarkAllAsRead}>
+              Mark all as read
+            </Button>
+          )
+        }
+      >
+        {localNotifications.length === 0 ? (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description="No attendance notifications"
+          />
+        ) : (
+          <NotificationScrollContainer>
           {localNotifications.map((notification: any) => (
             <NotificationCard
               key={notification.id}
@@ -164,9 +168,10 @@ const AttendanceNotificationPanel = ({
               )}
             </NotificationCard>
           ))}
-        </div>
-      )}
-    </Card>
+          </NotificationScrollContainer>
+        )}
+      </NotificationPanelCard>
+    </EqualHeightContainer>
   );
 };
 
