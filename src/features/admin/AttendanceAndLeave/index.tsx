@@ -317,12 +317,7 @@ const AdminAttendanceManagement: React.FC = () => {
         >
           <Row gutter={[16, 16]}>
             <Col span={24}>
-              <AttendanceNotificationPanel
-                notifications={notifications}
-                onMarkAsRead={handleMarkAsRead}
-                onMarkAllAsRead={handleMarkAllAsRead}
-                showEmployeeInfo={true}
-              />
+              <AttendanceNotificationPanel />
             </Col>
           </Row>
         </TabPane>
