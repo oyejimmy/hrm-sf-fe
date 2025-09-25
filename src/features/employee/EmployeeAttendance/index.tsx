@@ -247,14 +247,10 @@ const EmployeeAttendance: React.FC = () => {
           />
         </ResponsiveCol>
         <ResponsiveCol xs={24} md={12} lg={8} style={{ height: '480px' }}>
-          <AttendanceOverviewPanel summary={summary || { totalDays: 0, presentDays: 0, absentDays: 0, lateDays: 0, totalWorkingHours: 0, averageWorkingHours: 0, attendancePercentage: 0 }} loading={isLoading} />
+          <AttendanceOverviewPanel />
         </ResponsiveCol>
         <ResponsiveCol xs={24} md={24} lg={8} style={{ height: '480px' }}>
-          <AttendanceNotificationPanel
-            notifications={currentNotifications}
-            onMarkAsRead={handleMarkAsRead}
-            onMarkAllAsRead={handleMarkAllAsRead}
-          />
+          <AttendanceNotificationPanel />
         </ResponsiveCol>
       </ResponsiveRow>
 
