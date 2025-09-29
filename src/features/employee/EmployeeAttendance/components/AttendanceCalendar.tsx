@@ -9,18 +9,14 @@ import {
   Select,
   Row,
   Col,
-  Divider,
   Empty,
   Alert,
+  Spin,
 } from "antd";
 import {
   ChevronLeft,
   ChevronRight,
   Calendar as CalendarIcon,
-  UserCheck,
-  UserX,
-  AlertCircle,
-  Coffee,
 } from "lucide-react";
 import {
   MonthYearSelector,
@@ -32,9 +28,10 @@ import {
   DetailsGrid,
   DetailItem,
 } from "./styles";
-import { StateCard } from "../../../../components/StateCard";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
+import { useQuery } from '@tanstack/react-query';
+import { attendanceApi } from '../../../../services/api/attendanceApi';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -42,26 +39,16 @@ const { Option } = Select;
 // Type definitions
 interface AttendanceRecord {
   id: string;
-  employeeId: string;
+  employee_id: string;
   date: string;
-  status:
-    | "Present"
-    | "Absent"
-    | "Late"
-    | "On Leave"
-    | "Half Day"
-    | "Weekend"
-    | "Holiday";
-  checkIn?: string;
-  checkOut?: string;
-  workingHours: number;
-  breakMinutes: number;
-  isManualEntry: boolean;
+  status: string;
+  check_in?: string;
+  check_out?: string;
+  total_hours: number;
   notes?: string;
 }
 
 interface AttendanceCalendarProps {
-  records?: AttendanceRecord[];
   isDarkMode?: boolean;
 }
 
@@ -89,113 +76,14 @@ interface DateSelectorsProps {
 
 // Status configuration for reusability
 const STATUS_CONFIG: Record<string, StatusConfig> = {
-  Present: { color: "green", dotColor: "#52c41a" },
-  Absent: { color: "red", dotColor: "#f5222d" },
-  Late: { color: "orange", dotColor: "#faad14" },
-  "On Leave": { color: "blue", dotColor: "#1890ff" },
-  "Half Day": { color: "purple", dotColor: "#722ed1" },
-  Weekend: { color: "default", dotColor: "#8c8c8c" },
-  Holiday: { color: "magenta", dotColor: "#eb2f96" },
+  present: { color: "green", dotColor: "#52c41a" },
+  absent: { color: "red", dotColor: "#f5222d" },
+  late: { color: "orange", dotColor: "#faad14" },
+  on_leave: { color: "blue", dotColor: "#1890ff" },
+  half_day: { color: "purple", dotColor: "#722ed1" },
 };
 
-const useAttendanceData = (propRecords?: AttendanceRecord[]) => {
-  const today = dayjs();
-  const generateDummyData = useCallback((): AttendanceRecord[] => {
-    const data: AttendanceRecord[] = [];
-    const startOfMonth = today.startOf("month");
-    const daysInMonth = today.daysInMonth();
-    for (let i = 0; i < daysInMonth; i++) {
-      const date = startOfMonth.add(i, "day");
-      const dayOfWeek = date.day();
-      if (date.isAfter(today, "day")) continue;
-      const baseRecord = {
-        id: `record-${i}`,
-        employeeId: "emp1",
-        date: date.toISOString(),
-        workingHours: 0,
-        breakMinutes: 0,
-        isManualEntry: false,
-      };
 
-      // Weekend
-      if (dayOfWeek === 0 || dayOfWeek === 6) {
-        data.push({ ...baseRecord, status: "Weekend", notes: "Weekend" });
-        continue;
-      }
-
-      // Holiday
-      if (i % 7 === 0 && i > 0) {
-        data.push({
-          ...baseRecord,
-          status: "Holiday",
-          notes: "Public Holiday",
-        });
-        continue;
-      }
-
-      // Regular days with different statuses
-      const random = Math.random();
-      let status: AttendanceRecord["status"] = "Present";
-      let checkIn: any = date
-        .hour(9)
-        .minute(Math.floor(Math.random() * 30))
-        .toISOString();
-      let checkOut: any = date
-        .hour(17)
-        .minute(Math.floor(Math.random() * 30))
-        .toISOString();
-      let notes: string | undefined;
-
-      if (random < 0.12) {
-        status = "Absent";
-        checkIn = undefined;
-        checkOut = undefined;
-        notes = "Sick leave";
-      } else if (random < 0.22) {
-        status = "Late";
-        checkIn = date
-          .hour(10)
-          .minute(Math.floor(Math.random() * 59))
-          .toISOString();
-        notes = "Traffic delay";
-      } else if (random < 0.3) {
-        status = "On Leave";
-        checkIn = undefined;
-        checkOut = undefined;
-        notes = "Annual leave";
-      } else if (random < 0.35) {
-        status = "Half Day";
-        checkOut = date.hour(13).minute(0).toISOString();
-        notes = "Doctor appointment";
-      }
-
-      data.push({
-        ...baseRecord,
-        status,
-        checkIn,
-        checkOut,
-        workingHours:
-          status === "Half Day"
-            ? 4
-            : ["Present", "Late"].includes(status)
-            ? 8
-            : 0,
-        breakMinutes: ["Present", "Late"].includes(status) ? 60 : 0,
-        isManualEntry: ["Absent", "On Leave"].includes(status),
-        notes,
-      });
-    }
-
-    return data;
-  }, [today]);
-
-  const records = useMemo(
-    () => (propRecords?.length ? propRecords : generateDummyData()),
-    [propRecords, generateDummyData]
-  );
-
-  return records;
-};
 
 // Custom hook for date navigation
 const useDateNavigation = (initialDate: Dayjs = dayjs()) => {
@@ -293,95 +181,7 @@ const DateSelectors: React.FC<DateSelectorsProps> = ({
   );
 };
 
-// Now uses your StateCard for each stat
-const AttendanceStats = ({ records }: any) => {
-  const stats: any = useMemo(() => {
-    const statusCounts: any = Object.keys(STATUS_CONFIG).reduce(
-      (acc, status) => {
-        acc[status] = records.filter((r: any) => r.status === status).length;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
 
-    const workingDays = records.filter((r: any) =>
-      ["Present", "Late", "Half Day"].includes(r.status)
-    ).length;
-
-    return {
-      ...statusCounts,
-      workingDays,
-      total: records.length,
-    };
-  }, [records]);
-
-  const items: any = [
-    {
-      label: "Present",
-      value: stats.Present || 0,
-      icon: UserCheck,
-      tone: "pastelGreen" as const,
-    },
-    {
-      label: "Absent",
-      value: stats.Absent || 0,
-      icon: UserX,
-      tone: "pastelPink" as const,
-    },
-    {
-      label: "Late",
-      value: stats.Late || 0,
-      icon: AlertCircle,
-      tone: "lightPeach" as const,
-    },
-    {
-      label: "On Leave",
-      value: (stats as any)["On Leave"] || 0,
-      icon: Coffee,
-      tone: "softLavender" as const,
-    },
-  ];
-
-  return (
-    <Card
-      title="Attendance Summary"
-      bordered={false}
-      style={{ marginBottom: 12 }}
-    >
-      <Row gutter={[12, 12]}>
-        {items.map((it: any) => (
-          <Col xs={12} sm={12} md={12} lg={12} xl={12} key={it.label}>
-            <StateCard
-              tone={it.tone}
-              label={it.label}
-              icon={it.icon}
-              iconSize={18}
-              titleLevel={3}
-              value={it.value}
-              suffix={
-                <Text
-                  style={{
-                    marginLeft: 6,
-                    fontSize: "0.65em",
-                    color: "rgba(0,0,0,0.56)",
-                  }}
-                >
-                  days
-                </Text>
-              }
-            />
-          </Col>
-        ))}
-      </Row>
-
-      <Divider style={{ margin: "12px 0" }} />
-      <Space direction="vertical" size="small" style={{ width: "100%" }}>
-        <Text strong>Working Days: {stats.workingDays}</Text>
-        <Text strong>Total Recorded: {stats.total} days</Text>
-      </Space>
-    </Card>
-  );
-};
 
 // Reusable component for date details
 const DateDetails: React.FC<{
@@ -427,30 +227,25 @@ const DateDetails: React.FC<{
           <div className="detail-label">Status</div>
           <div className="detail-value">
             <Tag color={STATUS_CONFIG[attendance.status]?.color || "default"}>
-              {attendance.status}
+              {attendance.status.charAt(0).toUpperCase() + attendance.status.slice(1)}
             </Tag>
-            {attendance.isManualEntry && (
-              <Tag color="purple" style={{ marginLeft: 4 }}>
-                Manual Entry
-              </Tag>
-            )}
           </div>
         </DetailItem>
 
-        {attendance.checkIn && (
+        {attendance.check_in && (
           <DetailItem>
             <div className="detail-label">Check-in</div>
             <div className="detail-value">
-              {dayjs(attendance.checkIn).format("HH:mm:ss")}
+              {attendance.check_in}
             </div>
           </DetailItem>
         )}
 
-        {attendance.checkOut && (
+        {attendance.check_out && (
           <DetailItem>
             <div className="detail-label">Check-out</div>
             <div className="detail-value">
-              {dayjs(attendance.checkOut).format("HH:mm:ss")}
+              {attendance.check_out}
             </div>
           </DetailItem>
         )}
@@ -458,13 +253,8 @@ const DateDetails: React.FC<{
         <DetailItem>
           <div className="detail-label">Working Hours</div>
           <div className="detail-value">
-            {attendance.workingHours.toFixed(2)} hours
+            {attendance.total_hours.toFixed(2)} hours
           </div>
-        </DetailItem>
-
-        <DetailItem>
-          <div className="detail-label">Break Duration</div>
-          <div className="detail-value">{attendance.breakMinutes} minutes</div>
         </DetailItem>
 
         {attendance.notes && (
@@ -480,17 +270,22 @@ const DateDetails: React.FC<{
 
 const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
   isDarkMode,
-  records: propRecords,
 }) => {
   const today = dayjs();
   const [selectedDate, setSelectedDate] = useState<Dayjs>(today);
+  const { viewDate, navigateMonth, setMonth, setYear } = useDateNavigation(today);
 
-  const records = useAttendanceData(propRecords);
-  const { viewDate, navigateMonth, setMonth, setYear } =
-    useDateNavigation(today);
+  // Fetch attendance data from API
+  const { data: attendanceData, isLoading } = useQuery({
+    queryKey: ['attendance-calendar', viewDate.year(), viewDate.month() + 1],
+    queryFn: () => attendanceApi.getUserAttendance(viewDate.year(), viewDate.month() + 1),
+    retry: 1,
+  });
+
+  const records = attendanceData?.records || [];
 
   const getAttendanceForDate = useCallback(
-    (date: Dayjs) => records.find((r) => dayjs(r.date).isSame(date, "day")),
+    (date: Dayjs) => records.find((r: AttendanceRecord) => dayjs(r.date).isSame(date, "day")),
     [records]
   );
 
@@ -561,30 +356,28 @@ const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
       </DescriptionPanel>
 
       <Row gutter={[12, 12]}>
-        <Col xs={24} lg={16}>
+        <Col xs={24}>
           <CalendarContainer>
-            <Calendar
-              value={viewDate}
-              onSelect={onDateSelect}
-              dateCellRender={dateCellRender}
-              fullscreen={false}
-              disabledDate={(current) =>
-                current && current > today.endOf("day")
-              }
-              headerRender={() => (
-                <DateSelectors
-                  viewDate={viewDate}
-                  onMonthChange={setMonth}
-                  onYearChange={setYear}
-                  onNavigate={navigateMonth}
-                />
-              )}
-            />
+            <Spin spinning={isLoading}>
+              <Calendar
+                value={viewDate}
+                onSelect={onDateSelect}
+                dateCellRender={dateCellRender}
+                fullscreen={false}
+                disabledDate={(current) =>
+                  current && current > today.endOf("day")
+                }
+                headerRender={() => (
+                  <DateSelectors
+                    viewDate={viewDate}
+                    onMonthChange={setMonth}
+                    onYearChange={setYear}
+                    onNavigate={navigateMonth}
+                  />
+                )}
+              />
+            </Spin>
           </CalendarContainer>
-        </Col>
-
-        <Col xs={24} lg={8}>
-          <AttendanceStats records={records} />
         </Col>
       </Row>
 

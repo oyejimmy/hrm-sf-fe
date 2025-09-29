@@ -22,19 +22,7 @@ export interface AttendanceRecord {
   modifiedAt?: string;
 }
 
-export interface TodayAttendance {
-  id?: string;
-  date: string;
-  checkIn?: string;
-  checkOut?: string;
-  breakStart?: string;
-  breakEnd?: string;
-  totalHours: number;
-  breakMinutes: number;
-  workingHours: number;
-  status: AttendanceStatus;
-  isOnBreak: boolean;
-}
+
 
 export interface AttendanceNotification {
   id: string;
@@ -75,12 +63,3 @@ export interface BreakRecord {
   notes?: string;
 }
 
-export interface AttendanceOverride {
-  attendanceId: string;
-  field: 'checkIn' | 'checkOut' | 'breakStart' | 'breakEnd' | 'status';
-  oldValue: string;
-  newValue: string;
-  reason: string;
-  overriddenBy: string;
-  overriddenAt: string;
-}

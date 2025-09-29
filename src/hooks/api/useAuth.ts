@@ -91,6 +91,41 @@ export const useCompleteProfile = () => {
   });
 };
 
+export const useSignup = () => {
+  return useMutation({
+    mutationFn: async (userData: {
+      email: string;
+      password: string;
+      first_name: string;
+      last_name: string;
+      role: string;
+      phone?: string;
+    }) => {
+      console.log('Signup API call with data:', userData);
+      console.log('API endpoint:', API_ENDPOINTS.AUTH.SIGNUP);
+      const response = await api.post(API_ENDPOINTS.AUTH.SIGNUP, userData);
+      console.log('Signup response:', response.data);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      console.log('Signup successful:', data);
+      message.success({
+        content: 'Account created successfully! Redirecting to login...',
+        duration: 3,
+      });
+      // Navigate to login after a short delay
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2000);
+    },
+    onError: (error: any) => {
+      console.error('Signup error:', error);
+      console.error('Error response:', error.response?.data);
+      message.error(error.response?.data?.detail || 'Signup failed');
+    },
+  });
+};
+
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   

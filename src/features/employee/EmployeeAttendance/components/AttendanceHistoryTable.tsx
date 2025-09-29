@@ -3,35 +3,21 @@ import {
   Table,
   Tag,
   Space,
-  Button,
   DatePicker,
   Select,
-  Input,
-  Modal,
-  Form,
-  message,
 } from "antd";
-import { Download } from "lucide-react";
 import { FilterContainer, TimeCell, TimeText } from "./styles";
-import { AttendanceRecord, AttendanceOverride } from "../types";
-import { attendanceApi } from "../../../../services/api/attendanceApi";
+import { AttendanceRecord } from "../types";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
-const { TextArea } = Input;
 
 const AttendanceHistoryTable = ({
   records,
   loading = false,
   showEmployeeColumn = false,
-  onRecordUpdate,
 }: any) => {
   const [filteredRecords, setFilteredRecords] = useState(records);
-  const [editModal, setEditModal] = useState<{
-    visible: boolean;
-    record?: AttendanceRecord;
-  }>({ visible: false });
-  const [form] = Form.useForm();
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -63,32 +49,7 @@ const AttendanceHistoryTable = ({
     return `${h}h ${m}m`;
   };
 
-  const handleEditSubmit = async (values: any) => {
-    if (!editModal.record) return;
 
-    try {
-      const override: AttendanceOverride = {
-        attendanceId: editModal.record.id,
-        field: "checkIn", // This would be dynamic based on what changed
-        oldValue: editModal.record.checkIn || "",
-        newValue: values.checkIn,
-        reason: values.reason || "Manual correction",
-        overriddenBy: "Current User",
-        overriddenAt: new Date().toISOString(),
-      };
-
-      await attendanceApi.overrideAttendance(override);
-      message.success("Attendance record updated successfully");
-      setEditModal({ visible: false });
-      form.resetFields();
-
-      if (onRecordUpdate) {
-        onRecordUpdate({ ...editModal.record, ...values });
-      }
-    } catch (error) {
-      message.error("Failed to update attendance record");
-    }
-  };
 
   const handleFilter = (filters: any) => {
     let filtered = [...records];
@@ -103,29 +64,6 @@ const AttendanceHistoryTable = ({
       });
     }
     setFilteredRecords(filtered);
-  };
-
-  const handleExport = async () => {
-    try {
-      const blob = await attendanceApi.exportAttendanceReport({
-        records: filteredRecords.map((r: any) => r.id),
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      const sanitizedDate = new Date()
-        .toISOString()
-        .split("T")[0]
-        .replace(/[^\w\-]/g, "");
-      a.download = `attendance-report-${sanitizedDate}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      message.success("Report exported successfully");
-    } catch (error) {
-      message.error("Failed to export report");
-    }
   };
 
   const columns: any = [
@@ -236,9 +174,7 @@ const AttendanceHistoryTable = ({
           <Option value="late">Late</Option>
           <Option value="on leave">On Leave</Option>
         </Select>
-        <Button icon={<Download size={16} />} onClick={handleExport}>
-          Export
-        </Button>
+
       </FilterContainer>
 
       <Table
@@ -250,59 +186,7 @@ const AttendanceHistoryTable = ({
         scroll={{ x: true }}
       />
 
-      <Modal
-        title="Edit Attendance Record"
-        open={editModal.visible}
-        onCancel={() => setEditModal({ visible: false })}
-        footer={null}
-        width={600}
-      >
-        <Form form={form} layout="vertical" onFinish={handleEditSubmit}>
-          <Space direction="vertical" style={{ width: "100%" }}>
-            <Form.Item label="Check In Time" name="checkIn">
-              <Input type="time" />
-            </Form.Item>
-            <Form.Item label="Check Out Time" name="checkOut">
-              <Input type="time" />
-            </Form.Item>
-            <Form.Item label="Break Start" name="breakStart">
-              <Input type="time" />
-            </Form.Item>
-            <Form.Item label="Break End" name="breakEnd">
-              <Input type="time" />
-            </Form.Item>
-            <Form.Item label="Status" name="status">
-              <Select>
-                <Option value="present">Present</Option>
-                <Option value="absent">Absent</Option>
-                <Option value="late">Late</Option>
-                <Option value="on leave">On Leave</Option>
-              </Select>
-            </Form.Item>
-            <Form.Item
-              label="Reason for Change"
-              name="reason"
-              rules={[{ required: true }]}
-            >
-              <TextArea
-                rows={3}
-                placeholder="Explain why this change is being made"
-              />
-            </Form.Item>
-            <Form.Item label="Notes" name="notes">
-              <TextArea rows={2} />
-            </Form.Item>
-          </Space>
-          <Space style={{ marginTop: 16 }}>
-            <Button type="primary" htmlType="submit">
-              Update Record
-            </Button>
-            <Button onClick={() => setEditModal({ visible: false })}>
-              Cancel
-            </Button>
-          </Space>
-        </Form>
-      </Modal>
+
     </>
   );
 };

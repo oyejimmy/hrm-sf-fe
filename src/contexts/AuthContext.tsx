@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from 'react';
-import { useCurrentUser, useLogin, useLogout, useCompleteProfile, useProfileStatus } from '../hooks/api/useAuth';
+import { useCurrentUser, useLogin, useLogout, useSignup, useCompleteProfile, useProfileStatus } from '../hooks/api/useAuth';
 import { User } from '../services/api/types';
 
 interface AuthContextType {
@@ -25,8 +25,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { data: profileStatus } = useProfileStatus();
   const loginMutation = useLogin();
   const logoutMutation = useLogout();
+  const signupMutation = useSignup();
   const completeProfileMutation = useCompleteProfile();
-  const signupMutation = { mutate: () => {}, isPending: false }; // Placeholder
 
   const authValue: AuthContextType = {
     user,

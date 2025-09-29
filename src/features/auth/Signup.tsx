@@ -47,23 +47,12 @@ const Signup = () => {
       role: 'employee',
     };
 
-    try {
-      const sanitizedData: any = validateFormData(signupData);
-      signup(sanitizedData);
-      
-      notification.success({
-        message: 'Account Created',
-        description: 'Your account has been created successfully! Redirecting to login...',
-        placement: 'topRight',
-      });
-      setTimeout(() => navigate('/login'), 2000);
-    } catch (error) {
-      notification.error({
-        message: 'Signup Failed',
-        description: 'There was an issue creating your account. Please try again.',
-        placement: 'topRight',
-      });
-    }
+    console.log('Submitting signup form with data:', signupData);
+    const sanitizedData: any = validateFormData(signupData);
+    console.log('Sanitized data:', sanitizedData);
+    
+    // Call the signup mutation directly
+    signup(sanitizedData);
   };
 
   const checkPasswordStrength = (password: string) => {

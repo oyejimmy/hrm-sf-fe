@@ -7,10 +7,7 @@ import AttendanceClockPanel from "./components/AttendanceClockPanel";
 import AttendanceHistoryTable from "./components/AttendanceHistoryTable";
 import AttendanceCalendar from "./components/AttendanceCalendar";
 import {
-  TodayAttendance,
   AttendanceRecord,
-  AttendanceNotification,
-  AttendanceSummary,
 } from "./types";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../../services/api/api';
@@ -25,7 +22,7 @@ import { attendanceApi } from '../../../services/api/attendanceApi';
 const EmployeeAttendance: React.FC = () => {
   const queryClient = useQueryClient();
   
-  // Use the same queries as dashboard
+  // Fetch today's attendance
   const { data: todayAttendance, isLoading: todayLoading } = useQuery({
     queryKey: ['attendance-today'],
     queryFn: () => api.get('/api/attendance/today').then(res => res.data),
@@ -33,24 +30,17 @@ const EmployeeAttendance: React.FC = () => {
     retry: 1,
   });
 
-  const { data: attendanceHistory = [], isLoading: historyLoading, error } = useQuery({
+  // Fetch attendance history
+  const { data: attendanceHistory = [], isLoading: historyLoading } = useQuery({
     queryKey: ['attendance', 'records'],
     queryFn: async () => {
-      try {
-        console.log('Fetching attendance records...');
-        const response = await api.get('/api/attendance/records?limit=30');
-        console.log('Direct API Response:', response.data);
-        return response.data;
-      } catch (error) {
-        console.error('API Error:', error);
-        throw error;
-      }
+      const response = await api.get('/api/attendance/records?limit=30');
+      return response.data;
     },
     retry: 1,
     select: (data) => {
-      console.log('Select function - raw data:', data);
       if (!data || !Array.isArray(data)) return [];
-      const mapped = data.map((record: any) => ({
+      return data.map((record: any) => ({
         id: record.id.toString(),
         employeeId: 'current-user',
         employeeName: 'Current User',
@@ -67,17 +57,16 @@ const EmployeeAttendance: React.FC = () => {
         notes: record.notes,
         isManualEntry: false,
       }));
-      console.log('Mapped data:', mapped);
-      return mapped;
     },
   });
 
+  // Fetch notifications
   const { data: notifications } = useQuery({
     queryKey: ['attendance', 'notifications'],
     queryFn: attendanceApi.getAttendanceNotifications,
   });
 
-  // Use the same mutations as dashboard
+  // Mutations for attendance actions
   const checkInMutation = useMutation({
     mutationFn: () => api.post('/api/attendance/check-in'),
     onSuccess: () => {
@@ -126,45 +115,9 @@ const EmployeeAttendance: React.FC = () => {
     }
   });
 
-  const markNotificationReadMutation = useMutation({
-    mutationFn: attendanceApi.markNotificationAsRead,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'notifications'] });
-    },
-  });
-
   const isLoading = todayLoading || historyLoading;
-
-  const [summary, setSummary] = useState<AttendanceSummary>();
   const { isDarkMode } = useTheme();
-  const [isCalendarModalVisible, setIsCalendarModalVisible] = useState(false); // State for modal visibility
-
-  // Use only actual API data
-  const currentTodayAttendance = todayAttendance;
-  const currentAttendanceRecords = attendanceHistory;
-  const currentNotifications = notifications || [];
-
-  // Update summary based on actual data
-  useEffect(() => {
-    if (attendanceHistory && attendanceHistory.length > 0) {
-      const presentDays = attendanceHistory.filter((r: any) => r.status === 'present').length;
-      const absentDays = attendanceHistory.filter((r: any) => r.status === 'absent').length;
-      const lateDays = attendanceHistory.filter((r: any) => r.status === 'late').length;
-      const totalDays = attendanceHistory.length;
-      const attendancePercentage = totalDays > 0 ? (presentDays / totalDays) * 100 : 0;
-      const totalWorkingHours = attendanceHistory.reduce((sum: number, r: any) => sum + (r.workingHours || 0), 0);
-      
-      setSummary({
-        totalDays,
-        presentDays,
-        absentDays,
-        lateDays,
-        totalWorkingHours,
-        averageWorkingHours: totalDays > 0 ? totalWorkingHours / totalDays : 0,
-        attendancePercentage: Math.round(attendancePercentage * 10) / 10,
-      });
-    }
-  }, [attendanceHistory]);
+  const [isCalendarModalVisible, setIsCalendarModalVisible] = useState(false);
 
 
 
@@ -187,20 +140,7 @@ const EmployeeAttendance: React.FC = () => {
     }
   };
 
-  const handleMarkAsRead = (notificationId: string) => {
-    markNotificationReadMutation.mutate(notificationId);
-  };
 
-  const handleMarkAllAsRead = async () => {
-    const unreadNotifications = currentNotifications.filter(
-      (n: AttendanceNotification) => !n.read
-    );
-    const promises = unreadNotifications.map((n: AttendanceNotification) =>
-      markNotificationReadMutation.mutateAsync(n.id)
-    );
-    await Promise.all(promises);
-    message.success("All notifications marked as read");
-  };
 
   const showCalendarModal = () => {
     setIsCalendarModalVisible(true);
@@ -237,7 +177,7 @@ const EmployeeAttendance: React.FC = () => {
         <ResponsiveCol xs={24} md={12} lg={8} style={{ height: '480px' }}>
           <AttendanceClockPanel
             isDarkMode={isDarkMode}
-            todayAttendance={currentTodayAttendance}
+            todayAttendance={todayAttendance}
             onAttendanceUpdate={handleAttendanceUpdate}
             loading={isLoading}
             isCheckingIn={checkInMutation.isPending}
@@ -258,10 +198,9 @@ const EmployeeAttendance: React.FC = () => {
       <CommonCard isDarkMode={isDarkMode} title="Recent Attendance Records">
         <div style={{ padding: "24px" }}>
           <AttendanceHistoryTable
-            records={currentAttendanceRecords}
+            records={attendanceHistory}
             loading={isLoading}
             showEmployeeColumn={false}
-            allowEdit={false}
           />
         </div>
       </CommonCard>
@@ -281,7 +220,6 @@ const EmployeeAttendance: React.FC = () => {
       >
         <AttendanceCalendar
           isDarkMode={isDarkMode}
-          records={currentAttendanceRecords}
         />
       </Modal>
     </Wrapper>
