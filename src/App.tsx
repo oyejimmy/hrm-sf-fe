@@ -58,6 +58,8 @@ import { TeamPerformance } from './features/teamLead/TeamPerformance';
 import { TrainingAssignments } from './features/teamLead/TrainingAssignments';
 import { AuthTest } from './features/auth/AuthTest';
 import { MinimalOnboarding } from './components/onboarding/MinimalOnboarding';
+import StepOnboarding from './components/onboarding/StepOnboarding';
+import { OnboardingGuard } from './components/common/OnboardingGuard';
 import isBetween from "dayjs/plugin/isBetween";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
@@ -78,7 +80,7 @@ const AppContent: React.FC = () => {
           {/* Public Routes */}
           <Route path="/login" element={<AuthGuard><Login /></AuthGuard>} />
           <Route path="/signup" element={<AuthGuard><Signup /></AuthGuard>} />
-          <Route path="/onboarding" element={<AuthGuard requireAuth><MinimalOnboarding /></AuthGuard>} />
+          <Route path="/onboarding" element={<AuthGuard requireAuth><StepOnboarding /></AuthGuard>} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
           {/* Protected Routes */}
@@ -87,7 +89,9 @@ const AppContent: React.FC = () => {
             path="/admin"
             element={
               <AuthGuard requireAuth allowedRoles={['admin', 'hr']}>
-                <AdminLayout />
+                <OnboardingGuard>
+                  <AdminLayout />
+                </OnboardingGuard>
               </AuthGuard>
             }
           >
@@ -111,7 +115,9 @@ const AppContent: React.FC = () => {
             path="/employee"
             element={
               <AuthGuard requireAuth allowedRoles={['employee']}>
-                <EmployeeLayout />
+                <OnboardingGuard>
+                  <EmployeeLayout />
+                </OnboardingGuard>
               </AuthGuard>
             }
           >
@@ -135,7 +141,9 @@ const AppContent: React.FC = () => {
             path="/team-lead"
             element={
               <AuthGuard requireAuth allowedRoles={['team_lead']}>
-                <TeamLeadLayout />
+                <OnboardingGuard>
+                  <TeamLeadLayout />
+                </OnboardingGuard>
               </AuthGuard>
             }
           >
