@@ -44,7 +44,7 @@ const Signup = () => {
     const { confirmPassword, ...rest } = values;
     const signupData = {
       ...rest,
-      role: 'employee',
+      role: 'employee', // Always set as employee
     };
 
     console.log('Submitting signup form with data:', signupData);
