@@ -126,6 +126,34 @@ export const useSignup = () => {
   });
 };
 
+export const useOnboarding = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (onboardingData: any) => {
+      const response = await api.post('/auth/onboarding', onboardingData);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ['profile-status'] });
+      message.success('Onboarding completed successfully');
+    },
+    onError: (error: any) => {
+      console.error('Onboarding error:', error);
+      let errorMessage = 'Onboarding failed';
+      if (error.response?.data?.detail) {
+        if (Array.isArray(error.response.data.detail)) {
+          errorMessage = error.response.data.detail.map((err: any) => err.msg).join(', ');
+        } else {
+          errorMessage = error.response.data.detail;
+        }
+      }
+      message.error(errorMessage);
+    },
+  });
+};
+
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   
