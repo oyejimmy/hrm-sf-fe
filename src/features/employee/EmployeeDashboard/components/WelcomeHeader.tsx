@@ -271,7 +271,7 @@ const WelcomeHeader = ({ isDarkMode }: { isDarkMode: boolean }) => {
     location: profileData?.personalInfo?.location || "N/A",
     welcomeMessage: `Welcome back, ${profileData?.personalInfo?.name || user?.first_name || "User"}!`,
     position: profileData?.jobInfo?.title || profileData?.personalInfo?.position || "Employee",
-    avatarUrl: profileData?.personalInfo?.avatar_url || profileData?.personalInfo?.avatar || user?.profile_picture,
+    avatarUrl: profileData?.personalInfo?.avatar_url || user?.profile_picture || profileData?.personalInfo?.avatar,
     coverImageUrl: profileData?.personalInfo?.cover_image_url || profileData?.personalInfo?.coverImage,
   };
 
