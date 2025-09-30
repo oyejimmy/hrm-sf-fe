@@ -1,56 +1,78 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useAuthContext } from "../../contexts/AuthContext";
-import { Form, Input } from "antd";
+import { Form, Input, notification } from "antd";
 import { isValidEmail, validateFormData } from "../../utils/security";
-import { 
-  AuthButton, AuthContainer, AuthFooter, AuthFooterText, 
-  AuthForm, AuthLink, AuthSubtitle, AuthTitle, ForgotPasswordLink, 
-  GlassCard, LogoContainer, FloatingLabel, InputContainer 
+import {
+  AuthButton,
+  AuthContainer,
+  AuthFooter,
+  AuthFooterText,
+  AuthForm,
+  AuthLink,
+  AuthSubtitle,
+  AuthTitle,
+  ForgotPasswordLink,
+  ThemeToggle,
+  LogoImage,
+  ResponsiveGlassCard,
+  HeaderContainer,
+  FormItemContainer,
+  FullWidthInputContainer,
+  StyledInput,
+  IconStyle,
 } from "./styles";
-import { EyeInvisibleOutlined, EyeTwoTone, MailOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  EyeInvisibleOutlined,
+  EyeTwoTone,
+  MailOutlined,
+  LockOutlined,
+  SunOutlined,
+  MoonOutlined,
+} from "@ant-design/icons";
+import { useMutation } from "@tanstack/react-query";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { currentTheme, isDarkMode, toggleTheme } = useTheme();
   const { login, isLoginLoading } = useAuthContext();
-  const { currentTheme } = useTheme();
   const [form] = Form.useForm();
-  const [isFocused, setIsFocused] = useState({ email: false, password: false });
   const [shake, setShake] = useState(false);
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = (values: any) => {
     if (!isValidEmail(values.email)) {
-      form.setFields([{ name: 'email', errors: ['Please enter a valid email address'] }]);
+      form.setFields([
+        { name: "email", errors: ["Please enter a valid email address"] },
+      ]);
       setShake(true);
       setTimeout(() => setShake(false), 500);
       return;
     }
-    
-    const sanitizedData: any = validateFormData(values);
-    login(sanitizedData);
-  };
 
-  const handleFocus = (field: string) => {
-    setIsFocused(prev => ({ ...prev, [field]: true }));
-  };
-
-  const handleBlur = (field: string, value: string) => {
-    if (!value) {
-      setIsFocused(prev => ({ ...prev, [field]: false }));
-    }
+    const sanitizedData = validateFormData(values);
+    login({ email: sanitizedData.email, password: sanitizedData.password });
   };
 
   return (
-    <AuthContainer>
-      <GlassCard theme={currentTheme} className={shake ? 'shake' : ''}>
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <LogoContainer theme={currentTheme}>
-            <UserOutlined />
-          </LogoContainer>
+    <AuthContainer theme={currentTheme}>
+      <ThemeToggle onClick={toggleTheme} theme={currentTheme}>
+        {isDarkMode ? <SunOutlined /> : <MoonOutlined />}
+      </ThemeToggle>
+
+      <ResponsiveGlassCard
+        theme={currentTheme}
+        className={shake ? "shake" : ""}
+      >
+        <HeaderContainer>
+          <LogoImage src="/logo.png" alt="Smart Forum HRMS Logo" />
           <AuthTitle level={2} theme={currentTheme}>
-            Welcome Back
+            SMART FORUM HRMS
           </AuthTitle>
-          <AuthSubtitle>Sign in to continue to your account</AuthSubtitle>
-        </div>
+          <AuthSubtitle theme={currentTheme}>
+            Sign in to continue to your work profile account
+          </AuthSubtitle>
+        </HeaderContainer>
 
         <AuthForm
           form={form}
@@ -60,73 +82,86 @@ const Login = () => {
           size="large"
           theme={currentTheme}
         >
-          <Form.Item
+          <FormItemContainer
             name="email"
             rules={[
-              { required: true, message: '' },
-              { type: 'email', message: '' },
+              { required: true, message: "Please enter your email" },
+              { type: "email", message: "Please enter a valid email" },
             ]}
-            style={{ marginBottom: 30 }}
           >
-            <InputContainer>
-              <Input
-                prefix={<MailOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />}
-                placeholder=""
+            <FullWidthInputContainer theme={currentTheme}>
+              <StyledInput
+                theme={currentTheme}
+                prefix={
+                  <MailOutlined
+                    style={{
+                      color: IconStyle.getColor(
+                        currentTheme.themeMode === "dark"
+                      ),
+                    }}
+                  />
+                }
+                placeholder="Email Address"
                 autoComplete="email"
-                onFocus={() => handleFocus('email')}
-                onBlur={(e) => handleBlur('email', e.target.value)}
-                style={{ 
-                  background: 'transparent', 
-                  border: 'none', 
-                  boxShadow: 'none',
-                  padding: '12px 16px',
-                  color: 'white'
-                }}
               />
-              <FloatingLabel isFocused={isFocused.email} hasValue={form.getFieldValue('email')}>
-                Email Address
-              </FloatingLabel>
-            </InputContainer>
-          </Form.Item>
+            </FullWidthInputContainer>
+          </FormItemContainer>
 
-          <Form.Item
+          <FormItemContainer
             name="password"
             rules={[
-              { required: true, message: '' },
-              { min: 6, message: '' },
+              { required: true, message: "Please enter your password" },
+              { min: 6, message: "Password must be at least 6 characters" },
             ]}
-            style={{ marginBottom: 10 }}
           >
-            <InputContainer>
+            <FullWidthInputContainer theme={currentTheme}>
               <Input.Password
-                prefix={<LockOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />}
-                placeholder=""
+                prefix={
+                  <LockOutlined
+                    style={{
+                      color: IconStyle.getColor(
+                        currentTheme.themeMode === "dark"
+                      ),
+                    }}
+                  />
+                }
+                placeholder="Password"
                 autoComplete="current-password"
-                iconRender={(visible) => (visible ? 
-                  <EyeTwoTone style={{ color: 'rgba(255, 255, 255, 0.6)' }} /> : 
-                  <EyeInvisibleOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
-                )}
-                onFocus={() => handleFocus('password')}
-                onBlur={(e) => handleBlur('password', e.target.value)}
-                style={{ 
-                  background: 'transparent', 
-                  border: 'none', 
-                  boxShadow: 'none',
-                  padding: '12px 16px',
-                  color: 'white'
+                iconRender={(visible) =>
+                  visible ? (
+                    <EyeTwoTone
+                      style={{
+                        color: IconStyle.getColor(
+                          currentTheme.themeMode === "dark"
+                        ),
+                      }}
+                    />
+                  ) : (
+                    <EyeInvisibleOutlined
+                      style={{
+                        color: IconStyle.getColor(
+                          currentTheme.themeMode === "dark"
+                        ),
+                      }}
+                    />
+                  )
+                }
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  boxShadow: "none",
+                  padding: "12px 16px",
+                  color: currentTheme.themeMode === "dark" ? "white" : "black",
                 }}
               />
-              <FloatingLabel isFocused={isFocused.password} hasValue={form.getFieldValue('password')}>
-                Password
-              </FloatingLabel>
-            </InputContainer>
-          </Form.Item>
+            </FullWidthInputContainer>
+          </FormItemContainer>
 
           <ForgotPasswordLink to="/forgot-password" theme={currentTheme}>
             Forgot password?
           </ForgotPasswordLink>
 
-          <Form.Item style={{ marginTop: 20 }}>
+          <Form.Item>
             <AuthButton
               type="primary"
               htmlType="submit"
@@ -141,14 +176,20 @@ const Login = () => {
         </AuthForm>
 
         <AuthFooter>
-          <AuthFooterText>Don't have an account? </AuthFooterText>
-          <AuthLink to="/signup" theme={currentTheme} className="hover-underline">
+          <AuthFooterText theme={currentTheme}>
+            Don't have an account?{" "}
+          </AuthFooterText>
+          <AuthLink
+            to="/signup"
+            theme={currentTheme}
+            className="hover-underline"
+          >
             Sign up here
           </AuthLink>
         </AuthFooter>
-      </GlassCard>
+      </ResponsiveGlassCard>
     </AuthContainer>
   );
-}
+};
 
 export default Login;
