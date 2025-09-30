@@ -250,6 +250,27 @@ export interface AdminDashboardStats {
   complaints: {
     pending: number;
   };
+  departments: {
+    name: string;
+    total_members: number;
+  }[];
+  recent_notifications: {
+    id: number;
+    title: string;
+    message: string;
+    type: string;
+    priority: string;
+    is_read: boolean;
+    created_at: string;
+  }[];
+  recent_announcements: {
+    id: number;
+    title: string;
+    content: string;
+    announcement_type: string;
+    priority: string;
+    created_at: string;
+  }[];
 }
 
 export interface EmployeeDashboardStats {
@@ -270,4 +291,8 @@ export interface EmployeeDashboardStats {
     total: number;
     completion_rate: number;
   };
+}
+
+export interface AttendanceReport {
+  monthly_rates: number[];
 }
