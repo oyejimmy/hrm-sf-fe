@@ -1,289 +1,287 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Form, Input, notification } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined, EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
-import { useAuthContext } from '../../contexts/AuthContext';
-import { validateFormData, isValidEmail } from '../../utils/security';
-import { useTheme } from '../../contexts/ThemeContext';
-import { 
-  AuthButton, AuthContainer, AuthFooter, AuthFooterText, 
-  AuthForm, AuthLink, AuthSubtitle, AuthTitle, GlassCard, 
-  LogoContainer, FloatingLabel, InputContainer, PasswordStrengthBar 
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Form, notification, Select } from "antd";
+import {
+  UserOutlined,
+  MailOutlined,
+  SunOutlined,
+  MoonOutlined,
+  SendOutlined,
+} from "@ant-design/icons";
+import { isValidEmail } from "../../utils/security";
+import { COUNTRY_CODES } from "../../utils/constants";
+import { useTheme } from "../../contexts/ThemeContext";
+import {
+  AuthButton,
+  AuthContainer,
+  AuthFooter,
+  AuthFooterText,
+  AuthForm,
+  AuthLink,
+  AuthSubtitle,
+  AuthTitle,
+  ThemeToggle,
+  LogoImage,
+  ResponsiveGlassCard,
+  HeaderContainer,
+  FormItemContainer,
+  MessageFormItem,
+  FullWidthInputContainer,
+  CountrySelect,
+  StyledInput,
+  StyledSelect,
+  StyledTextArea,
+  FlagSpan,
+  IconStyle,
+  getDropdownStyle,
 } from "./styles";
+import { useMutation } from "@tanstack/react-query";
+
+const { Option } = Select;
+
+const DEPARTMENTS = [
+  { value: 'hr', label: 'Human Resources' },
+  { value: 'it', label: 'Information Technology' },
+  { value: 'finance', label: 'Finance' },
+  { value: 'marketing', label: 'Marketing' },
+  { value: 'sales', label: 'Sales' },
+  { value: 'operations', label: 'Operations' }
+];
+
+const submitAccessRequest = async (data: any) => {
+  const response = await fetch("http://localhost:8000/auth/access-request", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Server error: ${response.status}`);
+  }
+
+  return response.json();
+};
+
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { signup, isSignupLoading } = useAuthContext();
-  const { currentTheme } = useTheme();
+  const { currentTheme, isDarkMode, toggleTheme } = useTheme();
   const [form] = Form.useForm();
-  const [passwordStrength, setPasswordStrength] = useState(0);
-  const [isFocused, setIsFocused] = useState({
-    first_name: false,
-    last_name: false,
-    email: false,
-    password: false,
-    confirmPassword: false
-  });
+
   const [shake, setShake] = useState(false);
+  const [countryCode, setCountryCode] = useState("+92");
 
-  const handleSubmit = async (values: any) => {
-    if (!isValidEmail(values.email)) {
-      form.setFields([{ name: 'email', errors: ['Please enter a valid email address'] }]);
+  const mutation = useMutation({
+    mutationFn: submitAccessRequest,
+    onSuccess: () => {
+      notification.success({
+        message: "Request Submitted Successfully",
+        description:
+          "Your access request has been sent to HR/Admin. You will receive an email with your company credentials once approved.",
+        duration: 3,
+      });
+      form.resetFields();
+      setCountryCode("+92");
+      setTimeout(() => navigate("/login"), 2000);
+    },
+    onError: (error: Error) => {
+      notification.error({
+        message: "Submission Failed",
+        description: error.message || "Please try again later.",
+      });
+    },
+  });
+
+  const handleSubmit = (values: any) => {
+    if (!isValidEmail(values.personal_email)) {
+      form.setFields([
+        {
+          name: "personal_email",
+          errors: ["Please enter a valid email address"],
+        },
+      ]);
       setShake(true);
       setTimeout(() => setShake(false), 500);
       return;
     }
 
-    if (values.password !== values.confirmPassword) {
-      form.setFields([{ name: 'confirmPassword', errors: ['Passwords do not match'] }]);
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
-      return;
+    let phoneNumber = values.phone || "";
+    if (phoneNumber.startsWith("0")) {
+      phoneNumber = phoneNumber.substring(1);
     }
 
-    const { confirmPassword, ...rest } = values;
-    const signupData = {
-      ...rest,
-      role: 'employee', // Always set as employee
+    const requestData = {
+      full_name: values.full_name,
+      personal_email: values.personal_email,
+      phone: countryCode + phoneNumber,
+      department: values.department,
+      message: values.message || null,
     };
 
-    console.log('Submitting signup form with data:', signupData);
-    const sanitizedData: any = validateFormData(signupData);
-    console.log('Sanitized data:', sanitizedData);
-    
-    // Call the signup mutation directly
-    signup(sanitizedData);
-  };
-
-  const checkPasswordStrength = (password: string) => {
-    let strength = 0;
-    if (password.length >= 8) strength += 25;
-    if (/[A-Z]/.test(password)) strength += 25;
-    if (/[0-9]/.test(password)) strength += 25;
-    if (/[^A-Za-z0-9]/.test(password)) strength += 25;
-    
-    setPasswordStrength(strength);
-  };
-
-  const handleFocus = (field: string) => {
-    setIsFocused(prev => ({ ...prev, [field]: true }));
-  };
-
-  const handleBlur = (field: string, value: string) => {
-    if (!value) {
-      setIsFocused(prev => ({ ...prev, [field]: false }));
-    }
+    mutation.mutate(requestData);
   };
 
   return (
-    <AuthContainer>
-      <GlassCard theme={currentTheme} className={shake ? 'shake' : ''}>
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <LogoContainer theme={currentTheme}>
-            <UserOutlined />
-          </LogoContainer>
+    <AuthContainer theme={currentTheme}>
+      <ThemeToggle onClick={toggleTheme} theme={currentTheme}>
+        {isDarkMode ? <SunOutlined /> : <MoonOutlined />}
+      </ThemeToggle>
+
+      <ResponsiveGlassCard
+        theme={currentTheme}
+        className={shake ? "shake" : ""}
+      >
+        <HeaderContainer>
+          <LogoImage
+            src="/logo.png"
+            alt="Smart Forum HRMS Logo"
+            theme={currentTheme}
+          />
           <AuthTitle level={2} theme={currentTheme}>
-            Join Our Community
+            SMART FORUM HRMS
           </AuthTitle>
-          <AuthSubtitle>Create your account to get started</AuthSubtitle>
-        </div>
+          <AuthSubtitle theme={currentTheme}>
+            Request access to join our organization
+          </AuthSubtitle>
+        </HeaderContainer>
 
         <AuthForm
           form={form}
-          name="signup"
+          name="access-request"
           onFinish={handleSubmit}
           layout="vertical"
           size="large"
           theme={currentTheme}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: 20 }}>
-            <Form.Item
-              name="first_name"
-              rules={[
-                { required: true, message: '' },
-                { min: 2, message: '' },
-              ]}
+          <FormItemContainer
+            name="full_name"
+            rules={[{ required: true, message: "Please enter your full name" }]}
+          >
+            <FullWidthInputContainer theme={currentTheme}>
+              <StyledInput
+                theme={currentTheme}
+                prefix={
+                  <UserOutlined
+                    style={{
+                      color: IconStyle.getColor(
+                        currentTheme.themeMode === "dark"
+                      ),
+                    }}
+                  />
+                }
+                placeholder="Full Name"
+              />
+            </FullWidthInputContainer>
+          </FormItemContainer>
+
+          <FormItemContainer
+            name="personal_email"
+            rules={[
+              { required: true, message: "Please enter your personal email" },
+              { type: "email", message: "Please enter a valid email" },
+            ]}
+          >
+            <FullWidthInputContainer theme={currentTheme}>
+              <StyledInput
+                theme={currentTheme}
+                prefix={
+                  <MailOutlined
+                    style={{
+                      color: IconStyle.getColor(
+                        currentTheme.themeMode === "dark"
+                      ),
+                    }}
+                  />
+                }
+                placeholder="Personal Email Address"
+              />
+            </FullWidthInputContainer>
+          </FormItemContainer>
+
+          <FormItemContainer name="phone">
+            <StyledInput
+              theme={currentTheme}
+              placeholder="Phone Number"
+              addonBefore={
+                <CountrySelect
+                  theme={currentTheme}
+                  value={countryCode}
+                  onChange={(value: any) => setCountryCode(value)}
+                  dropdownStyle={getDropdownStyle(
+                    currentTheme.themeMode === "dark"
+                  )}
+                >
+                  {COUNTRY_CODES.map((country) => (
+                    <Option key={country.code} value={country.code}>
+                      <FlagSpan>{country.flag}</FlagSpan>
+                      {country.code}
+                    </Option>
+                  ))}
+                </CountrySelect>
+              }
+            />
+          </FormItemContainer>
+
+          <FormItemContainer
+            name="department"
+            rules={[
+              { required: true, message: "Please select your department" },
+            ]}
+          >
+            <StyledSelect
+              theme={currentTheme}
+              placeholder="Select Department"
+              dropdownMatchSelectWidth={false}
+              dropdownStyle={getDropdownStyle(
+                currentTheme.themeMode === "dark"
+              )}
             >
-              <InputContainer>
-                <Input
-                  prefix={<UserOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />}
-                  placeholder=""
-                  autoComplete="given-name"
-                  onFocus={() => handleFocus('first_name')}
-                  onBlur={(e) => handleBlur('first_name', e.target.value)}
-                  style={{ 
-                    background: 'transparent', 
-                    border: 'none', 
-                    boxShadow: 'none',
-                    padding: '12px 16px',
-                    color: 'white'
-                  }}
-                />
-                <FloatingLabel isFocused={isFocused.first_name} hasValue={form.getFieldValue('first_name')}>
-                  First Name
-                </FloatingLabel>
-              </InputContainer>
-            </Form.Item>
+              {DEPARTMENTS.map(dept => (
+                <Option key={dept.value} value={dept.value}>
+                  {dept.label}
+                </Option>
+              ))}
+            </StyledSelect>
+          </FormItemContainer>
 
-            <Form.Item
-              name="last_name"
-              rules={[
-                { required: true, message: '' },
-                { min: 2, message: '' },
-              ]}
-            >
-              <InputContainer>
-                <Input
-                  prefix={<UserOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />}
-                  placeholder=""
-                  autoComplete="family-name"
-                  onFocus={() => handleFocus('last_name')}
-                  onBlur={(e) => handleBlur('last_name', e.target.value)}
-                  style={{ 
-                    background: 'transparent', 
-                    border: 'none', 
-                    boxShadow: 'none',
-                    padding: '12px 16px',
-                    color: 'white'
-                  }}
-                />
-                <FloatingLabel isFocused={isFocused.last_name} hasValue={form.getFieldValue('last_name')}>
-                  Last Name
-                </FloatingLabel>
-              </InputContainer>
-            </Form.Item>
-          </div>
-
-          <Form.Item
-            name="email"
-            rules={[
-              { required: true, message: '' },
-              { type: 'email', message: '' },
-            ]}
-            style={{ marginBottom: 20 }}
-          >
-            <InputContainer>
-              <Input
-                prefix={<MailOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />}
-                placeholder=""
-                autoComplete="email"
-                onFocus={() => handleFocus('email')}
-                onBlur={(e) => handleBlur('email', e.target.value)}
-                style={{ 
-                  background: 'transparent', 
-                  border: 'none', 
-                  boxShadow: 'none',
-                  padding: '12px 16px',
-                  color: 'white'
-                }}
-              />
-              <FloatingLabel isFocused={isFocused.email} hasValue={form.getFieldValue('email')}>
-                Email Address
-              </FloatingLabel>
-            </InputContainer>
-          </Form.Item>
-
-          <Form.Item
-            name="password"
-            rules={[
-              { required: true, message: '' },
-              { min: 8, message: '' },
-            ]}
-            style={{ marginBottom: 10 }}
-          >
-            <InputContainer>
-              <Input.Password
-                prefix={<LockOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />}
-                placeholder=""
-                autoComplete="new-password"
-                iconRender={(visible) => (visible ? 
-                  <EyeTwoTone style={{ color: 'rgba(255, 255, 255, 0.6)' }} /> : 
-                  <EyeInvisibleOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
-                )}
-                onFocus={() => handleFocus('password')}
-                onBlur={(e) => handleBlur('password', e.target.value)}
-                onChange={(e) => checkPasswordStrength(e.target.value)}
-                style={{ 
-                  background: 'transparent', 
-                  border: 'none', 
-                  boxShadow: 'none',
-                  padding: '12px 16px',
-                  color: 'white'
-                }}
-              />
-              <FloatingLabel isFocused={isFocused.password} hasValue={form.getFieldValue('password')}>
-                Password
-              </FloatingLabel>
-              <PasswordStrengthBar strength={passwordStrength} theme={currentTheme}>
-                <div className="strength-fill" />
-                <span className="strength-text">
-                  {passwordStrength < 40 ? 'Weak' : passwordStrength < 70 ? 'Medium' : 'Strong'}
-                </span>
-              </PasswordStrengthBar>
-            </InputContainer>
-          </Form.Item>
-
-          <Form.Item
-            name="confirmPassword"
-            rules={[
-              { required: true, message: '' },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue('password') === value) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject(new Error(''));
-                },
-              }),
-            ]}
-            style={{ marginBottom: 20 }}
-          >
-            <InputContainer>
-              <Input.Password
-                prefix={<LockOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />}
-                placeholder=""
-                autoComplete="new-password"
-                iconRender={(visible) => (visible ? 
-                  <EyeTwoTone style={{ color: 'rgba(255, 255, 255, 0.6)' }} /> : 
-                  <EyeInvisibleOutlined style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
-                )}
-                onFocus={() => handleFocus('confirmPassword')}
-                onBlur={(e) => handleBlur('confirmPassword', e.target.value)}
-                style={{ 
-                  background: 'transparent', 
-                  border: 'none', 
-                  boxShadow: 'none',
-                  padding: '12px 16px',
-                  color: 'white'
-                }}
-              />
-              <FloatingLabel isFocused={isFocused.confirmPassword} hasValue={form.getFieldValue('confirmPassword')}>
-                Confirm Password
-              </FloatingLabel>
-            </InputContainer>
-          </Form.Item>
+          <MessageFormItem name="message">
+            <StyledTextArea
+              theme={currentTheme}
+              placeholder="Additional message (optional)"
+              rows={3}
+            />
+          </MessageFormItem>
 
           <Form.Item>
             <AuthButton
               type="primary"
               htmlType="submit"
-              loading={isSignupLoading}
+              loading={mutation.isPending}
               block
               theme={currentTheme}
-              className="hover-lift"
+              icon={<SendOutlined />}
             >
-              Create Account
+              Submit Access Request
             </AuthButton>
           </Form.Item>
         </AuthForm>
 
         <AuthFooter>
-          <AuthFooterText>Already have an account? </AuthFooterText>
-          <AuthLink to="/login" theme={currentTheme} className="hover-underline">
+          <AuthFooterText theme={currentTheme}>
+            Already have company credentials?{" "}
+          </AuthFooterText>
+          <AuthLink
+            to="/login"
+            theme={currentTheme}
+            className="hover-underline"
+          >
             Sign in here
           </AuthLink>
         </AuthFooter>
-      </GlassCard>
+      </ResponsiveGlassCard>
     </AuthContainer>
   );
 };
