@@ -18,6 +18,7 @@ export const useLogin = () => {
       queryClient.setQueryData(['user'], data.user);
       queryClient.invalidateQueries({ queryKey: ['user'] });
       message.success('Login successful');
+      // Redirect will be handled by AuthGuard
     },
     onError: (error: any) => {
       message.error(error.response?.data?.detail || 'Login failed');
