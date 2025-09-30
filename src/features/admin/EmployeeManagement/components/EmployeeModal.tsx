@@ -9,36 +9,67 @@ import {
   Row,
   Col,
   InputNumber,
+  Space,
 } from 'antd';
-import { Employee, EmployeeFormData } from '../types/types';
+import { RefreshCw } from 'lucide-react';
+import { useCreateEmployee, useUpdateEmployee, useDepartments, useManagers, Employee } from '../../../../hooks/api/useEmployees';
 import dayjs from 'dayjs';
 
 interface EmployeeModalProps {
   visible: boolean;
   onCancel: () => void;
-  onSave: (values: EmployeeFormData) => void;
+  onSave: () => void;
   employee?: Employee;
   isEditing: boolean;
 }
 
 const { Option } = Select;
 
- const EmployeeModal = ({
+const EmployeeModal = ({
   visible,
   onCancel,
   onSave,
   employee,
   isEditing,
-}: any) => {
+}: EmployeeModalProps) => {
   const [form] = Form.useForm();
+  const createEmployee = useCreateEmployee();
+  const updateEmployee = useUpdateEmployee();
+  const { data: departments = [] } = useDepartments();
+  const { data: managers = [] } = useManagers();
+
+  const generatePassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let password = '';
+    for (let i = 0; i < 16; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    form.setFieldValue('temp_password', password);
+  };
 
   useEffect(() => {
     if (visible) {
       if (employee) {
+        const [firstName, ...lastNameParts] = employee.name.split(' ');
+        const lastName = lastNameParts.join(' ');
+        
         form.setFieldsValue({
-          ...employee,
-          joinDate: employee.joinDate ? dayjs(employee.joinDate) : null,
-          leaveDate: employee.leaveDate ? dayjs(employee.leaveDate) : null,
+          employee_id: employee.employee_id,
+          first_name: firstName,
+          last_name: lastName,
+          email: employee.email,
+          temp_password: employee.temp_password || '',
+          phone: employee.phone,
+          position: employee.position,
+          department_id: employee.department_id,
+          manager_id: employee.manager_id,
+          employment_status: employee.employment_status,
+          hire_date: employee.hire_date ? dayjs(employee.hire_date) : null,
+          salary: employee.salary,
+          work_location: employee.work_location,
+          work_schedule: employee.work_schedule,
+          work_type: employee.work_type,
+          role: employee.role,
         });
       } else {
         form.resetFields();
@@ -49,13 +80,43 @@ const { Option } = Select;
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      onSave({
-        ...values,
-        joinDate: values.joinDate ? values.joinDate.format('YYYY-MM-DD') : '',
-        leaveDate: values.leaveDate ? values.leaveDate.format('YYYY-MM-DD') : undefined,
-      });
-    } catch (error) {
-      console.error('Validation failed:', error);
+      
+      const requestData = {
+        user: {
+          first_name: values.first_name,
+          last_name: values.last_name,
+          email: values.email,
+          temp_password: values.temp_password,
+          phone: values.phone || '',
+          role: values.role,
+        },
+        employee: {
+          employee_id: values.employee_id,
+          position: values.position || '',
+          department_id: values.department_id || null,
+          manager_id: values.manager_id || null,
+          employment_status: values.employment_status,
+          hire_date: values.hire_date ? values.hire_date.format('YYYY-MM-DD') : null,
+          salary: values.salary || null,
+          work_location: values.work_location,
+          work_schedule: values.work_schedule,
+          work_type: values.work_type,
+        },
+      };
+      
+      if (isEditing && employee) {
+        await updateEmployee.mutateAsync({ id: employee.id, data: requestData });
+      } else {
+        await createEmployee.mutateAsync(requestData);
+      }
+      
+      onSave();
+    } catch (error: any) {
+      if (error.errorFields) {
+        // Form validation error - don't log, Ant Design will show the errors
+        return;
+      }
+      console.error('Submission failed:', error);
     }
   };
 
@@ -73,7 +134,12 @@ const { Option } = Select;
         <Button key="cancel" onClick={handleCancel}>
           Cancel
         </Button>,
-        <Button key="submit" type="primary" onClick={handleSubmit}>
+        <Button 
+          key="submit" 
+          type="primary" 
+          onClick={handleSubmit}
+          loading={createEmployee.isPending || updateEmployee.isPending}
+        >
           {isEditing ? 'Update Employee' : 'Add Employee'}
         </Button>,
       ]}
@@ -85,104 +151,133 @@ const { Option } = Select;
         name="employeeForm"
       >
         <Row gutter={16}>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
-              name="employeeId"
+              name="employee_id"
               label="Employee ID"
               rules={[{ required: true, message: 'Please enter employee ID' }]}
             >
               <Input placeholder="Enter employee ID" />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
-              name="name"
-              label="Full Name"
-              rules={[{ required: true, message: 'Please enter the full name' }]}
+              name="first_name"
+              label="First Name"
+              rules={[{ required: true, message: 'Please enter first name' }]}
             >
-              <Input placeholder="Enter full name" />
+              <Input placeholder="Enter first name" />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item
+              name="last_name"
+              label="Last Name"
+              rules={[{ required: true, message: 'Please enter last name' }]}
+            >
+              <Input placeholder="Enter last name" />
             </Form.Item>
           </Col>
         </Row>
 
         <Row gutter={16}>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
               name="email"
-              label="Email"
+              label="Company Email"
               rules={[
-                { required: true, message: 'Please enter the email' },
+                { required: true, message: 'Please enter the company email' },
                 { type: 'email', message: 'Please enter a valid email' },
               ]}
             >
-              <Input placeholder="Enter email address" />
+              <Input placeholder="Enter company email address" />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
-              name="position"
-              label="Position"
-              rules={[{ required: true, message: 'Please select a position' }]}
+              name="temp_password"
+              label={
+                <Space>
+                  Temp Password
+                  <Button 
+                    type="link" 
+                    size="small"
+                    onClick={generatePassword}
+                    style={{ padding: 0, height: 'auto', fontSize: '12px' }}
+                  >
+                    Generate
+                  </Button>
+                </Space>
+              }
+              rules={[{ required: true, message: 'Please enter temporary password' }]}
             >
-              <Select placeholder="Select position">
-                <Option value="Software Engineer">Software Engineer</Option>
-                <Option value="Product Manager">Product Manager</Option>
-                <Option value="UX Designer">UX Designer</Option>
-                <Option value="QA Engineer">QA Engineer</Option>
-                <Option value="DevOps Engineer">DevOps Engineer</Option>
-              </Select>
+              <Input placeholder="Enter temporary password" />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item
+              name="phone"
+              label="Phone"
+            >
+              <Input placeholder="Enter phone number" />
             </Form.Item>
           </Col>
         </Row>
 
         <Row gutter={16}>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
-              name="department"
+              name="position"
+              label="Position"
+            >
+              <Input placeholder="Enter position" />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item
+              name="department_id"
               label="Department"
-              rules={[{ required: true, message: 'Please select a department' }]}
             >
               <Select placeholder="Select department">
-                <Option value="Engineering">Engineering</Option>
-                <Option value="Product">Product</Option>
-                <Option value="Design">Design</Option>
-                <Option value="Marketing">Marketing</Option>
-                <Option value="Sales">Sales</Option>
-                <Option value="HR">Human Resources</Option>
+                {departments.map((dept: any) => (
+                  <Option key={dept.id} value={dept.id}>{dept.name}</Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
               name="role"
               label="Role"
               rules={[{ required: true, message: 'Please select the role!' }]}
             >
               <Select placeholder="Select a role">
-                <Option value="Team Lead">Team Lead</Option>
-                <Option value="HR">HR</Option>
-                <Option value="Admin">Admin</Option>
-                <Option value="Employee">Employee</Option>
+                <Option value="team_lead">Team Lead</Option>
+                <Option value="hr">HR</Option>
+                <Option value="admin">Admin</Option>
+                <Option value="employee">Employee</Option>
               </Select>
             </Form.Item>
           </Col>
         </Row>
 
         <Row gutter={16}>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
-              name="supervisor"
-              label="Supervisor"
-              rules={[{ required: true, message: 'Please enter supervisor name' }]}
+              name="manager_id"
+              label="Manager"
             >
-              <Input placeholder="Enter supervisor name" />
+              <Select placeholder="Select manager">
+                {managers.map((mgr: any) => (
+                  <Option key={mgr.id} value={mgr.id}>{mgr.name}</Option>
+                ))}
+              </Select>
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
               name="salary"
               label="Salary"
-              rules={[{ required: true, message: 'Please enter salary amount' }]}
             >
               <InputNumber
                 style={{ width: '100%' }}
@@ -193,71 +288,73 @@ const { Option } = Select;
               />
             </Form.Item>
           </Col>
+          <Col span={8}>
+            <Form.Item
+              name="hire_date"
+              label="Hire Date"
+            >
+              <DatePicker style={{ width: '100%' }} />
+            </Form.Item>
+          </Col>
         </Row>
 
         <Row gutter={16}>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
-              name="workLocation"
+              name="work_location"
               label="Work Location"
-              rules={[{ required: true, message: 'Please enter work location' }]}
+              rules={[{ required: true, message: 'Please select work location' }]}
             >
               <Select placeholder="Select work location">
-                <Option value="Head Office">Head Office</Option>
-                <Option value="Branch Office">Branch Office</Option>
-                <Option value="Remote">Remote</Option>
-                <Option value="Hybrid">Hybrid</Option>
+                <Option value="office">Office</Option>
+                <Option value="remote">Remote</Option>
+                <Option value="hybrid">Hybrid</Option>
+                <Option value="field">Field</Option>
               </Select>
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
-              name="employmentType"
-              label="Employment Type"
-              rules={[{ required: true, message: 'Please select employment type' }]}
+              name="employment_status"
+              label="Employment Status"
+              rules={[{ required: true, message: 'Please select employment status' }]}
             >
-              <Select placeholder="Select employment type">
-                <Option value="Full-time">Full-time</Option>
-                <Option value="Part-time">Part-time</Option>
-                <Option value="Contract">Contract</Option>
-                <Option value="Internship">Internship</Option>
+              <Select placeholder="Select employment status">
+                <Option value="full_time">Full Time</Option>
+                <Option value="part_time">Part Time</Option>
+                <Option value="contract">Contract</Option>
+                <Option value="intern">Intern</Option>
               </Select>
             </Form.Item>
           </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
-              name="joinDate"
-              label="Join Date"
-              rules={[{ required: true, message: 'Please select a join date' }]}
+              name="work_type"
+              label="Work Type"
             >
-              <DatePicker style={{ width: '100%' }} />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              name="status"
-              label="Status"
-              rules={[{ required: true, message: 'Please select a status' }]}
-            >
-              <Select placeholder="Select status">
-                <Option value="active">Active</Option>
-                <Option value="on_leave">On Leave</Option>
-                <Option value="inactive">Inactive</Option>
+              <Select placeholder="Select work type">
+                <Option value="office">Office</Option>
+                <Option value="remote">Remote</Option>
+                <Option value="hybrid">Hybrid</Option>
               </Select>
             </Form.Item>
           </Col>
         </Row>
 
         <Row gutter={16}>
-          <Col span={12}>
+          <Col span={24}>
             <Form.Item
-              name="leaveDate"
-              label="Date of Leave"
+              name="work_schedule"
+              label="Work Schedule"
             >
-              <DatePicker style={{ width: '100%' }} />
+              <Select placeholder="Select work schedule">
+                <Option value="Standard (9:00 AM - 6:00 PM)">Standard (9:00 AM - 6:00 PM)</Option>
+                <Option value="Flexible">Flexible</Option>
+                <Option value="Shift Work">Shift Work</Option>
+                <Option value="Morning Shift (6:00 AM - 2:00 PM)">Morning Shift (6:00 AM - 2:00 PM)</Option>
+                <Option value="Evening Shift (2:00 PM - 10:00 PM)">Evening Shift (2:00 PM - 10:00 PM)</Option>
+                <Option value="Night Shift (10:00 PM - 6:00 AM)">Night Shift (10:00 PM - 6:00 AM)</Option>
+              </Select>
             </Form.Item>
           </Col>
         </Row>

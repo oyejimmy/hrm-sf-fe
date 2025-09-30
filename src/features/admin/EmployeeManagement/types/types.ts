@@ -13,6 +13,7 @@ export interface Employee {
   salary: number;
   workLocation: string;
   employmentType: string;
+  temp_password?: string;
 }
 
 export interface EmployeeFormData {
