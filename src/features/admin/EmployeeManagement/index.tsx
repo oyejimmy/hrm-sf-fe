@@ -1,406 +1,403 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from "react";
 import {
-    Card,
-    Table,
-    Button,
-    Tag,
-    Row,
-    Col,
-    Statistic,
-    Input,
-    Space,
-    message,
-    Typography,
-    Flex
-} from 'antd';
+  Card,
+  Table,
+  Button,
+  Tag,
+  Row,
+  Col,
+  Input,
+  Space,
+  Typography,
+  Flex,
+  Spin,
+  Popconfirm,
+} from "antd";
 import {
-    Plus,
-    Search,
-    Users,
-    UserCheck,
-    UserX,
-    Edit,
-    Trash2,
-    Upload,
-    Badge,
-    UserCog,
-    DollarSign,
-    MapPin,
-    Briefcase
-} from 'lucide-react';
-import { Employee, EmployeeFormData } from './types/types';
-import EmployeeModal from './components/EmployeeModal';
-import { ImportCSVModal } from './components/ImportCSVModal';
-import { Wrapper } from '../../../components/Wrapper';
-import { useTheme } from '../../../contexts/ThemeContext';
-import HeaderComponent from '../../../components/PageHeader';
-import { Container, StatCard, DirectoryHeader } from './styles';
+  Plus,
+  Search,
+  Users,
+  UserCheck,
+  Edit,
+  Trash2,
+  Upload,
+  MapPin,
+  Briefcase,
+  Key,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import {
+  useEmployees,
+  useDeleteEmployee,
+  Employee,
+} from "../../../hooks/api/useEmployees";
+import EmployeeModal from "./components/EmployeeModal";
+import { ImportCSVModal } from "./components/ImportCSVModal";
+import { Wrapper } from "../../../components/Wrapper";
+import { useTheme } from "../../../contexts/ThemeContext";
+import HeaderComponent from "../../../components/PageHeader";
+import { StateCard } from "../../../components/StateCard";
 
-const { Title } = Typography;
 const { Search: SearchInput } = Input;
 
-// Mock data
-
-const initialData: Employee[] = [
-    {
-        id: '1',
-        employeeId: 'EMP001',
-        name: 'John Doe',
-        email: 'john.doe@company.com',
-        position: 'Software Engineer',
-        department: 'Engineering',
-        role: 'Employee',
-        supervisor: 'Sarah Wilson',
-        salary: 85000,
-        workLocation: 'Head Office',
-        employmentType: 'Full-time',
-        status: 'active',
-        joinDate: '2022-01-15'
-    },
-    {
-        id: '2',
-        employeeId: 'EMP002',
-        name: 'Jane Smith',
-        email: 'jane.smith@company.com',
-        position: 'Product Manager',
-        department: 'Product',
-        role: 'Team Lead',
-        supervisor: 'Michael Chen',
-        salary: 105000,
-        workLocation: 'Remote',
-        employmentType: 'Full-time',
-        status: 'active',
-        joinDate: '2021-08-23'
-    },
-    {
-        id: '3',
-        employeeId: 'EMP003',
-        name: 'Robert Johnson',
-        email: 'robert.j@company.com',
-        position: 'UX Designer',
-        department: 'Design',
-        role: 'Admin',
-        supervisor: 'Lisa Rodriguez',
-        salary: 78000,
-        workLocation: 'Branch Office',
-        employmentType: 'Contract',
-        status: 'on_leave',
-        joinDate: '2020-05-10',
-        leaveDate: '2023-10-15'
-    }
-];
-
 const EmployeeManagement = () => {
-    const { isDarkMode } = useTheme();
-    const [data, setData] = useState<Employee[]>(initialData);
-    const [isModalVisible, setIsModalVisible] = useState<any>(false);
-    const [isImportModalVisible, setIsImportModalVisible] = useState<any>(false);
-    const [editingEmployee, setEditingEmployee] = useState<Employee | undefined>();
-    const [isEditing, setIsEditing] = useState<any>(false);
-    const [searchText, setSearchText] = useState<any>('');
+  const { isDarkMode } = useTheme();
+  const { data: employees = [], isLoading, error } = useEmployees();
+  const deleteEmployee = useDeleteEmployee();
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isImportModalVisible, setIsImportModalVisible] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<
+    Employee | undefined
+  >();
+  const [isEditing, setIsEditing] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set());
 
-    const filteredData = useMemo(() => {
-        if (!searchText) return data;
+  const togglePasswordVisibility = (employeeId: number) => {
+    setVisiblePasswords(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(employeeId)) {
+        newSet.delete(employeeId);
+      } else {
+        newSet.add(employeeId);
+      }
+      return newSet;
+    });
+  };
 
-        return data.filter((item: any) =>
-            Object.values(item).some(value =>
-                value?.toString().toLowerCase().includes(searchText.toLowerCase())
-            )
-        );
-    }, [data, searchText]);
+  const filteredData = useMemo(() => {
+    if (!searchText) return employees;
 
-    const stats = useMemo(() => {
-        const totalEmployees = data.length;
-        const activeEmployees = data.filter(emp => emp.status === 'active').length;
-        const onLeaveEmployees = data.filter(emp => emp.status === 'on_leave').length;
-
-        return { totalEmployees, activeEmployees, onLeaveEmployees };
-    }, [data]);
-
-    const handleSave = (values: EmployeeFormData) => {
-        if (isEditing && editingEmployee) {
-            // Update existing employee
-            setData(prev => prev.map(item =>
-                item.id === editingEmployee.id
-                    ? { ...values, id: editingEmployee.id }
-                    : item
-            ));
-            message.success('Employee updated successfully');
-        } else {
-            // Add new employee
-            const newEmployee: Employee = {
-                ...values,
-                id: Date.now().toString()
-            };
-            setData(prev => [...prev, newEmployee]);
-            message.success('Employee added successfully');
-        }
-
-        setIsModalVisible(false);
-        setEditingEmployee(undefined);
-        setIsEditing(false);
-    };
-
-    const handleDelete = (id: string) => {
-        setData(prev => prev.filter(item => item.id !== id));
-        message.success('Employee deleted successfully');
-    };
-
-    const showEditModal = (employee: Employee) => {
-        setEditingEmployee(employee);
-        setIsEditing(true);
-        setIsModalVisible(true);
-    };
-
-    const showAddModal = () => {
-        setEditingEmployee(undefined);
-        setIsEditing(false);
-        setIsModalVisible(true);
-    };
-
-    const handleImport = (employees: Employee[]) => {
-        setData(prev => [...prev, ...employees]);
-        setIsImportModalVisible(false);
-        message.success(`Successfully imported ${employees.length} employees`);
-    };
-
-    const columns: any = [
-        {
-            title: 'Employee ID',
-            dataIndex: 'employeeId',
-            key: 'employeeId',
-            render: (employeeId: string) => (
-                <Space>
-                    <Badge size={16} color="#1890ff" /> {employeeId}
-                </Space>
-            ),
-        },
-        {
-            title: 'Name',
-            dataIndex: 'name',
-            key: 'name',
-        },
-        {
-            title: 'Email',
-            dataIndex: 'email',
-            key: 'email',
-        },
-        {
-            title: 'Position',
-            dataIndex: 'position',
-            key: 'position',
-        },
-        {
-            title: 'Department',
-            dataIndex: 'department',
-            key: 'department',
-        },
-        {
-            title: 'Role',
-            dataIndex: 'role',
-            key: 'role',
-            render: (role: string) => (
-                <Space>
-                    <UserCog size={16} color="#722ed1" /> {role}
-                </Space>
-            ),
-        },
-        {
-            title: 'Supervisor',
-            dataIndex: 'supervisor',
-            key: 'supervisor',
-            render: (supervisor: string) => (
-                <Space>
-                    <UserCheck size={16} color="#52c41a" /> {supervisor}
-                </Space>
-            ),
-        },
-        {
-            title: 'Salary',
-            dataIndex: 'salary',
-            key: 'salary',
-            render: (salary: number) => (
-                <Space>
-                    <DollarSign size={16} color="#faad14" /> ${salary.toLocaleString()}
-                </Space>
-            ),
-        },
-        {
-            title: 'Work Location',
-            dataIndex: 'workLocation',
-            key: 'workLocation',
-            render: (workLocation: string) => (
-                <Space>
-                    <MapPin size={16} color="#eb2f96" /> {workLocation}
-                </Space>
-            ),
-        },
-        {
-            title: 'Employment Type',
-            dataIndex: 'employmentType',
-            key: 'employmentType',
-            render: (employmentType: string) => (
-                <Space>
-                    <Briefcase size={16} color="#13c2c2" /> {employmentType}
-                </Space>
-            ),
-        },
-        {
-            title: 'Status',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status: string) => {
-                const statusConfig = {
-                    active: { color: 'green', text: 'Active' },
-                    on_leave: { color: 'orange', text: 'On Leave' },
-                    inactive: { color: 'red', text: 'Inactive' }
-                };
-                const config = statusConfig[status as keyof typeof statusConfig];
-                return <Tag color={config.color}>{config.text}</Tag>;
-            },
-        },
-        {
-            title: 'Join Date',
-            dataIndex: 'joinDate',
-            key: 'joinDate',
-            render: (date: string) => new Date(date).toLocaleDateString(),
-        },
-        {
-            title: 'Date of Leave',
-            dataIndex: 'leaveDate',
-            key: 'leaveDate',
-            render: (date: string) => date ? new Date(date).toLocaleDateString() : '-',
-        },
-        {
-            title: 'Actions',
-            key: 'actions',
-            render: (_: any, record: Employee) => (
-                <Space size="middle">
-                    <Button
-                        type="text"
-                        icon={<Edit size={16} />}
-                        onClick={() => showEditModal(record)}
-                    >
-                        Edit
-                    </Button>
-                    <Button
-                        type="text"
-                        danger
-                        icon={<Trash2 size={16} />}
-                        onClick={() => handleDelete(record.id)}
-                    >
-                        Delete
-                    </Button>
-                </Space>
-            ),
-        },
-    ];
-
-    return (
-        <Container>
-            <HeaderComponent
-                isDarkMode={isDarkMode}
-                title="Employee Management"
-                subtitle="Manage all Employee"
-                breadcrumbItems={[
-                    {
-                        title: 'Home',
-                        href: '/'
-                    },
-                ]}
-                extraButtons={[
-                    <Button
-                        type="default"
-                        icon={<Upload size={16} />}
-                        onClick={() => setIsImportModalVisible(true)}
-                    >
-                        Import CSV
-                    </Button>,
-                    <Button
-                        type="primary"
-                        icon={<Plus size={16} />}
-                        onClick={showAddModal}
-                    >
-                        Add Employee
-                    </Button>
-                ]}
-            />
-            {/* Statistics Cards */}
-            <Row gutter={16} style={{ marginBottom: 24 }}>
-                <Col span={8}>
-                    <StatCard>
-                        <Statistic
-                            title="Total Employees"
-                            value={stats.totalEmployees}
-                            prefix={<Users size={20} />}
-                            valueStyle={{ color: '#1890ff' }}
-                        />
-                    </StatCard>
-                </Col>
-                <Col span={8}>
-                    <StatCard>
-                        <Statistic
-                            title="Active Employees"
-                            value={stats.activeEmployees}
-                            prefix={<UserCheck size={20} />}
-                            valueStyle={{ color: '#52c41a' }}
-                        />
-                    </StatCard>
-                </Col>
-                <Col span={8}>
-                    <StatCard>
-                        <Statistic
-                            title="Employees on Leave"
-                            value={stats.onLeaveEmployees}
-                            prefix={<UserX size={20} />}
-                            valueStyle={{ color: '#fa8c16' }}
-                        />
-                    </StatCard>
-                </Col>
-            </Row>
-
-            {/* Employee Directory */}
-            <Card>
-                <DirectoryHeader>
-                    <Title level={4} style={{ margin: 0 }}>Employee Directory</Title>
-                    <Flex gap={8} wrap="wrap">
-                        <SearchInput
-                            placeholder="Search employees..."
-                            prefix={<Search size={16} />}
-                            onChange={(e) => setSearchText(e.target.value)}
-                            style={{ width: 250 }}
-                        />
-
-                    </Flex>
-                </DirectoryHeader>
-
-                <Table
-                    columns={columns}
-                    dataSource={filteredData}
-                    rowKey="id"
-                    pagination={{ pageSize: 10 }}
-                />
-            </Card>
-
-            {/* Modals */}
-            <EmployeeModal
-                visible={isModalVisible}
-                onCancel={() => {
-                    setIsModalVisible(false);
-                    setEditingEmployee(undefined);
-                }}
-                onSave={handleSave}
-                employee={editingEmployee}
-                isEditing={isEditing}
-            />
-
-            <ImportCSVModal
-                visible={isImportModalVisible}
-                onCancel={() => setIsImportModalVisible(false)}
-                onImport={handleImport}
-            />
-        </Container>
+    return employees.filter((item: Employee) =>
+      Object.values(item).some((value) =>
+        value?.toString().toLowerCase().includes(searchText.toLowerCase())
+      )
     );
+  }, [employees, searchText]);
+
+  const stats = useMemo(() => {
+    const totalEmployees = employees.length;
+    const activeEmployees = employees.filter(
+      (emp) => emp.status === "active"
+    ).length;
+    const fullTimeEmployees = employees.filter(
+      (emp) => emp.employment_status === "full_time"
+    ).length;
+    const remoteEmployees = employees.filter(
+      (emp) => emp.work_location === "remote" || emp.work_type === "remote"
+    ).length;
+
+    return {
+      totalEmployees,
+      activeEmployees,
+      fullTimeEmployees,
+      remoteEmployees,
+    };
+  }, [employees]);
+
+  const handleSave = () => {
+    setIsModalVisible(false);
+    setEditingEmployee(undefined);
+    setIsEditing(false);
+  };
+
+  const handleDelete = (id: number) => {
+    deleteEmployee.mutate(id);
+  };
+
+  const showEditModal = (employee: Employee) => {
+    setEditingEmployee(employee);
+    setIsEditing(true);
+    setIsModalVisible(true);
+  };
+
+  const showAddModal = () => {
+    setEditingEmployee(undefined);
+    setIsEditing(false);
+    setIsModalVisible(true);
+  };
+
+  const handleImport = (importedEmployees: any[]) => {
+    setIsImportModalVisible(false);
+  };
+
+  const columns: any = [
+    {
+      title: "Employee ID",
+      dataIndex: "employee_id",
+      key: "employee_id",
+      render: (employee_id: string) => <strong style={{ color: '#1890ff' }}>{employee_id}</strong>,
+    },
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Company Email",
+      dataIndex: "email",
+      key: "email",
+    },
+    {
+      title: "Position",
+      dataIndex: "position",
+      key: "position",
+    },
+    {
+      title: "Department",
+      dataIndex: "department",
+      key: "department",
+    },
+    {
+      title: "Role",
+      dataIndex: "role",
+      key: "role",
+    },
+    {
+      title: "Supervisor",
+      dataIndex: "manager",
+      key: "manager",
+      render: (manager: string) => manager || "No Manager",
+    },
+    {
+      title: "Salary",
+      dataIndex: "salary",
+      key: "salary",
+      render: (salary: number) => salary ? `$${salary.toLocaleString()}` : "Not Set",
+    },
+    {
+      title: "Work Location",
+      dataIndex: "work_location",
+      key: "work_location",
+    },
+    {
+      title: "Employment Type",
+      dataIndex: "employment_status",
+      key: "employment_status",
+      render: (employment_status: string) => employment_status.replace("_", " "),
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status: string) => {
+        const statusConfig = {
+          active: { color: "green", text: "Active" },
+          on_leave: { color: "orange", text: "On Leave" },
+          inactive: { color: "red", text: "Inactive" },
+        };
+        const config = statusConfig[status as keyof typeof statusConfig];
+        return <Tag color={config.color}>{config.text}</Tag>;
+      },
+    },
+    {
+      title: "Join Date",
+      dataIndex: "hire_date",
+      key: "hire_date",
+      render: (date: string) =>
+        date ? new Date(date).toLocaleDateString() : "-",
+    },
+    {
+      title: "Temp Password",
+      dataIndex: "temp_password",
+      key: "temp_password",
+      render: (tempPassword: string, record: Employee) => {
+        if (!tempPassword) {
+          return (
+            <Space>
+              <Key size={16} color="#fa541c" />
+              <Tag color="orange">Not Set</Tag>
+            </Space>
+          );
+        }
+        
+        const isVisible = visiblePasswords.has(record.id);
+        return (
+          <Space>
+            <Key size={16} color="#fa541c" />
+            <Tag color="orange">{isVisible ? tempPassword : "******"}</Tag>
+            <Button
+              type="text"
+              size="small"
+              icon={isVisible ? <EyeOff size={14} /> : <Eye size={14} />}
+              onClick={() => togglePasswordVisibility(record.id)}
+            />
+          </Space>
+        );
+      },
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_: any, record: Employee) => (
+        <Space size="middle">
+          <Button
+            type="text"
+            icon={<Edit size={16} />}
+            onClick={() => showEditModal(record)}
+          />
+          <Popconfirm
+            title="Delete Employee"
+            description="Are you sure you want to delete this employee?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button
+              type="text"
+              danger
+              icon={<Trash2 size={16} />}
+              loading={deleteEmployee.isPending}
+            />
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
+
+  if (isLoading) {
+    return (
+      <Wrapper isDarkMode={isDarkMode}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "400px",
+          }}
+        >
+          <Spin size="large" />
+        </div>
+      </Wrapper>
+    );
+  }
+
+  if (error) {
+    return (
+      <Wrapper isDarkMode={isDarkMode}>
+        <div style={{ textAlign: "center", padding: "50px" }}>
+          <h3>Error loading employees</h3>
+          <p>Please try refreshing the page</p>
+        </div>
+      </Wrapper>
+    );
+  }
+
+  return (
+    <Wrapper isDarkMode={isDarkMode}>
+      <HeaderComponent
+        isDarkMode={isDarkMode}
+        title="Employee Management"
+        subtitle="View, add, edit, and manage employee records, roles, and organizational structure"
+        breadcrumbItems={[
+          {
+            title: "Home",
+            href: "/",
+          },
+          {
+            title: "Employees",
+          },
+        ]}
+        extraButtons={[
+          <Button
+            type="default"
+            icon={<Upload size={16} />}
+            onClick={() => setIsImportModalVisible(true)}
+          >
+            Import CSV
+          </Button>,
+          <Button
+            type="primary"
+            icon={<Plus size={16} />}
+            onClick={showAddModal}
+          >
+            Add Employee
+          </Button>,
+        ]}
+      />
+      
+      {/* Statistics Cards */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={12} md={6}>
+          <StateCard
+            label="Total Employees"
+            value={stats.totalEmployees}
+            icon={<Users />}
+            tone="pastelBlue"
+            loading={isLoading}
+          />
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <StateCard
+            label="Active Employees"
+            value={stats.activeEmployees}
+            icon={<UserCheck />}
+            tone="pastelGreen"
+            loading={isLoading}
+          />
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <StateCard
+            label="Full-Time"
+            value={stats.fullTimeEmployees}
+            icon={<Briefcase />}
+            tone="lightPeach"
+            loading={isLoading}
+          />
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <StateCard
+            label="Remote Workers"
+            value={stats.remoteEmployees}
+            icon={<MapPin />}
+            tone="softLavender"
+            loading={isLoading}
+          />
+        </Col>
+      </Row>
+
+      {/* Table */}
+      <Card
+        title="Employee List"
+        extra={
+          <SearchInput
+            placeholder="Search employees..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ width: 300 }}
+          />
+        }
+      >
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          rowKey="id"
+          scroll={{ x: 1200 }}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} employees`,
+          }}
+        />
+      </Card>
+
+      <EmployeeModal
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onSave={handleSave}
+        employee={editingEmployee}
+        isEditing={isEditing}
+      />
+
+      <ImportCSVModal
+        visible={isImportModalVisible}
+        onCancel={() => setIsImportModalVisible(false)}
+        onImport={handleImport}
+      />
+    </Wrapper>
+  );
 };
 
 export default EmployeeManagement;
