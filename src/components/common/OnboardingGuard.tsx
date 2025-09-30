@@ -14,7 +14,7 @@ export const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) =>
     return <PageLoader />;
   }
 
-  if (user && !user.is_profile_complete) {
+  if (user && !user.is_profile_complete && user.role === 'employee') {
     return <Navigate to="/onboarding" replace />;
   }
 
