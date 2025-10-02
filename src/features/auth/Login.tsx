@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useAuthContext } from "../../contexts/AuthContext";
-import { Form, Input, notification } from "antd";
+import { Form, Input, message } from "antd";
 import { isValidEmail, validateFormData } from "../../utils/security";
 import {
   AuthButton,
@@ -39,19 +39,73 @@ const Login = () => {
   const { login, isLoginLoading } = useAuthContext();
   const [form] = Form.useForm();
   const [shake, setShake] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = async (values: any) => {
+    if (isSubmitting || isLoginLoading) return;
+    
     if (!isValidEmail(values.email)) {
-      form.setFields([
-        { name: "email", errors: ["Please enter a valid email address"] },
-      ]);
+      message.error('Please enter a valid email address');
       setShake(true);
       setTimeout(() => setShake(false), 500);
       return;
     }
 
+    setIsSubmitting(true);
     const sanitizedData = validateFormData(values);
-    login({ email: sanitizedData.email, password: sanitizedData.password });
+    
+    try {
+      await login({ email: sanitizedData.email, password: sanitizedData.password });
+    } catch (err: any) {
+      let errorMessage = 'Login failed';
+      
+      if (err.response) {
+        const status = err.response.status;
+        const detail = err.response.data?.detail;
+        
+        switch (status) {
+          case 400:
+            errorMessage = 'Invalid credentials. Please check your email and password';
+            break;
+          case 401:
+            errorMessage = 'Invalid credentials. Please check your email and password';
+            break;
+          case 403:
+            errorMessage = 'Access denied. Your account may be disabled';
+            break;
+          case 404:
+            errorMessage = 'User not found. Please check your email address';
+            break;
+          case 422:
+            errorMessage = detail || 'Invalid input data';
+            break;
+          case 429:
+            errorMessage = 'Too many login attempts. Please try again later';
+            break;
+          case 500:
+            errorMessage = 'Server error. Please try again later';
+            break;
+          case 502:
+            errorMessage = 'Service unavailable. Please try again later';
+            break;
+          case 503:
+            errorMessage = 'Service temporarily unavailable. Please try again later';
+            break;
+          default:
+            errorMessage = detail || `Login failed (Error ${status})`;
+        }
+      } else if (err.request) {
+        errorMessage = 'Network error. Please check your internet connection';
+      } else {
+        errorMessage = err.message || 'An unexpected error occurred';
+      }
+      
+      message.error(errorMessage);
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -157,7 +211,7 @@ const Login = () => {
             </FullWidthInputContainer>
           </FormItemContainer>
 
-          <ForgotPasswordLink to="/forgot-password" theme={currentTheme}>
+          <ForgotPasswordLink to="/reset-password" theme={currentTheme}>
             Forgot password?
           </ForgotPasswordLink>
 
@@ -165,7 +219,8 @@ const Login = () => {
             <AuthButton
               type="primary"
               htmlType="submit"
-              loading={isLoginLoading}
+              loading={isSubmitting || isLoginLoading}
+              disabled={isSubmitting || isLoginLoading}
               block
               theme={currentTheme}
               className="hover-lift"
