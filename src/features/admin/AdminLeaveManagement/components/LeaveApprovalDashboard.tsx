@@ -97,8 +97,8 @@ const LeaveApprovalDashboard: React.FC = () => {
   const handleApprovalAction = async (approval: LeaveApprovalRequest) => {
     setLoading(true);
     try {
-      // Process approval
-      await leaveApi.processLeaveApproval(approval);
+      // Process approval - API not implemented yet
+      // await leaveApi.processLeaveApproval(approval);
 
       // Update request status
       setLeaveRequests(prev => prev.map(req => 
@@ -120,13 +120,14 @@ const LeaveApprovalDashboard: React.FC = () => {
       // Send notification email to employee
       const request = leaveRequests.find(r => r.id === approval.requestId);
       if (request) {
-        await leaveApi.sendLeaveNotificationEmail({
-          requestId: approval.requestId,
-          recipientIds: [request.employeeId || request.employee],
-          type: approval.action === 'approve' ? 'approval' : 
-               approval.action === 'reject' ? 'rejection' : 
-               approval.action === 'hold' ? 'hold' : 'details_request'
-        });
+        // Email notification API not implemented yet
+        // await leaveApi.sendLeaveNotificationEmail({
+        //   requestId: approval.requestId,
+        //   recipientIds: [request.employeeId || request.employee],
+        //   type: approval.action === 'approve' ? 'approval' : 
+        //        approval.action === 'reject' ? 'rejection' : 
+        //        approval.action === 'hold' ? 'hold' : 'details_request'
+        // });
       }
 
       // Update stats

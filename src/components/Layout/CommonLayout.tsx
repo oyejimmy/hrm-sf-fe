@@ -556,6 +556,14 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
       },
     },
     {
+      key: "change-password",
+      icon: <BookOutlined />,
+      label: "Change Password",
+      onClick: () => {
+        navigate("/change-password");
+      },
+    },
+    {
       key: "settings",
       icon: <SettingOutlined />,
       label: "Settings",

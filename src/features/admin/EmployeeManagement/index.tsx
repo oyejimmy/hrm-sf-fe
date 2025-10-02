@@ -12,6 +12,10 @@ import {
   Flex,
   Spin,
   Popconfirm,
+  Tooltip,
+  Modal,
+  Descriptions,
+  Avatar,
 } from "antd";
 import {
   Plus,
@@ -26,6 +30,8 @@ import {
   Key,
   Eye,
   EyeOff,
+  CheckCircle,
+  FileText,
 } from "lucide-react";
 import {
   useEmployees,
@@ -34,10 +40,13 @@ import {
 } from "../../../hooks/api/useEmployees";
 import EmployeeModal from "./components/EmployeeModal";
 import { ImportCSVModal } from "./components/ImportCSVModal";
+import EmployeeViewModal from "./components/EmployeeViewModal";
 import { Wrapper } from "../../../components/Wrapper";
 import { useTheme } from "../../../contexts/ThemeContext";
 import HeaderComponent from "../../../components/PageHeader";
 import { StateCard } from "../../../components/StateCard";
+import { DATE_FORMATS } from "../../../constants";
+import dayjs from 'dayjs';
 
 const { Search: SearchInput } = Input;
 
@@ -53,9 +62,24 @@ const EmployeeManagement = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set());
+  const [visibleSalaries, setVisibleSalaries] = useState<Set<number>>(new Set());
+  const [viewingEmployee, setViewingEmployee] = useState<Employee | null>(null);
+  const [isViewModalVisible, setIsViewModalVisible] = useState(false);
 
   const togglePasswordVisibility = (employeeId: number) => {
     setVisiblePasswords(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(employeeId)) {
+        newSet.delete(employeeId);
+      } else {
+        newSet.add(employeeId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSalaryVisibility = (employeeId: number) => {
+    setVisibleSalaries(prev => {
       const newSet = new Set(prev);
       if (newSet.has(employeeId)) {
         newSet.delete(employeeId);
@@ -118,6 +142,11 @@ const EmployeeManagement = () => {
     setIsModalVisible(true);
   };
 
+  const showViewModal = (employee: Employee) => {
+    setViewingEmployee(employee);
+    setIsViewModalVisible(true);
+  };
+
   const handleImport = (importedEmployees: any[]) => {
     setIsImportModalVisible(false);
   };
@@ -140,14 +169,14 @@ const EmployeeManagement = () => {
       key: "email",
     },
     {
-      title: "Position",
-      dataIndex: "position",
-      key: "position",
-    },
-    {
       title: "Department",
       dataIndex: "department",
       key: "department",
+    },
+    {
+      title: "Position",
+      dataIndex: "position",
+      key: "position",
     },
     {
       title: "Role",
@@ -164,7 +193,24 @@ const EmployeeManagement = () => {
       title: "Salary",
       dataIndex: "salary",
       key: "salary",
-      render: (salary: number) => salary ? `$${salary.toLocaleString()}` : "Not Set",
+      render: (salary: number, record: Employee) => {
+        const isVisible = visibleSalaries.has(record.id);
+        return (
+          <Space>
+            {salary ? (
+              isVisible ? `PKR ${salary.toLocaleString()}` : "******"
+            ) : "Not Set"}
+            {salary && (
+              <Button
+                type="text"
+                size="small"
+                icon={isVisible ? <EyeOff size={14} /> : <Eye size={14} />}
+                onClick={() => toggleSalaryVisibility(record.id)}
+              />
+            )}
+          </Space>
+        );
+      },
     },
     {
       title: "Work Location",
@@ -173,10 +219,12 @@ const EmployeeManagement = () => {
     },
     {
       title: "Employment Type",
-      dataIndex: "employment_status",
-      key: "employment_status",
-      render: (employment_status: string) => employment_status.replace("_", " "),
+      dataIndex: "employment_type",
+      key: "employment_type",
+      render: (employment_type: string) => employment_type?.replace("_", " ") || "-",
     },
+
+
     {
       title: "Status",
       dataIndex: "status",
@@ -196,7 +244,7 @@ const EmployeeManagement = () => {
       dataIndex: "hire_date",
       key: "hire_date",
       render: (date: string) =>
-        date ? new Date(date).toLocaleDateString() : "-",
+        date ? dayjs(date).format(DATE_FORMATS.DISPLAY) : "-",
     },
     {
       title: "Temp Password",
@@ -205,10 +253,11 @@ const EmployeeManagement = () => {
       render: (tempPassword: string, record: Employee) => {
         if (!tempPassword) {
           return (
-            <Space>
-              <Key size={16} color="#fa541c" />
-              <Tag color="orange">Not Set</Tag>
-            </Space>
+            <div style={{ textAlign: 'center' }}>
+              <Tooltip title="User has successfully changed their password from the temporary password">
+                <CheckCircle size={16} color="#52c41a" />
+              </Tooltip>
+            </div>
           );
         }
         
@@ -231,12 +280,21 @@ const EmployeeManagement = () => {
       title: "Actions",
       key: "actions",
       render: (_: any, record: Employee) => (
-        <Space size="middle">
-          <Button
-            type="text"
-            icon={<Edit size={16} />}
-            onClick={() => showEditModal(record)}
-          />
+        <Space size={0}>
+          <Tooltip title="View Details">
+            <Button
+              type="text"
+              icon={<Eye size={16} />}
+              onClick={() => showViewModal(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Edit">
+            <Button
+              type="text"
+              icon={<Edit size={16} />}
+              onClick={() => showEditModal(record)}
+            />
+          </Tooltip>
           <Popconfirm
             title="Delete Employee"
             description="Are you sure you want to delete this employee?"
@@ -244,12 +302,14 @@ const EmployeeManagement = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button
-              type="text"
-              danger
-              icon={<Trash2 size={16} />}
-              loading={deleteEmployee.isPending}
-            />
+            <Tooltip title="Delete">
+              <Button
+                type="text"
+                danger
+                icon={<Trash2 size={16} />}
+                loading={deleteEmployee.isPending}
+              />
+            </Tooltip>
           </Popconfirm>
         </Space>
       ),
@@ -378,9 +438,16 @@ const EmployeeManagement = () => {
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} employees`,
           }}
         />
+        <div style={{ marginTop: 8, fontSize: '14px', fontWeight: 500, color: isDarkMode ? '#fff' : '#333' }}>
+          {(() => {
+            const total = filteredData.length;
+            if (total === 0) return "No employees found";
+            if (total === 1) return "Displaying 1 employee record";
+            return `Displaying ${total} employee records`;
+          })()}
+        </div>
       </Card>
 
       <EmployeeModal
@@ -395,6 +462,15 @@ const EmployeeManagement = () => {
         visible={isImportModalVisible}
         onCancel={() => setIsImportModalVisible(false)}
         onImport={handleImport}
+      />
+
+      <EmployeeViewModal
+        employee={viewingEmployee}
+        visible={isViewModalVisible}
+        onClose={() => {
+          setIsViewModalVisible(false);
+          setViewingEmployee(null);
+        }}
       />
     </Wrapper>
   );

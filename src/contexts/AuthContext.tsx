@@ -34,7 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     error,
     isAuthenticated: !!user,
     isProfileComplete: user?.is_profile_complete || false,
-    login: loginMutation.mutate,
+    login: loginMutation.mutateAsync,
     logout: logoutMutation.mutate,
     signup: signupMutation.mutate,
     completeProfile: completeProfileMutation.mutate,
