@@ -52,30 +52,51 @@ export const attendanceApi = {
   },
 
   markNotificationAsRead: async (notificationId: string) => {
-    const response = await api.put(`/api/attendance/notifications/${notificationId}/read`);
+    const response = await api.put(`/api/notifications/${notificationId}/read`);
     return response.data;
   },
 
-  // Admin functions (mock implementations)
+  // Get user notifications
+  getUserNotifications: async (unreadOnly: boolean = false) => {
+    const response = await api.get(`/api/notifications/?unread_only=${unreadOnly}`);
+    return response.data;
+  },
+
+  getUnreadNotificationCount: async () => {
+    const response = await api.get('/api/notifications/unread-count');
+    return response.data;
+  },
+
+  markAllNotificationsAsRead: async () => {
+    const response = await api.put('/api/notifications/mark-all-read');
+    return response.data;
+  },
+
+  // Admin functions
   getAttendanceStats: async () => {
-    return {
-      todayPresent: 0,
-      todayAbsent: 0,
-      todayLate: 0,
-      onBreak: 0,
-      totalEmployees: 0
-    };
+    const response = await api.get('/api/attendance/admin/stats');
+    return response.data;
   },
 
   getAllAttendanceToday: async () => {
-    return [];
+    const response = await api.get('/api/attendance/admin/all-today');
+    return response.data;
+  },
+
+  getAdminAttendanceNotifications: async () => {
+    const response = await api.get('/api/attendance/admin/notifications');
+    return response.data;
   },
 
   exportAttendanceReport: async (filters: any) => {
-    return new Blob(['Mock report data'], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const response = await api.post('/api/attendance/admin/export-report', filters, {
+      responseType: 'blob'
+    });
+    return response.data;
   },
 
   processAutoAbsence: async () => {
-    return { message: 'Auto-absence processing completed' };
+    const response = await api.post('/api/attendance/admin/process-auto-absence');
+    return response.data;
   }
 };

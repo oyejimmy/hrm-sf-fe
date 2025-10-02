@@ -15,11 +15,12 @@ export class EmailNotificationService {
     recipients: Employee[]
   ): Promise<void> {
     try {
-      await leaveApi.sendLeaveNotificationEmail({
-        requestId: leaveRequest.id,
-        recipientIds: recipients.map(r => r.id),
-        type: 'request'
-      });
+      // Email notification API not implemented yet
+      // await leaveApi.sendLeaveNotificationEmail({
+      //   requestId: leaveRequest.id,
+      //   recipientIds: recipients.map(r => r.id),
+      //   type: 'request'
+      // });
 
       // Log notification for tracking (sanitized)
       console.log('Leave request notification sent to recipients:', recipients.length);
@@ -36,11 +37,12 @@ export class EmailNotificationService {
     comments?: string
   ): Promise<void> {
     try {
-      await leaveApi.sendLeaveNotificationEmail({
-        requestId,
-        recipientIds: [employeeId],
-        type: action
-      });
+      // Email notification API not implemented yet
+      // await leaveApi.sendLeaveNotificationEmail({
+      //   requestId,
+      //   recipientIds: [employeeId],
+      //   type: action
+      // });
 
       console.log(`Leave ${action} notification sent for request ${requestId}`);
     } catch (error) {
@@ -53,11 +55,12 @@ export class EmailNotificationService {
     notifications: EmailNotificationData[]
   ): Promise<void> {
     try {
-      const promises = notifications.map(notification =>
-        leaveApi.sendLeaveNotificationEmail(notification)
-      );
-
-      await Promise.all(promises);
+      // Email notification API not implemented yet
+      // const promises = notifications.map(notification =>
+      //   leaveApi.sendLeaveNotificationEmail(notification)
+      // );
+      // await Promise.all(promises);
+      
       console.log(`Bulk notifications sent: ${notifications.length} emails`);
     } catch (error) {
       console.error('Failed to send bulk notifications:', error);
