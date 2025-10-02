@@ -22,6 +22,8 @@ import { TeamLeadLayout } from './components/Layout/TeamLeadLayout';
 // Auth Components
 import Login from './features/auth/Login';
 import Signup from './features/auth/Signup';
+import ResetPassword from './features/auth/ResetPassword';
+import ChangePassword from './features/auth/ChangePassword';
 
 // Admin Components
 import AdminDashboard from './features/admin/AdminDashboard';
@@ -80,6 +82,8 @@ const AppContent: React.FC = () => {
           {/* Public Routes */}
           <Route path="/login" element={<AuthGuard><Login /></AuthGuard>} />
           <Route path="/signup" element={<AuthGuard><Signup /></AuthGuard>} />
+          <Route path="/reset-password" element={<AuthGuard><ResetPassword /></AuthGuard>} />
+          <Route path="/change-password" element={<AuthGuard requireAuth><ChangePassword /></AuthGuard>} />
           <Route path="/onboarding" element={<AuthGuard requireAuth><StepOnboarding /></AuthGuard>} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
