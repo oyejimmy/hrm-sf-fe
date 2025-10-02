@@ -15,7 +15,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   requireAuth = false,
   allowedRoles = []
 }) => {
-  const { isAuthenticated, user, isLoading, isProfileComplete } = useAuthContext();
+  const { isAuthenticated, user, isLoading } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -26,26 +26,21 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
     
     // Redirect authenticated users away from auth pages
     if (isAuthenticated && user && isAuthPage) {
-      if (!isProfileComplete) {
-        navigate('/onboarding', { replace: true });
-        return;
-      }
       const targetRoute = user.redirect_url || getDashboardRoute(user.role);
       navigate(targetRoute, { replace: true });
       return;
     }
 
-    // Redirect to onboarding if profile incomplete
-    if (requireAuth && isAuthenticated && user && !isProfileComplete && location.pathname !== '/onboarding') {
-      navigate('/onboarding', { replace: true });
-      return;
-    }
-
-    // Redirect away from onboarding if profile complete
-    if (isAuthenticated && user && isProfileComplete && location.pathname === '/onboarding') {
-      const targetRoute = getDashboardRoute(user.role);
-      navigate(targetRoute, { replace: true });
-      return;
+    // Handle routing based on backend redirect_url
+    if (requireAuth && isAuthenticated && user && user.redirect_url) {
+      if (user.redirect_url === '/onboarding' && location.pathname !== '/onboarding') {
+        navigate('/onboarding', { replace: true });
+        return;
+      }
+      if (user.redirect_url !== '/onboarding' && location.pathname === '/onboarding') {
+        navigate(user.redirect_url, { replace: true });
+        return;
+      }
     }
 
     // Redirect unauthenticated users to login

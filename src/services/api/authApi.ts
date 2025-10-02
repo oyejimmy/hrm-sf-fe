@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 import { environment } from '../../config/environment';
 import { tokenStorage } from '../../utils/security';
 
@@ -16,7 +17,7 @@ const apiClient = axios.create({
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = tokenStorage.getToken('access_token');
+    const token = Cookies.get('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -36,7 +37,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       
-      const refreshToken = tokenStorage.getToken('refresh_token');
+      const refreshToken = Cookies.get('refresh_token');
       if (refreshToken) {
         try {
           const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
@@ -44,14 +45,15 @@ apiClient.interceptors.response.use(
           });
           
           const { access_token, refresh_token: newRefreshToken } = response.data;
-          tokenStorage.setToken('access_token', access_token);
-          tokenStorage.setToken('refresh_token', newRefreshToken);
+          Cookies.set('access_token', access_token, { expires: 7 });
+          Cookies.set('refresh_token', newRefreshToken, { expires: 7 });
           
           originalRequest.headers.Authorization = `Bearer ${access_token}`;
           return apiClient(originalRequest);
         } catch (refreshError) {
-          tokenStorage.removeToken('access_token');
-          tokenStorage.removeToken('refresh_token');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          Cookies.remove('user_email');
           window.location.href = '/login';
           return Promise.reject(refreshError);
         }
@@ -110,6 +112,30 @@ export const authApi = {
 
   logout: async () => {
     const response = await apiClient.post('/auth/logout');
+    return response.data;
+  },
+
+  checkTempPassword: async (email: string) => {
+    const response = await apiClient.get(`/auth/check-temp-password/${email}`);
+    return response.data;
+  },
+
+  resetPassword: async (data: {
+    email: string;
+    temp_password: string;
+    new_password: string;
+    confirm_password: string;
+  }) => {
+    const response = await apiClient.post('/auth/reset-password', data);
+    return response.data;
+  },
+
+  changePassword: async (data: {
+    current_password: string;
+    new_password: string;
+    confirm_password: string;
+  }) => {
+    const response = await apiClient.post('/auth/change-password', data);
     return response.data;
   },
 };
