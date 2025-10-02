@@ -51,6 +51,7 @@ export interface User {
   updated_at?: string;
   last_login?: string;
   redirect_url?: string;
+  temp_password?: string;
 }
 
 // Employee Types

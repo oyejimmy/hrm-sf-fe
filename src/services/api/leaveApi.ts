@@ -1,102 +1,79 @@
-import axios from 'axios';
-import { API_BASE_URL } from '../../constants/api';
+import { api } from './api';
 import { LeaveRequest, LeaveApprovalRequest, Employee } from '../../features/employee/EmployeeLeaveManagement/types';
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-});
 
 export const leaveApi = {
   // Leave Requests
   createLeaveRequest: async (data: Partial<LeaveRequest>) => {
-    const response = await api.post('/leave/request', data);
+    const response = await api.post('/api/leaves/', data);
     return response.data;
   },
 
   getMyLeaveRequests: async () => {
-    const response = await api.get('/leave/my-requests');
-    return response.data;
-  },
-
-  getPendingLeaveRequests: async () => {
-    const response = await api.get('/leave/pending');
+    const response = await api.get('/api/leaves/my-leaves');
     return response.data;
   },
 
   getAllLeaveRequests: async (filters?: any) => {
-    const response = await api.get('/leave/all', { params: filters });
+    const response = await api.get('/api/leaves/', { params: filters });
+    return response.data;
+  },
+
+  getLeaveRequest: async (leaveId: string) => {
+    const response = await api.get(`/api/leaves/${leaveId}`);
     return response.data;
   },
 
   // Approval Workflow
-  processLeaveApproval: async (approval: LeaveApprovalRequest) => {
-    const response = await api.put(`/leave/process/${approval.requestId}`, approval);
-    return response.data;
-  },
-
-  approveLeaveRequest: async (requestId: string, data: any) => {
-    const response = await api.put(`/leave/approve/${requestId}`, data);
+  approveLeaveRequest: async (requestId: string, data?: any) => {
+    const response = await api.put(`/api/leaves/${requestId}/approve`, data || {});
     return response.data;
   },
 
   rejectLeaveRequest: async (requestId: string, data: any) => {
-    const response = await api.put(`/leave/reject/${requestId}`, data);
+    const response = await api.put(`/api/leaves/${requestId}/reject`, data);
     return response.data;
   },
 
-  holdLeaveRequest: async (requestId: string, data: any) => {
-    const response = await api.put(`/leave/hold/${requestId}`, data);
+  cancelLeaveRequest: async (requestId: string) => {
+    const response = await api.delete(`/api/leaves/${requestId}`);
     return response.data;
   },
 
-  requestAdditionalDetails: async (requestId: string, data: any) => {
-    const response = await api.put(`/leave/request-details/${requestId}`, data);
+  // Admin functions
+  getAdminLeaveStats: async () => {
+    const response = await api.get('/api/leaves/admin/stats');
     return response.data;
   },
 
-  // Leave Balance
-  getLeaveBalance: async (userId: string, year?: number) => {
-    const params = year ? { year } : {};
-    const response = await api.get(`/leave/balance/${userId}`, { params });
+  getPendingLeaveRequests: async () => {
+    const response = await api.get('/api/leaves/admin/pending');
+    return response.data;
+  },
+
+  getAdminLeaveNotifications: async () => {
+    const response = await api.get('/api/leaves/admin/notifications');
     return response.data;
   },
 
   // Notifications
-  getLeaveNotifications: async () => {
-    const response = await api.get('/leave/notifications');
-    return response.data;
-  },
-
   markNotificationAsRead: async (notificationId: string) => {
-    const response = await api.put(`/leave/notifications/${notificationId}/read`);
+    const response = await api.put(`/api/notifications/${notificationId}/read`);
     return response.data;
   },
 
   markAllNotificationsAsRead: async () => {
-    const response = await api.put('/leave/notifications/read-all');
+    const response = await api.put('/api/notifications/mark-all-read');
     return response.data;
   },
 
-  // Dashboard Stats
-  getDashboardStats: async () => {
-    const response = await api.get('/leave/dashboard-stats');
+  // Get user notifications
+  getUserNotifications: async (unreadOnly: boolean = false) => {
+    const response = await api.get(`/api/notifications/?unread_only=${unreadOnly}`);
     return response.data;
   },
 
-  // Employee Directory (for recipient selection)
-  getEmployeeDirectory: async () => {
-    const response = await api.get('/employees/directory');
+  getUnreadNotificationCount: async () => {
+    const response = await api.get('/api/notifications/unread-count');
     return response.data;
-  },
-
-  // Email Notifications
-  sendLeaveNotificationEmail: async (data: {
-    requestId: string;
-    recipientIds: string[];
-    type: 'request' | 'approval' | 'rejection' | 'hold' | 'details_request';
-  }) => {
-    const response = await api.post('/leave/send-notification', data);
-    return response.data;
-  },
+  }
 };
