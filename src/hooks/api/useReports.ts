@@ -26,7 +26,6 @@ export const useAdminDashboard = () => {
       }
     },
     retry: false,
-    refetchInterval: 300000,
   });
 };
 
@@ -37,7 +36,6 @@ export const useEmployeeDashboard = () => {
       const response = await api.get(API_ENDPOINTS.REPORTS.EMPLOYEE_DASHBOARD);
       return response.data;
     },
-    refetchInterval: 300000, // Refetch every 5 minutes
   });
 };
 

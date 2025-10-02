@@ -6,16 +6,20 @@ export interface Employee {
   id: number;
   user_id: number;
   employee_id: string;
+  title?: string;
   name: string;
   email: string;
   temp_password?: string;
   phone?: string;
   position?: string;
+  position_id?: number;
   department: string;
   department_id?: number;
   manager?: string;
   manager_id?: number;
   salary?: number;
+  salary_in_words?: string;
+  employment_type?: string;
   employment_status: string;
   work_location: string;
   work_schedule?: string;
@@ -23,26 +27,32 @@ export interface Employee {
   hire_date?: string;
   role: string;
   status: string;
+  active: boolean;
   created_at: string;
 }
 
 export interface EmployeeCreateRequest {
   user: {
+    title?: string;
     first_name: string;
     last_name: string;
     email: string;
     temp_password?: string;
     phone?: string;
     role: string;
+    active?: boolean;
   };
   employee: {
     employee_id: string;
     position?: string;
+    position_id?: number;
     department_id?: number;
     manager_id?: number;
+    employment_type?: string;
     employment_status: string;
     hire_date?: string;
     salary?: number;
+    salary_in_words?: string;
     work_location: string;
     work_schedule?: string;
     work_type?: string;
@@ -123,6 +133,17 @@ export const useDepartments = () => {
   });
 };
 
+export const usePositions = (departmentId?: number) => {
+  return useQuery({
+    queryKey: ['positions', departmentId],
+    queryFn: async () => {
+      const url = departmentId ? `/api/positions/?department_id=${departmentId}` : '/api/positions/';
+      const response = await api.get(url);
+      return response.data;
+    },
+  });
+};
+
 export const useManagers = () => {
   return useQuery({
     queryKey: ['managers'],
@@ -130,5 +151,79 @@ export const useManagers = () => {
       const response = await api.get('/api/employees/managers');
       return response.data;
     },
+  });
+};
+
+export const useGenerateEmployeeId = () => {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.get('/api/employees/generate-employee-id');
+      return response.data;
+    },
+    onError: (error: any) => {
+      message.error(error.response?.data?.detail || 'Failed to generate employee ID');
+    },
+  });
+};
+
+export interface DetailedEmployee {
+  id: number;
+  user_id: number;
+  employee_id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  position?: string;
+  position_id?: number;
+  department: string;
+  manager?: string;
+  salary?: number;
+  salary_in_words?: string;
+  currency_symbol?: string;
+  employment_type?: string;
+  employment_status: string;
+  work_location: string;
+  work_schedule?: string;
+  work_type?: string;
+  hire_date?: string;
+  role: string;
+  status: string;
+  active: boolean;
+  avatar_url?: string;
+  personal_email?: string;
+  gender?: string;
+  date_of_birth?: string;
+  marital_status?: string;
+  blood_group?: string;
+  nationality?: string;
+  religion?: string;
+  address?: string;
+  qualification?: string;
+  university?: string;
+  graduation_year?: number;
+  bonus_target?: string;
+  stock_options?: string;
+  last_salary_increase?: string;
+  emergency_contact_name?: string;
+  emergency_contact_relationship?: string;
+  emergency_contact_phone?: string;
+  emergency_contact_work_phone?: string;
+  emergency_contact_home_phone?: string;
+  emergency_contact_address?: string;
+  skills_summary?: string;
+  certifications?: string;
+  languages_known?: string;
+  hobbies?: string;
+  team_size?: number;
+}
+
+export const useEmployeeDetails = (id: number) => {
+  return useQuery({
+    queryKey: ['employee-details', id],
+    queryFn: async (): Promise<DetailedEmployee> => {
+      const response = await api.get(`/api/employees/${id}`);
+      return response.data;
+    },
+    enabled: !!id,
   });
 };

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { message } from 'antd';
+import Cookies from 'js-cookie';
 import api from '../../services/api/api';
 import { API_ENDPOINTS } from '../../services/api/endpoints';
 import { LoginRequest, LoginResponse, User } from '../../services/api/types';
@@ -7,21 +8,43 @@ import { LoginRequest, LoginResponse, User } from '../../services/api/types';
 export const useLogin = () => {
   const queryClient = useQueryClient();
   
-  return useMutation({
+  return useMutation<LoginResponse, Error, LoginRequest>({
     mutationFn: async (credentials: LoginRequest): Promise<LoginResponse> => {
       const response = await api.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
       return response.data;
     },
     onSuccess: (data) => {
+      // Store tokens in both cookies and localStorage
+      Cookies.set('access_token', data.access_token, { expires: 7 });
+      Cookies.set('refresh_token', data.refresh_token, { expires: 7 });
       localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('refresh_token', data.refresh_token);
+      
+      Cookies.set('user_email', data.user.email, { expires: 7 });
+      Cookies.set('has_temp_password', data.user.temp_password ? 'true' : 'false', { expires: 7 });
+      Cookies.set('is_profile_complete', data.user.is_profile_complete ? 'true' : 'false', { expires: 7 });
+      
       queryClient.setQueryData(['user'], data.user);
       queryClient.invalidateQueries({ queryKey: ['user'] });
       message.success('Login successful');
-      // Redirect will be handled by AuthGuard
+      
+      // Handle redirect based on backend response
+      if (data.user.redirect_url) {
+        window.location.href = data.user.redirect_url;
+      } else {
+        // Fallback to dashboard
+        const roleRedirects = {
+          admin: '/admin/dashboard',
+          hr: '/admin/dashboard',
+          team_lead: '/team-lead/dashboard',
+          employee: '/employee/dashboard'
+        };
+        window.location.href = roleRedirects[data.user.role as keyof typeof roleRedirects] || '/employee/dashboard';
+      }
     },
     onError: (error: any) => {
-      message.error(error.response?.data?.detail || 'Login failed');
+      // Don't show message here, let the component handle it
+      console.error('Login error:', error);
     },
   });
 };
@@ -34,8 +57,18 @@ export const useLogout = () => {
       await api.post(API_ENDPOINTS.AUTH.LOGOUT);
     },
     onSuccess: () => {
+      // Remove all cookies
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      Cookies.remove('user_email');
+      Cookies.remove('has_temp_password');
+      Cookies.remove('is_profile_complete');
+      
+      // Clear all localStorage
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
+      localStorage.clear();
+      
       queryClient.clear();
       message.success('Logged out successfully');
     },
@@ -49,7 +82,7 @@ export const useCurrentUser = () => {
       const response = await api.get(API_ENDPOINTS.AUTH.ME);
       return response.data;
     },
-    enabled: !!localStorage.getItem('access_token'),
+    enabled: !!Cookies.get('access_token'),
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -62,7 +95,7 @@ export const useProfileStatus = () => {
       const response = await api.get('/auth/profile/me');
       return response.data;
     },
-    enabled: !!localStorage.getItem('access_token'),
+    enabled: !!Cookies.get('access_token'),
   });
 };
 
@@ -136,9 +169,15 @@ export const useOnboarding = () => {
       return response.data;
     },
     onSuccess: () => {
+      // Update profile complete status in cookies
+      Cookies.set('is_profile_complete', 'true', { expires: 7 });
+      
       queryClient.invalidateQueries({ queryKey: ['user'] });
       queryClient.invalidateQueries({ queryKey: ['profile-status'] });
       message.success('Onboarding completed successfully');
+      
+      // Redirect to employee dashboard
+      window.location.href = '/employee/dashboard';
     },
     onError: (error: any) => {
       console.error('Onboarding error:', error);
