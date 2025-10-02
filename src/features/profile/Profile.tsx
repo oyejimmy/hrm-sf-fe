@@ -5,7 +5,7 @@ import {
   Typography,
   Tabs,
   Button,
-  Progress,
+  Tag,
   Spin,
   Alert,
 } from "antd";
@@ -27,6 +27,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../services/api/api";
+import { DATE_FORMATS } from "../../constants";
+import dayjs from 'dayjs';
 import * as S from "./styles";
 
 const { Text } = Typography;
@@ -59,35 +61,35 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
     apiProfileData || {
       personalInfo: {
         name: "Loading...",
-        position: "N/A",
-        department: "N/A",
-        location: "N/A",
-        email: "N/A",
-        phone: "N/A",
-        hireDate: "N/A",
-        employmentType: "N/A",
-        employeeId: "N/A",
-        manager: "N/A",
-        qualification: "N/A",
-        bloodGroup: "N/A",
+        position: "-",
+        department: "-",
+        location: "-",
+        email: "-",
+        phone: "-",
+        hireDate: "-",
+        employmentType: "-",
+        employeeId: "-",
+        manager: "-",
+        qualification: "-",
+        bloodGroup: "-",
       },
       emergencyContacts: [],
       jobInfo: {
-        title: "N/A",
-        department: "N/A",
-        reportsTo: "N/A",
+        title: "-",
+        department: "-",
+        reportsTo: "-",
         teamSize: 0,
-        startDate: "N/A",
-        employmentType: "N/A",
-        workSchedule: "N/A",
-        location: "N/A",
+        startDate: "-",
+        employmentType: "-",
+        workSchedule: "-",
+        location: "-",
       },
       compensation: {
-        salary: "N/A",
-        bonus: "N/A",
-        stockOptions: "N/A",
-        lastIncrease: "N/A",
-        nextReview: "N/A",
+        salary: "-",
+        bonus: "-",
+        stockOptions: "-",
+        lastIncrease: "-",
+        nextReview: "-",
       },
       skills: [],
       documents: [],
@@ -143,16 +145,16 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
 
               <S.UserInfo>
                 <S.UserName level={2} isDarkMode={isDarkMode}>
-                  {employeeData.personalInfo?.name || 'N/A'}
+                  {employeeData.personalInfo?.name || '-'}
                 </S.UserName>
                 <S.UserDetailsVertical>
                   <S.UserDetailItem>
                     <Briefcase size={18} color="#1890ff" />
-                    <Text>{employeeData.personalInfo?.position || 'N/A'}</Text>
+                    <Text>{employeeData.personalInfo?.position || '-'}</Text>
                   </S.UserDetailItem>
                   <S.UserDetailItem>
                     <MapPin size={18} color="#ff4d4f" />
-                    <Text>{employeeData.personalInfo?.location || 'N/A'}</Text>
+                    <Text>{employeeData.personalInfo?.location || '-'}</Text>
                   </S.UserDetailItem>
                 </S.UserDetailsVertical>
               </S.UserInfo>
@@ -181,7 +183,7 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                       href={`mailto:${employeeData.personalInfo?.email || ''}`}
                       className="value"
                     >
-                      {employeeData.personalInfo?.email || 'N/A'}
+                      {employeeData.personalInfo?.email || '-'}
                     </a>
                   </S.SideInfoItem>
 
@@ -197,7 +199,7 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                       href={`tel:${employeeData.personalInfo?.phone || ''}`}
                       className="value"
                     >
-                      {employeeData.personalInfo?.phone || 'N/A'}
+                      {employeeData.personalInfo?.phone || '-'}
                     </a>
                   </S.SideInfoItem>
 
@@ -210,7 +212,7 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                       Hired on
                     </div>
                     <div className="value">
-                      {employeeData.personalInfo?.hireDate || 'N/A'}
+                      {employeeData.personalInfo?.hireDate || '-'}
                     </div>
                   </S.SideInfoItem>
 
@@ -223,7 +225,7 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                       Employment type
                     </div>
                     <div className="value">
-                      {employeeData.personalInfo?.employmentType || 'N/A'}
+                      {employeeData.personalInfo?.employmentType || '-'}
                     </div>
                   </S.SideInfoItem>
 
@@ -236,7 +238,7 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                       Employee ID
                     </div>
                     <div className="value">
-                      {employeeData.personalInfo?.employeeId || 'N/A'}
+                      {employeeData.personalInfo?.employeeId || '-'}
                     </div>
                   </S.SideInfoItem>
 
@@ -249,7 +251,7 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                       Manager
                     </div>
                     <div className="value">
-                      {employeeData.personalInfo?.manager || 'N/A'}
+                      {employeeData.personalInfo?.manager || '-'}
                     </div>
                   </S.SideInfoItem>
                 </S.StyledCard>
@@ -282,32 +284,32 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Gender</div>
                             <div className="value">
-                              {employeeData.personalInfo?.gender || "N/A"}
+                              {employeeData.personalInfo?.gender || "-"}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Date of Birth</div>
                             <div className="value">
-                              {employeeData.personalInfo?.dateOfBirth || "N/A"}
+                              {employeeData.personalInfo?.dateOfBirth || "-"}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Marital Status</div>
                             <div className="value">
                               {employeeData.personalInfo?.maritalStatus ||
-                                "N/A"}
+                                "-"}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Blood Group</div>
                             <div className="value">
-                              {employeeData.personalInfo?.bloodGroup || "N/A"}
+                              {employeeData.personalInfo?.bloodGroup || "-"}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Nationality</div>
                             <div className="value">
-                              {employeeData.personalInfo?.nationality || "N/A"}
+                              {employeeData.personalInfo?.nationality || "-"}
                             </div>
                           </S.SideInfoItem>
                         </Col>
@@ -315,33 +317,33 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Religion</div>
                             <div className="value">
-                              {employeeData.personalInfo?.religion || "N/A"}
+                              {employeeData.personalInfo?.religion || "-"}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Languages Known</div>
                             <div className="value">
                               {employeeData.personalInfo?.languagesKnown ||
-                                "N/A"}
+                                "-"}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Hobbies</div>
                             <div className="value">
-                              {employeeData.personalInfo?.hobbies || "N/A"}
+                              {employeeData.personalInfo?.hobbies || "-"}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Address</div>
                             <div className="value">
-                              {employeeData.personalInfo?.address || "N/A"}
+                              {employeeData.personalInfo?.address || "-"}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Personal Email</div>
                             <div className="value">
                               {employeeData.personalInfo?.personalEmail ||
-                                "N/A"}
+                                "-"}
                             </div>
                           </S.SideInfoItem>
                         </Col>
@@ -397,7 +399,7 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                                   ?.emergency_contact_relationship ||
                                   employeeData.personalInfo
                                     ?.emergencyContactRelationship ||
-                                  "N/A"}
+                                  "-"}
                               </div>
                             </S.SideInfoItem>
                             <S.SideInfoItem isDarkMode={isDarkMode}>
@@ -453,7 +455,7 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                                         ?.emergencyContactWorkPhone}
                                   </a>
                                 ) : (
-                                  "N/A"
+                                  "-"
                                 )}
                               </div>
                             </S.SideInfoItem>
@@ -484,7 +486,7 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                                         ?.emergencyContactHomePhone}
                                   </a>
                                 ) : (
-                                  "N/A"
+                                  "-"
                                 )}
                               </div>
                             </S.SideInfoItem>
@@ -501,7 +503,7 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                                   ?.emergency_contact_address ||
                                   employeeData.personalInfo
                                     ?.emergencyContactAddress ||
-                                  "N/A"}
+                                  "-"}
                               </div>
                             </S.SideInfoItem>
                           </Col>
@@ -542,13 +544,13 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Employment Status</div>
                             <div className="value">
-                              {employeeData.jobInfo?.employmentStatus || 'N/A'}
+                              {employeeData.jobInfo?.employmentStatus || '-'}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Work Location</div>
                             <div className="value">
-                              {employeeData.jobInfo?.workLocation || 'N/A'}
+                              {employeeData.jobInfo?.workLocation || '-'}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
@@ -562,21 +564,21 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Work Schedule</div>
                             <div className="value">
-                              {employeeData.jobInfo?.workSchedule || 'N/A'}
+                              {employeeData.jobInfo?.workSchedule || '-'}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Qualification</div>
                             <div className="value">
                               {employeeData.personalInfo?.qualification ||
-                                "N/A"}
+                                "-"}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Education Level</div>
                             <div className="value">
                               {employeeData.personalInfo?.educationLevel ||
-                                "N/A"}
+                                "-"}
                             </div>
                           </S.SideInfoItem>
                         </Col>
@@ -605,13 +607,13 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Base Salary</div>
                             <div className="value">
-                              {employeeData.compensation?.salary || 'N/A'}
+                              {employeeData.compensation?.salary || '-'}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Bonus Target</div>
                             <div className="value">
-                              {employeeData.compensation?.bonus || 'N/A'}
+                              {employeeData.compensation?.bonus || '-'}
                             </div>
                           </S.SideInfoItem>
                         </Col>
@@ -619,13 +621,13 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Stock Options</div>
                             <div className="value">
-                              {employeeData.compensation?.stockOptions || 'N/A'}
+                              {employeeData.compensation?.stockOptions || '-'}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Next Review</div>
                             <div className="value">
-                              {employeeData.compensation?.nextReview || 'N/A'}
+                              {employeeData.compensation?.nextReview || '-'}
                             </div>
                           </S.SideInfoItem>
                         </Col>
@@ -654,21 +656,21 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">University</div>
                             <div className="value">
-                              {employeeData.personalInfo?.university || "N/A"}
+                              {employeeData.personalInfo?.university || "-"}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Graduation Year</div>
                             <div className="value">
                               {employeeData.personalInfo?.graduationYear ||
-                                "N/A"}
+                                "-"}
                             </div>
                           </S.SideInfoItem>
                           <S.SideInfoItem isDarkMode={isDarkMode}>
                             <div className="label">Certifications</div>
                             <div className="value">
                               {employeeData.personalInfo?.certifications ||
-                                "N/A"}
+                                "-"}
                             </div>
                           </S.SideInfoItem>
                         </Col>
@@ -677,21 +679,24 @@ const Profile: React.FC<ProfileProps> = ({ userData, profileData }) => {
                             <div className="label">Skills Summary</div>
                             <div className="value">
                               {employeeData.personalInfo?.skillsSummary ||
-                                "N/A"}
+                                "-"}
                             </div>
                           </S.SideInfoItem>
                         </Col>
                       </Row>
                       <div style={{ marginTop: 16 }}>
                         <Text strong>Technical Skills:</Text>
-                        {(employeeData?.skills || []).map(
-                          (skill: any, index: number) => (
-                            <S.SideInfoItem key={index} isDarkMode={isDarkMode}>
-                              <div className="label">{skill?.name || 'N/A'}</div>
-                              <Progress percent={skill?.level || 0} showInfo={true} />
-                            </S.SideInfoItem>
-                          )
-                        )}
+                        <div style={{ marginTop: 8 }}>
+                          {employeeData?.personalInfo?.technical_skills && employeeData.personalInfo.technical_skills.length > 0 ? (
+                            employeeData.personalInfo.technical_skills.map((skill: string, index: number) => (
+                              <Tag key={index} style={{ margin: '4px' }}>
+                                {skill}
+                              </Tag>
+                            ))
+                          ) : (
+                            <Text type="secondary">No technical skills listed</Text>
+                          )}
+                        </div>
                       </div>
                     </S.StyledCard>
                   </TabPane>

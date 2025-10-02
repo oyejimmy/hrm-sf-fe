@@ -188,6 +188,9 @@ const EditProfile: React.FC = () => {
       }
       addField('certifications', allFormData.certifications);
       addField('skills_summary', allFormData.skillsSummary);
+      if (allFormData.technicalSkills && Array.isArray(allFormData.technicalSkills)) {
+        addField('technical_skills', allFormData.technicalSkills);
+      }
       
       // Compensation
       if (allFormData.salary) {
@@ -256,7 +259,9 @@ const EditProfile: React.FC = () => {
         emergencyContactRelationship: employeeData?.personalInfo?.emergency_contact_relationship,
         emergencyContactWorkPhone: employeeData?.personalInfo?.emergency_contact_work_phone,
         emergencyContactHomePhone: employeeData?.personalInfo?.emergency_contact_home_phone,
-        emergencyContactAddress: employeeData?.personalInfo?.emergency_contact_address
+        emergencyContactAddress: employeeData?.personalInfo?.emergency_contact_address,
+        // Technical skills
+        technicalSkills: employeeData?.personalInfo?.technical_skills || []
       }}>
         <S.StyledCard bodyStyle={{ padding: 0 }} isDarkMode={isDarkMode}>
         <S.CoverSection bgImage={coverImage || employeeData?.personalInfo?.coverImage || employeeData?.personalInfo?.cover_image_url || undefined} isDarkMode={isDarkMode}>
@@ -588,15 +593,94 @@ const EditProfile: React.FC = () => {
                           </S.FormItem>
                         </Col>
                       </Row>
-                      <div style={{ marginTop: 16 }}>
-                        <Text strong>Technical Skills:</Text>
-                        {(employeeData?.skills || []).map((skill: any, index: number) => (
-                          <S.SideInfoItem key={index} isDarkMode={isDarkMode}>
-                            <div className="label">{skill.name}</div>
-                            <Progress percent={skill.level} showInfo={true} />
-                          </S.SideInfoItem>
-                        ))}
-                      </div>
+                        <Col span={24}>
+                          <S.FormItem name="technicalSkills" label="Technical Skills" isDarkMode={isDarkMode}>
+                            <Select
+                              mode="multiple"
+                              placeholder="Select your technical skills"
+                              style={{ width: '100%' }}
+                            >
+                              <Option value="Adobe XD">Adobe XD</Option>
+                              <Option value="Algorithms">Algorithms</Option>
+                              <Option value="Android">Android</Option>
+                              <Option value="Angular">Angular</Option>
+                              <Option value="Ansible">Ansible</Option>
+                              <Option value="API Design">API Design</Option>
+                              <Option value="Automation Testing">Automation Testing</Option>
+                              <Option value="AWS">AWS</Option>
+                              <Option value="CSS">CSS</Option>
+                              <Option value="Cypress">Cypress</Option>
+                              <Option value="Data Analysis">Data Analysis</Option>
+                              <Option value="Data Visualization">Data Visualization</Option>
+                              <Option value="Deep Learning">Deep Learning</Option>
+                              <Option value="Django">Django</Option>
+                              <Option value="Docker">Docker</Option>
+                              <Option value="Express.js">Express.js</Option>
+                              <Option value="FastAPI">FastAPI</Option>
+                              <Option value="Figma">Figma</Option>
+                              <Option value="Flutter">Flutter</Option>
+                              <Option value="Git">Git</Option>
+                              <Option value="HTML">HTML</Option>
+                              <Option value="Illustrator">Illustrator</Option>
+                              <Option value="iOS">iOS</Option>
+                              <Option value="Java">Java</Option>
+                              <Option value="JavaScript">JavaScript</Option>
+                              <Option value="Jenkins">Jenkins</Option>
+                              <Option value="Jest">Jest</Option>
+                              <Option value="Jupyter">Jupyter</Option>
+                              <Option value="Keras">Keras</Option>
+                              <Option value="Kotlin">Kotlin</Option>
+                              <Option value="Kubernetes">Kubernetes</Option>
+                              <Option value="Linux">Linux</Option>
+                              <Option value="Machine Learning">Machine Learning</Option>
+                              <Option value="Manual Testing">Manual Testing</Option>
+                              <Option value="Matplotlib">Matplotlib</Option>
+                              <Option value="Microservices">Microservices</Option>
+                              <Option value="MLOps">MLOps</Option>
+                              <Option value="Model Deployment">Model Deployment</Option>
+                              <Option value="MongoDB">MongoDB</Option>
+                              <Option value="Monitoring">Monitoring</Option>
+                              <Option value="Neural Networks">Neural Networks</Option>
+                              <Option value="Next.js">Next.js</Option>
+                              <Option value="Nginx">Nginx</Option>
+                              <Option value="NLP">NLP</Option>
+                              <Option value="Node.js">Node.js</Option>
+                              <Option value="NumPy">NumPy</Option>
+                              <Option value="OpenCV">OpenCV</Option>
+                              <Option value="Pandas">Pandas</Option>
+                              <Option value="Performance Testing">Performance Testing</Option>
+                              <Option value="Photoshop">Photoshop</Option>
+                              <Option value="Postman">Postman</Option>
+                              <Option value="Prototyping">Prototyping</Option>
+                              <Option value="Python">Python</Option>
+                              <Option value="PyTorch">PyTorch</Option>
+                              <Option value="R">R</Option>
+                              <Option value="React">React</Option>
+                              <Option value="React Native">React Native</Option>
+                              <Option value="Redux">Redux</Option>
+                              <Option value="REST API">REST API</Option>
+                              <Option value="SASS">SASS</Option>
+                              <Option value="Scikit-learn">Scikit-learn</Option>
+                              <Option value="Selenium">Selenium</Option>
+                              <Option value="Sketch">Sketch</Option>
+                              <Option value="Spring Boot">Spring Boot</Option>
+                              <Option value="SQL">SQL</Option>
+                              <Option value="Statistics">Statistics</Option>
+                              <Option value="Swift">Swift</Option>
+                              <Option value="TensorFlow">TensorFlow</Option>
+                              <Option value="Terraform">Terraform</Option>
+                              <Option value="Test Planning">Test Planning</Option>
+                              <Option value="TestNG">TestNG</Option>
+                              <Option value="TypeScript">TypeScript</Option>
+                              <Option value="Unit Testing">Unit Testing</Option>
+                              <Option value="User Research">User Research</Option>
+                              <Option value="UX Design">UX Design</Option>
+                              <Option value="Vue.js">Vue.js</Option>
+                              <Option value="Wireframing">Wireframing</Option>
+                              <Option value="Xamarin">Xamarin</Option>
+                            </Select>
+                          </S.FormItem>
+                        </Col>
                     </S.StyledCard>
                   </TabPane>
                 </S.StyledTabs>

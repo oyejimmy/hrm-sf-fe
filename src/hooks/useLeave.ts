@@ -10,10 +10,11 @@ export const useLeave = () => {
     queryFn: leaveApi.getMyLeaveRequests,
   });
 
-  const leaveBalanceQuery = useQuery({
-    queryKey: ['leave', 'balance'],
-    queryFn: () => leaveApi.getLeaveBalance('current-user'),
-  });
+  // Leave balance query disabled for now - API endpoint not implemented
+  // const leaveBalanceQuery = useQuery({
+  //   queryKey: ['leave', 'balance'],
+  //   queryFn: () => leaveApi.getLeaveBalance('current-user'),
+  // });
 
   const pendingRequestsQuery = useQuery({
     queryKey: ['leave', 'pending'],
@@ -45,9 +46,9 @@ export const useLeave = () => {
 
   return {
     leaveRequests: leaveRequestsQuery.data,
-    leaveBalance: leaveBalanceQuery.data,
+    leaveBalance: null, // leaveBalanceQuery.data,
     pendingRequests: pendingRequestsQuery.data,
-    isLoading: leaveRequestsQuery.isLoading || leaveBalanceQuery.isLoading,
+    isLoading: leaveRequestsQuery.isLoading, // || leaveBalanceQuery.isLoading,
     createLeaveRequest: createLeaveRequestMutation.mutate,
     approveLeaveRequest: approveLeaveRequestMutation.mutate,
     isCreatingRequest: createLeaveRequestMutation.isPending,
