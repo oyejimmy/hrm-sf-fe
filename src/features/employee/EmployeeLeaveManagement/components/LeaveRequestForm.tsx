@@ -18,6 +18,7 @@ import {
 import { Send, Upload as UploadIcon, User, Mail, Building, X } from 'lucide-react';
 import styled from 'styled-components';
 import { DurationType, Employee } from '../types';
+import { DATE_FORMATS } from '../../../../constants';
 
 const { RangePicker } = DatePicker; // Destructure RangePicker from DatePicker
 const { TextArea } = Input; // Destructure TextArea from Input
@@ -175,7 +176,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
           name="dates" // Name of the form item
           rules={[{ required: true, message: 'Please select dates' }]} // Validation rules
         >
-          <RangePicker style={{ width: '100%' }} /> {/* Date range picker component */}
+          <RangePicker style={{ width: '100%' }} format={DATE_FORMATS.DISPLAY} /> {/* Date range picker component */}
         </Form.Item>
 
         <Form.Item

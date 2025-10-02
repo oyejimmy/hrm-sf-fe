@@ -216,10 +216,20 @@ const UpcomingHolidays = ({ isDarkMode }: { isDarkMode: boolean }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showFireworks, setShowFireworks] = useState(false);
 
-  const { data: holidays = [], isLoading } = useQuery({
+  const { data: holidays = [], isLoading, error } = useQuery({
     queryKey: ["holidays"],
-    queryFn: () => api.get("/api/holidays/").then((res) => res.data),
+    queryFn: async () => {
+      try {
+        const response = await api.get("/api/holidays/");
+        return response.data || [];
+      } catch (error) {
+        console.error('Holidays API error:', error);
+        return [];
+      }
+    },
     staleTime: 24 * 60 * 60 * 1000, // 24 hours
+    retry: 3,
+    retryDelay: 1000,
   });
 
   // Find nearest upcoming holiday and set as default
@@ -307,8 +317,18 @@ const UpcomingHolidays = ({ isDarkMode }: { isDarkMode: boolean }) => {
               <HolidayTitle isDarkMode={isDarkMode}>
                 {currentHoliday.name}
               </HolidayTitle>
-              <DateText isDarkMode={isDarkMode}>{currentHoliday.date}</DateText>
-              <DayText isDarkMode={isDarkMode}>{currentHoliday.day}</DayText>
+              <DateText isDarkMode={isDarkMode}>
+                {new Date(currentHoliday.date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </DateText>
+              <DayText isDarkMode={isDarkMode}>
+                {new Date(currentHoliday.date).toLocaleDateString('en-US', {
+                  weekday: 'long'
+                })}
+              </DayText>
             </ContentCenter>
             <NavButton
               isDarkMode={isDarkMode}
@@ -329,12 +349,15 @@ const UpcomingHolidays = ({ isDarkMode }: { isDarkMode: boolean }) => {
           </HolidayDescription>
         </>
       ) : (
-        <div>
+        <div style={{ textAlign: 'center', padding: '20px' }}>
           <CalendarIcon
             size={48}
             style={{ marginBottom: "16px", opacity: 0.5 }}
+            color={isDarkMode ? "#666" : "#ccc"}
           />
-          <p>No holidays available</p>
+          <p style={{ color: isDarkMode ? "#999" : "#666" }}>
+            {error ? 'Unable to load holidays' : 'No holidays available'}
+          </p>
         </div>
       )}
     </StyledCard>

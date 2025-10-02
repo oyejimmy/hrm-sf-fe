@@ -2,7 +2,8 @@ import React from 'react';
 import { Badge, Button, Space, Typography, Tag, Empty, message } from 'antd';
 import { Bell, Clock, Coffee, LogIn, LogOut, AlertTriangle, User } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../../../../services/api/api';
+import { leaveApi } from '../../../../services/api/leaveApi';
+import { attendanceApi } from '../../../../services/api/attendanceApi';
 import {
   NotificationPanelCard,
   NotificationCard,
@@ -18,74 +19,50 @@ const { Text } = Typography;
 const AttendanceNotificationPanel: React.FC = () => {
   const queryClient = useQueryClient();
 
-  const { data: notifications = [], isLoading } = useQuery({
-    queryKey: ['attendance-notifications'],
-    queryFn: () => api.get('/api/attendance/records?limit=10').then(res => {
-      // Transform attendance records into notifications
-      return res.data.map((record: any) => {
-        const notifications = [];
-        
-        if (record.check_in) {
-          notifications.push({
-            id: `${record.id}-checkin`,
-            type: 'check_in',
-            message: `Checked in at ${record.check_in}`,
-            timestamp: record.date,
-            priority: 'low',
-            read: true
-          });
-        }
-        
-        if (record.check_out) {
-          notifications.push({
-            id: `${record.id}-checkout`,
-            type: 'check_out',
-            message: `Checked out at ${record.check_out}`,
-            timestamp: record.date,
-            priority: 'low',
-            read: true
-          });
-        }
-        
-        record.break_details?.forEach((breakRecord: any, index: number) => {
-          if (breakRecord.start_time) {
-            notifications.push({
-              id: `${record.id}-break-start-${index}`,
-              type: 'break_start',
-              message: `Break started at ${breakRecord.start_time}`,
-              timestamp: record.date,
-              priority: 'low',
-              read: true
-            });
-          }
-          
-          if (breakRecord.end_time) {
-            notifications.push({
-              id: `${record.id}-break-end-${index}`,
-              type: 'break_end',
-              message: `Break ended at ${breakRecord.end_time} (${breakRecord.duration_minutes} min)`,
-              timestamp: record.date,
-              priority: 'low',
-              read: true
-            });
-          }
-        });
-        
-        return notifications;
-      }).flat().slice(0, 20);
-    }),
+  // Get real notifications from API
+  const { data: userNotifications = [], isLoading: notificationsLoading } = useQuery({
+    queryKey: ['user-notifications'],
+    queryFn: () => leaveApi.getUserNotifications(false),
     refetchInterval: 60000,
   });
 
+  const { data: attendanceNotifications = [], isLoading: attendanceLoading } = useQuery({
+    queryKey: ['attendance-notifications'],
+    queryFn: attendanceApi.getAttendanceNotifications,
+    refetchInterval: 60000,
+  });
+
+  // Combine all notifications
+  const notifications = [...userNotifications, ...attendanceNotifications];
+  const isLoading = notificationsLoading || attendanceLoading;
+
   const markAsReadMutation = useMutation({
-    mutationFn: (notificationId: string) => Promise.resolve(),
+    mutationFn: leaveApi.markNotificationAsRead,
     onSuccess: () => {
       message.success('Notification marked as read');
+      queryClient.invalidateQueries({ queryKey: ['user-notifications'] });
       queryClient.invalidateQueries({ queryKey: ['attendance-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unread-notification-count'] });
+    },
+    onError: () => {
+      message.error('Failed to mark notification as read');
     }
   });
 
-  const unreadCount = notifications.filter((n: any) => !n.read).length;
+  const markAllAsReadMutation = useMutation({
+    mutationFn: leaveApi.markAllNotificationsAsRead,
+    onSuccess: () => {
+      message.success('All notifications marked as read');
+      queryClient.invalidateQueries({ queryKey: ['user-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unread-notification-count'] });
+    },
+    onError: () => {
+      message.error('Failed to mark all notifications as read');
+    }
+  });
+
+  const unreadCount = notifications.filter((n: any) => !n.is_read && !n.read).length;
 
   const getIcon = (type: string) => {
     const iconMap = {
@@ -94,7 +71,10 @@ const AttendanceNotificationPanel: React.FC = () => {
       break_start: <Coffee size={16} color="#faad14" />,
       break_end: <Coffee size={16} color="#52c41a" />,
       absence: <AlertTriangle size={16} color="#ff4d4f" />,
-      late_arrival: <Clock size={16} color="#faad14" />
+      late_arrival: <Clock size={16} color="#faad14" />,
+      leave_request: <User size={16} color="#1890ff" />,
+      leave_approval: <User size={16} color="#52c41a" />,
+      leave_rejection: <User size={16} color="#ff4d4f" />
     };
     return iconMap[type as keyof typeof iconMap] || <Bell size={16} />;
   };
@@ -106,13 +86,20 @@ const AttendanceNotificationPanel: React.FC = () => {
       break_start: 'Break Started',
       break_end: 'Break Ended',
       absence: 'Absence',
-      late_arrival: 'Late Arrival'
+      late_arrival: 'Late Arrival',
+      leave_request: 'Leave Request',
+      leave_approval: 'Leave Approved',
+      leave_rejection: 'Leave Rejected'
     };
     return labelMap[type as keyof typeof labelMap] || 'Notification';
   };
 
   const handleMarkAllAsRead = () => {
-    message.success('All notifications marked as read');
+    markAllAsReadMutation.mutate();
+  };
+
+  const handleMarkAsRead = (notificationId: string) => {
+    markAsReadMutation.mutate(notificationId);
   };
 
   return (
@@ -141,29 +128,45 @@ const AttendanceNotificationPanel: React.FC = () => {
           />
         ) : (
           <NotificationScrollContainer>
-            {notifications.map((notification: any) => (
-              <NotificationCard
-                key={notification.id}
-                $read={notification.read}
-                $priority={notification.priority}
-              >
-                <NotificationHeader>
-                  <Space>
-                    {getIcon(notification.type)}
-                    <Tag color="blue">
-                      {getTypeLabel(notification.type)}
-                    </Tag>
-                  </Space>
-                  <TimeStamp>{notification.timestamp}</TimeStamp>
-                </NotificationHeader>
-                
-                <NotificationContent>
-                  <Text style={{ fontSize: '13px' }}>
-                    {notification.message}
-                  </Text>
-                </NotificationContent>
-              </NotificationCard>
-            ))}
+            {notifications.map((notification: any) => {
+              const notificationType = notification.notification_type || notification.type || 'notification';
+              const isRead = notification.is_read || notification.read || false;
+              const timestamp = notification.created_at || notification.timestamp;
+              
+              return (
+                <NotificationCard
+                  key={notification.id}
+                  $read={isRead}
+                  $priority={notification.priority}
+                  onClick={() => !isRead && handleMarkAsRead(notification.id)}
+                  style={{ cursor: !isRead ? 'pointer' : 'default' }}
+                >
+                  <NotificationHeader>
+                    <Space>
+                      {getIcon(notificationType)}
+                      <Tag color="blue">
+                        {getTypeLabel(notificationType)}
+                      </Tag>
+                      {!isRead && <Tag color="red">New</Tag>}
+                    </Space>
+                    <TimeStamp>
+                      {timestamp ? new Date(timestamp).toLocaleDateString() : 'Unknown'}
+                    </TimeStamp>
+                  </NotificationHeader>
+                  
+                  <NotificationContent>
+                    <Text style={{ fontSize: '13px' }}>
+                      {notification.message}
+                    </Text>
+                    {notification.title && notification.title !== notification.message && (
+                      <Text strong style={{ fontSize: '12px', display: 'block', marginTop: '4px' }}>
+                        {notification.title}
+                      </Text>
+                    )}
+                  </NotificationContent>
+                </NotificationCard>
+              );
+            })}
           </NotificationScrollContainer>
         )}
       </NotificationPanelCard>

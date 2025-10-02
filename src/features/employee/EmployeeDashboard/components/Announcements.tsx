@@ -1,10 +1,9 @@
-import React from "react";
-import { List, Spin } from "antd";
+import React, { useState, useCallback } from "react";
+import { List, Spin, Alert, Button, Tag } from "antd";
 import styled, { keyframes } from "styled-components";
-import { Bell } from "lucide-react";
+import { Bell, ChevronLeft, ChevronRight } from "lucide-react";
 import { StyledCard } from "./styles";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "../../../../services/api/api";
+import { useAnnouncements, Announcement } from "../../../../hooks/api/useAnnouncements";
 
 // 🔔 Keyframes for bell animation
 const ring = keyframes`
@@ -130,48 +129,228 @@ const NewBadge = styled.div`
   margin: 3px 8px;
 `;
 
-const Announcements = ({ isDarkMode }: { isDarkMode: boolean }) => {
-  const { data: announcements = [], isLoading } = useQuery({
-    queryKey: ["announcements"],
-    queryFn: () => api.get("/api/announcements/").then((res) => res.data),
-    refetchInterval: 3000000,
-  });
+const NavButton = styled(Button)<{ isDarkMode: boolean }>`
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  background: ${({ isDarkMode }) => (isDarkMode ? "#333" : "#f5f5f5")};
+  border: ${({ isDarkMode }) =>
+    isDarkMode ? "1px solid #555" : "1px solid #d9d9d9"};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
-  const loopItems = [...announcements, ...announcements];
+  &:hover {
+    background: ${({ isDarkMode }) => (isDarkMode ? "#444" : "#e6f7ff")};
+    border-color: #1890ff;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:first-child {
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  &:last-child {
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  @media (max-width: 480px) {
+    width: 40px;
+    height: 40px;
+  }
+`;
+
+const ContentWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 300px;
+`;
+
+const ContentCenter = styled.div`
+  flex: 1;
+  margin: 0 60px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+`;
+
+const AnnouncementCard = styled.div<{ isDarkMode: boolean }>`
+  padding: 20px;
+  border-radius: 12px;
+  background: ${({ isDarkMode }) =>
+    isDarkMode ? "rgba(255, 255, 255, 0.05)" : "rgba(24, 144, 255, 0.05)"};
+  border: ${({ isDarkMode }) =>
+    isDarkMode ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid rgba(24, 144, 255, 0.1)"};
+  text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`;
+
+const AnnouncementTitle = styled.h3<{ isDarkMode: boolean }>`
+  color: ${({ isDarkMode }) => (isDarkMode ? "#fff" : "#1890ff")};
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+  font-weight: 700;
+`;
+
+const AnnouncementContent = styled.p<{ isDarkMode: boolean }>`
+  color: ${({ isDarkMode }) => (isDarkMode ? "#d9d9d9" : "#555")};
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 16px;
+`;
+
+const AnnouncementMeta = styled.div<{ isDarkMode: boolean }>`
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: ${({ isDarkMode }) => (isDarkMode ? "#bfbfbf" : "#888")};
+`;
+
+const Announcements = ({ isDarkMode }: { isDarkMode: boolean }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const { data: announcements = [], isLoading, error } = useAnnouncements();
+
+  const goNext = useCallback(() => {
+    if (announcements.length > 0 && !isAnimating) {
+      setIsAnimating(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % announcements.length);
+        setTimeout(() => setIsAnimating(false), 100);
+      }, 200);
+    }
+  }, [announcements.length, isAnimating]);
+
+  const goPrev = useCallback(() => {
+    if (announcements.length > 0 && !isAnimating) {
+      setIsAnimating(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev - 1 + announcements.length) % announcements.length);
+        setTimeout(() => setIsAnimating(false), 100);
+      }, 200);
+    }
+  }, [announcements.length, isAnimating]);
+
+  const currentAnnouncement = announcements[currentIndex];
+
+  if (isLoading) {
+    return (
+      <StyledCard
+        title="Announcements"
+        loading={isLoading}
+        $isDarkMode={isDarkMode}
+        extra={<Bell size={18} />}
+      >
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
+          <Spin size="large" />
+        </div>
+      </StyledCard>
+    );
+  }
+
+  if (error) {
+    return (
+      <StyledCard
+        title="Announcements"
+        $isDarkMode={isDarkMode}
+        extra={<Bell size={18} />}
+      >
+        <Alert
+          message="Error loading announcements"
+          description="Unable to fetch announcement data. Please try again later."
+          type="error"
+          showIcon
+        />
+      </StyledCard>
+    );
+  }
 
   return (
     <StyledCard
       title="Announcements"
-      loading={isLoading}
       $isDarkMode={isDarkMode}
-      extra={!isLoading && <AnimatedBell isDarkMode={isDarkMode} />}
+      extra={<AnimatedBell isDarkMode={isDarkMode} />}
     >
-      {!isLoading && (
-        <ScrollContainer>
-          <ScrollContent>
-            {loopItems.map((item, index) => (
-              <ItemWrapper key={`${item.id}-${index}`}>
-                {item.isNew && <NewBadge>NEW</NewBadge>}
-                <StyledListItem
-                  bg={backgroundColors[index % backgroundColors.length]}
-                  isDarkMode={isDarkMode}
-                >
-                  <List.Item.Meta
-                    title={<strong>{item.title}</strong>}
-                    description={
-                      <div>
-                        <div style={{ marginBottom: "4px" }}>{item.content}</div>
-                        <span style={{ fontSize: "12px" }}>
-                          {item.publish_date}
-                        </span>
-                      </div>
-                    }
-                  />
-                </StyledListItem>
-              </ItemWrapper>
-            ))}
-          </ScrollContent>
-        </ScrollContainer>
+      {currentAnnouncement ? (
+        <ContentWrapper>
+          {announcements.length > 1 && (
+            <NavButton
+              isDarkMode={isDarkMode}
+              onClick={goPrev}
+              aria-label="Previous announcement"
+            >
+              <ChevronLeft
+                color={isDarkMode ? "#69c0ff" : "#1890ff"}
+                size={20}
+              />
+            </NavButton>
+          )}
+          <ContentCenter style={{
+            opacity: isAnimating ? 0 : 1,
+            transform: isAnimating ? 'translateY(10px)' : 'translateY(0)',
+          }}>
+            <AnnouncementCard isDarkMode={isDarkMode}>
+              <AnnouncementTitle isDarkMode={isDarkMode}>
+                {currentAnnouncement.title}
+              </AnnouncementTitle>
+              <AnnouncementContent isDarkMode={isDarkMode}>
+                {currentAnnouncement.content}
+              </AnnouncementContent>
+              <AnnouncementMeta isDarkMode={isDarkMode}>
+                <Tag color={currentAnnouncement.priority === 'high' ? 'red' : currentAnnouncement.priority === 'medium' ? 'orange' : 'blue'}>
+                  {currentAnnouncement.priority}
+                </Tag>
+                <span>{currentAnnouncement.publish_date}</span>
+                {currentAnnouncement.is_new && (
+                  <Tag color="green">NEW</Tag>
+                )}
+              </AnnouncementMeta>
+            </AnnouncementCard>
+          </ContentCenter>
+          {announcements.length > 1 && (
+            <NavButton
+              isDarkMode={isDarkMode}
+              onClick={goNext}
+              aria-label="Next announcement"
+            >
+              <ChevronRight
+                color={isDarkMode ? "#69c0ff" : "#1890ff"}
+                size={20}
+              />
+            </NavButton>
+          )}
+        </ContentWrapper>
+      ) : (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Bell
+            size={48}
+            style={{ marginBottom: "16px", opacity: 0.5 }}
+            color={isDarkMode ? "#666" : "#ccc"}
+          />
+          <p style={{ color: isDarkMode ? "#999" : "#666" }}>
+            No announcements available
+          </p>
+        </div>
       )}
     </StyledCard>
   );

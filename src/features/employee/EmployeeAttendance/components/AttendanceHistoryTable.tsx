@@ -36,6 +36,18 @@ const AttendanceHistoryTable = ({
 
   const formatTime = (timestamp?: string) => {
     if (!timestamp) return "-";
+    // Handle time-only format (HH:MM:SS) or full datetime
+    if (timestamp.includes(':') && !timestamp.includes('T')) {
+      // Time only format
+      const [hours, minutes] = timestamp.split(':');
+      const date = new Date();
+      date.setHours(parseInt(hours), parseInt(minutes), 0);
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
     return new Date(timestamp).toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
@@ -43,10 +55,22 @@ const AttendanceHistoryTable = ({
     });
   };
 
-  const formatDuration = (hours: number) => {
-    const h = Math.floor(hours);
-    const m = Math.round((hours - h) * 60);
-    return `${h}h ${m}m`;
+  const formatDuration = (duration: any) => {
+    if (!duration) return "0h 0m";
+    
+    // If it's already a formatted string, return it
+    if (typeof duration === 'string' && duration.includes('h')) {
+      return duration;
+    }
+    
+    // If it's a number (hours)
+    if (typeof duration === 'number') {
+      const h = Math.floor(duration);
+      const m = Math.round((duration - h) * 60);
+      return `${h}h ${m}m`;
+    }
+    
+    return "0h 0m";
   };
 
 
@@ -94,37 +118,31 @@ const AttendanceHistoryTable = ({
     {
       title: "Check In",
       key: "checkIn",
-      render: (record: AttendanceRecord) => (
+      render: (record: any) => (
         <TimeCell>
-          <TimeText $type="primary">{formatTime(record.checkIn)}</TimeText>
-          {record.status === "Late" && <Tag color="orange">Late</Tag>}
+          <TimeText $type="primary">{formatTime(record.checkIn || record.check_in)}</TimeText>
+          {(record.status === "late" || record.status === "Late") && <Tag color="orange">Late</Tag>}
         </TimeCell>
       ),
     },
     {
       title: "Check Out",
       key: "checkOut",
-      render: (record: AttendanceRecord) => (
-        <TimeText $type="primary">{formatTime(record.checkOut)}</TimeText>
+      render: (record: any) => (
+        <TimeText $type="primary">{formatTime(record.checkOut || record.check_out)}</TimeText>
       ),
     },
     {
       title: "Break Time",
       key: "break",
-      render: (record: AttendanceRecord) => (
+      render: (record: any) => (
         <TimeCell>
-          {record.breakStart && (
-            <>
-              <TimeText $type="secondary">
-                Start: {formatTime(record.breakStart)}
-              </TimeText>
-              <TimeText $type="secondary">
-                End: {formatTime(record.breakEnd)}
-              </TimeText>
-              <TimeText $type="primary">
-                Duration: {record.breakMinutes}min
-              </TimeText>
-            </>
+          {(record.breakMinutes || record.break_minutes) ? (
+            <TimeText $type="primary">
+              {record.breakMinutes || record.break_minutes || 0} min
+            </TimeText>
+          ) : (
+            <TimeText $type="secondary">No breaks</TimeText>
           )}
         </TimeCell>
       ),
@@ -132,14 +150,16 @@ const AttendanceHistoryTable = ({
     {
       title: "Working Hours",
       key: "workingHours",
-      render: (record: AttendanceRecord) => (
+      render: (record: any) => (
         <Space direction="vertical" size={0}>
           <TimeText $type="primary">
-            {formatDuration(record.workingHours)}
+            {formatDuration(record.workingHours || record.working_hours || record.hours_worked)}
           </TimeText>
-          <TimeText $type="secondary">
-            Total: {formatDuration(record.totalHours)}
-          </TimeText>
+          {(record.totalHours || record.total_hours) && (
+            <TimeText $type="secondary">
+              Total: {formatDuration(record.totalHours || record.total_hours)}
+            </TimeText>
+          )}
         </Space>
       ),
     },
@@ -147,10 +167,11 @@ const AttendanceHistoryTable = ({
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status: string, record: AttendanceRecord) => (
+      render: (status: string, record: any) => (
         <Space direction="vertical" size={4}>
           <Tag color={getStatusColor(status)}>{status.charAt(0).toUpperCase() + status.slice(1)}</Tag>
-          {record.isManualEntry && <Tag color="purple">Manual</Tag>}
+          {(record.isManualEntry || record.is_manual_entry) && <Tag color="purple">Manual</Tag>}
+          {record.notes && <Tag color="blue">Note</Tag>}
         </Space>
       ),
     },

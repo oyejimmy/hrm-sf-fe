@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, Select, DatePicker, Button, Upload, Typography, Space, Row, Col } from 'antd';
 import { FileTextOutlined, ExclamationCircleOutlined, CalendarOutlined, UploadOutlined } from '@ant-design/icons';
+import { DATE_FORMATS } from '../../../../constants';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -117,6 +118,7 @@ export const ComplaintForm: React.FC<ComplaintFormProps> = ({ visible, onClose, 
           <DatePicker 
             style={{ width: '100%' }}
             placeholder="Select date"
+            format={DATE_FORMATS.DISPLAY}
           />
         </Form.Item>
 

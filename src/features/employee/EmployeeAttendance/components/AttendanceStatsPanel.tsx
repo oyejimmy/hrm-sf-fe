@@ -1,6 +1,6 @@
-import { Row, Col, Statistic, Progress, Space, Typography } from "antd";
+import { Row, Col, Progress, Space, Typography, Card, Statistic } from "antd";
 import { Clock, CheckCircle, XCircle, Coffee, TrendingUp } from "lucide-react";
-import { StatCard, IconWrapper, StatisticWrapper } from "./styles";
+import { StateCard } from "../../../../components/StateCard";
 
 const { Text } = Typography;
 
@@ -14,98 +14,53 @@ const AttendanceStatsPanel = ({
     return (
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
-          <StatCard loading={loading}>
-            <StatisticWrapper>
-              <IconWrapper $color="#52c41a">
-                <CheckCircle size={24} />
-              </IconWrapper>
-              <Statistic
-                title="Present Days"
-                value={summary.presentDays}
-                suffix={`/ ${summary.totalDays}`}
-                valueStyle={{
-                  color: "#52c41a",
-                  fontSize: "24px",
-                  fontWeight: "bold",
-                }}
-              />
-              <Text type="secondary" style={{ fontSize: "12px" }}>
-                {summary.attendancePercentage.toFixed(1)}% attendance
-              </Text>
-            </StatisticWrapper>
-          </StatCard>
+          <StateCard
+            label="Present Days"
+            value={`${summary.presentDays}/${summary.totalDays}`}
+            icon={<CheckCircle />}
+            tone="pastelGreen"
+            description={`${summary.attendancePercentage.toFixed(1)}% attendance`}
+            loading={loading}
+          />
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <StatCard loading={loading}>
-            <StatisticWrapper>
-              <IconWrapper $color="#ff4d4f">
-                <XCircle size={24} />
-              </IconWrapper>
-              <Statistic
-                title="Absent Days"
-                value={summary.absentDays}
-                valueStyle={{
-                  color: "#ff4d4f",
-                  fontSize: "24px",
-                  fontWeight: "bold",
-                }}
-              />
-              <Text type="secondary" style={{ fontSize: "12px" }}>
-                Missed days
-              </Text>
-            </StatisticWrapper>
-          </StatCard>
+          <StateCard
+            label="Absent Days"
+            value={summary.absentDays}
+            icon={<XCircle />}
+            tone="pastelPink"
+            description="Missed days"
+            loading={loading}
+          />
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <StatCard loading={loading}>
-            <StatisticWrapper>
-              <IconWrapper $color="#faad14">
-                <Clock size={24} />
-              </IconWrapper>
-              <Statistic
-                title="Late Days"
-                value={summary.lateDays}
-                valueStyle={{
-                  color: "#faad14",
-                  fontSize: "24px",
-                  fontWeight: "bold",
-                }}
-              />
-              <Text type="secondary" style={{ fontSize: "12px" }}>
-                Late arrivals
-              </Text>
-            </StatisticWrapper>
-          </StatCard>
+          <StateCard
+            label="Late Days"
+            value={summary.lateDays}
+            icon={<Clock />}
+            tone="lightPeach"
+            description="Late arrivals"
+            loading={loading}
+          />
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <StatCard loading={loading}>
-            <StatisticWrapper>
-              <IconWrapper $color="#1890ff">
-                <TrendingUp size={24} />
-              </IconWrapper>
-              <Statistic
-                title="Avg. Hours/Day"
-                value={summary.averageWorkingHours}
-                precision={1}
-                suffix="h"
-                valueStyle={{
-                  color: "#1890ff",
-                  fontSize: "24px",
-                  fontWeight: "bold",
-                }}
-              />
-              <Text type="secondary" style={{ fontSize: "12px" }}>
-                Daily average
-              </Text>
-            </StatisticWrapper>
-          </StatCard>
+          <StateCard
+            label="Avg. Hours/Day"
+            value={summary.averageWorkingHours}
+            precision={1}
+            suffix="h"
+            icon={<TrendingUp />}
+            tone="pastelBlue"
+            description="Daily average"
+            loading={loading}
+          />
         </Col>
 
         <Col xs={24} lg={12}>
-          <StatCard title="Attendance Overview" loading={loading}>
+          <Card title="Attendance Overview" loading={loading}>
             <Space direction="vertical" style={{ width: "100%" }}>
               <Progress
                 percent={summary.attendancePercentage}
@@ -133,11 +88,11 @@ const AttendanceStatsPanel = ({
                 </Col>
               </Row>
             </Space>
-          </StatCard>
+          </Card>
         </Col>
 
         <Col xs={24} lg={12}>
-          <StatCard title="Working Hours Summary" loading={loading}>
+          <Card title="Working Hours Summary" loading={loading}>
             <Space direction="vertical" style={{ width: "100%" }}>
               <Statistic
                 title="Total Working Hours"
@@ -152,7 +107,7 @@ const AttendanceStatsPanel = ({
                 </Text>
               </div>
             </Space>
-          </StatCard>
+          </Card>
         </Col>
       </Row>
     );
@@ -162,97 +117,51 @@ const AttendanceStatsPanel = ({
     return (
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
-          <StatCard loading={loading}>
-            <StatisticWrapper>
-              <IconWrapper $color="#52c41a">
-                <CheckCircle size={24} />
-              </IconWrapper>
-              <Statistic
-                title="Present Today"
-                value={stats.todayPresent}
-                suffix={`/ ${stats.totalEmployees}`}
-                valueStyle={{
-                  color: "#52c41a",
-                  fontSize: "24px",
-                  fontWeight: "bold",
-                }}
-              />
-              <Text type="secondary" style={{ fontSize: "12px" }}>
-                {((stats.todayPresent / stats.totalEmployees) * 100).toFixed(1)}
-                % present
-              </Text>
-            </StatisticWrapper>
-          </StatCard>
+          <StateCard
+            label="Present Today"
+            value={`${stats.todayPresent}/${stats.totalEmployees}`}
+            icon={<CheckCircle />}
+            tone="pastelGreen"
+            description={`${((stats.todayPresent / stats.totalEmployees) * 100).toFixed(1)}% present`}
+            loading={loading}
+          />
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <StatCard loading={loading}>
-            <StatisticWrapper>
-              <IconWrapper $color="#ff4d4f">
-                <XCircle size={24} />
-              </IconWrapper>
-              <Statistic
-                title="Absent Today"
-                value={stats.todayAbsent}
-                valueStyle={{
-                  color: "#ff4d4f",
-                  fontSize: "24px",
-                  fontWeight: "bold",
-                }}
-              />
-              <Text type="secondary" style={{ fontSize: "12px" }}>
-                Not checked in
-              </Text>
-            </StatisticWrapper>
-          </StatCard>
+          <StateCard
+            label="Absent Today"
+            value={stats.todayAbsent}
+            icon={<XCircle />}
+            tone="pastelPink"
+            description="Not checked in"
+            loading={loading}
+          />
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <StatCard loading={loading}>
-            <StatisticWrapper>
-              <IconWrapper $color="#faad14">
-                <Clock size={24} />
-              </IconWrapper>
-              <Statistic
-                title="Late Today"
-                value={stats.todayLate}
-                valueStyle={{
-                  color: "#faad14",
-                  fontSize: "24px",
-                  fontWeight: "bold",
-                }}
-              />
-              <Text type="secondary" style={{ fontSize: "12px" }}>
-                Late arrivals
-              </Text>
-            </StatisticWrapper>
-          </StatCard>
+          <StateCard
+            label="Late Today"
+            value={stats.todayLate}
+            icon={<Clock />}
+            tone="lightPeach"
+            description="Late arrivals"
+            loading={loading}
+          />
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <StatCard loading={loading}>
-            <StatisticWrapper>
-              <IconWrapper $color="#722ed1">
-                <Coffee size={24} />
-              </IconWrapper>
-              <Statistic
-                title="On Break"
-                value={stats.onBreak}
-                valueStyle={{
-                  color: "#722ed1",
-                  fontSize: "24px",
-                  fontWeight: "bold",
-                }}
-              />
-              <Text type="secondary" style={{ fontSize: "12px" }}>
-                Currently on break
-              </Text>
-            </StatisticWrapper>
-          </StatCard>
+          <StateCard
+            label="On Break"
+            value={stats.onBreak}
+            icon={<Coffee />}
+            tone="softLavender"
+            description="Currently on break"
+            loading={loading}
+          />
         </Col>
 
         <Col xs={24}>
-          <StatCard title="Today's Attendance Overview" loading={loading}>
+          <Card title="Today's Attendance Overview" loading={loading}>
             <Row gutter={[16, 16]}>
               <Col xs={24} lg={12}>
                 <Progress
@@ -317,7 +226,7 @@ const AttendanceStatsPanel = ({
                 </Space>
               </Col>
             </Row>
-          </StatCard>
+          </Card>
         </Col>
       </Row>
     );

@@ -23,7 +23,7 @@ import WelcomeHeader from './components/WelcomeHeader';
 import MyStatsOverview from './components/MyStatsOverview';
 import Announcements from './components/Announcements';
 import RecentActivities from './components/RecentActivities';
-import UpcomingHolidays from './components/UpcomingHolidays';
+import HolidayCalendar from './components/HolidayCalendar';
 import TrainingPrograms from './components/TrainingRoadmap';
 import QuickActions from './components/QuickActions';
 import AttendanceTracker from './components/AttendanceTracker';
@@ -128,7 +128,7 @@ const EmployeeDashboard: React.FC = () => {
             <Announcements isDarkMode={isDarkMode} />
           </Col>
           <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-            <UpcomingHolidays isDarkMode={isDarkMode} />
+            <HolidayCalendar isDarkMode={isDarkMode} />
           </Col>
         </Row>
         <Row gutter={[24, 24]}>
