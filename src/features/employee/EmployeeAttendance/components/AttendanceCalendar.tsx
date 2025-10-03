@@ -31,7 +31,7 @@ import {
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import { useQuery } from '@tanstack/react-query';
-import { attendanceApi } from '../../../../services/api/attendanceApi';
+import { useMyAttendance } from '../../../../hooks/api/useAttendance';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -276,13 +276,12 @@ const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
   const { viewDate, navigateMonth, setMonth, setYear } = useDateNavigation(today);
 
   // Fetch attendance data from API
-  const { data: attendanceData, isLoading } = useQuery({
-    queryKey: ['attendance-calendar', viewDate.year(), viewDate.month() + 1],
-    queryFn: () => attendanceApi.getUserAttendance(viewDate.year(), viewDate.month() + 1),
-    retry: 1,
+  const { data: attendanceData = [], isLoading, error } = useMyAttendance({
+    year: viewDate.year(),
+    month: viewDate.month() + 1
   });
 
-  const records = attendanceData?.records || [];
+  const records = Array.isArray(attendanceData) ? attendanceData : [];
 
   const getAttendanceForDate = useCallback(
     (date: Dayjs) => records.find((r: AttendanceRecord) => dayjs(r.date).isSame(date, "day")),
@@ -331,6 +330,19 @@ const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
     },
     [viewDate, today]
   );
+
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <Alert
+        message="Error Loading Calendar Data"
+        description="Unable to load attendance calendar. Please try again."
+        type="error"
+        showIcon
+        style={{ margin: '20px 0' }}
+      />
+    );
+  }
 
   const selectedDateAttendance = getAttendanceForDate(selectedDate);
   const isFutureDate = selectedDate.isAfter(today, "day");

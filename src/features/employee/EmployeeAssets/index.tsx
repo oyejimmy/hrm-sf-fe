@@ -312,7 +312,7 @@ const EmployeeAssets = () => {
   };
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <Wrapper $isDarkMode={isDarkMode}>
       <HeaderComponent
         isDarkMode={isDarkMode}
         title="Asset Management"
