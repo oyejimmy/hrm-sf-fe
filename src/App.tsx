@@ -29,6 +29,7 @@ import ChangePassword from './features/auth/ChangePassword';
 import AdminDashboard from './features/admin/AdminDashboard';
 import EmployeeManagement from './features/admin/EmployeeManagement';
 import AttendanceAndLeave from './features/admin/AttendanceAndLeave';
+import AttendanceManagement from './features/admin/AttendanceManagement';
 import ReportsAnalytics from './features/admin/ReportsAnalytics';
 import Recruitments from './features/admin/Recruitments';
 import PerformanceManagement from './features/admin/PerformanceManagement';
@@ -41,13 +42,14 @@ import NotificationManagement from './features/admin/NotificationManagement';
 import EmployeeDashboard from './features/employee/EmployeeDashboard';
 import { EmployeeDashboardEnhanced } from './features/employee/EmployeeDashboardEnhanced';
 import Attendance from './features/employee/EmployeeAttendance';
+import AttendanceTracker from './features/employee/AttendanceTracker';
 import LeaveManagement from './features/employee/EmployeeLeaveManagement';
 import TrainingAndDevelopment from './features/employee/EmployeeTrainingDevelopment';
 import Payslip from './features/employee/EmployeePayslip';
 import Assets from './features/employee/EmployeeAssets';
 import Documents from './features/employee/EmployeeDocuments';
-import EmployeeProfile from './features/profile/Profile';
-import EditProfile from './features/profile/EditProfile';
+import EmployeeProfile from './features/commonPages/profile/Profile';
+import EditProfile from './features/commonPages/profile/EditProfile';
 import EmployeeComplain from './features/employee/EmployeeComplain';
 import EmployeeRequest from './features/employee/EmployeeRequest';
 import EmployeeHealthInsurance from './features/employee/EmployeeHealthInsurance';
@@ -59,8 +61,7 @@ import { TeamLeaveRequests } from './features/teamLead/TeamLeaveRequests';
 import { TeamPerformance } from './features/teamLead/TeamPerformance';
 import { TrainingAssignments } from './features/teamLead/TrainingAssignments';
 import { AuthTest } from './features/auth/AuthTest';
-import { MinimalOnboarding } from './components/onboarding/MinimalOnboarding';
-import StepOnboarding from './components/onboarding/StepOnboarding';
+import StepOnboarding, { MinimalOnboarding } from './features/commonPages/onboarding';
 import { OnboardingGuard } from './components/common/OnboardingGuard';
 import isBetween from "dayjs/plugin/isBetween";
 import weekday from "dayjs/plugin/weekday";
@@ -103,6 +104,7 @@ const AppContent: React.FC = () => {
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="employees" element={<EmployeeManagement />} />
             <Route path="attendance-leave" element={<AttendanceAndLeave />} />
+            <Route path="attendance-management" element={<AttendanceManagement />} />
             <Route path="reports" element={<ReportsAnalytics />} />
             <Route path="recruitment" element={<Recruitments />} />
             <Route path="performance" element={<PerformanceManagement />} />
@@ -128,6 +130,7 @@ const AppContent: React.FC = () => {
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<EmployeeDashboardEnhanced />} />
             <Route path="attendance" element={<Attendance />} />
+            <Route path="attendance-tracker" element={<AttendanceTracker />} />
             <Route path="leave" element={<LeaveManagement />} />
             <Route path="training" element={<TrainingAndDevelopment />} />
             <Route path="payslip" element={<Payslip />} />
