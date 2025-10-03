@@ -32,7 +32,10 @@ import {
   EyeOff,
   CheckCircle,
   FileText,
+  FileSpreadsheet,
+  Download,
 } from "lucide-react";
+import { CsvIcon, ExcelIcon } from "../../../components/icons";
 import {
   useEmployees,
   useDeleteEmployee,
@@ -47,6 +50,8 @@ import HeaderComponent from "../../../components/PageHeader";
 import { StateCard } from "../../../components/StateCard";
 import { DATE_FORMATS } from "../../../constants";
 import dayjs from 'dayjs';
+import * as XLSX from 'xlsx';
+import Papa from 'papaparse';
 
 const { Search: SearchInput } = Input;
 
@@ -151,6 +156,56 @@ const EmployeeManagement = () => {
     setIsImportModalVisible(false);
   };
 
+  const exportToCSV = () => {
+    const dataToExport = filteredData.map(emp => ({
+      'Employee ID': emp.employee_id,
+      'Name': emp.name,
+      'Email': emp.email,
+      'Department': emp.department,
+      'Position': emp.position,
+      'Role': emp.role?.charAt(0).toUpperCase() + emp.role?.slice(1) || '',
+      'Manager': emp.manager || 'No Manager',
+      'Salary': emp.salary || 'Not Set',
+      'Work Location': emp.work_location,
+      'Employment Type': emp.employment_type?.replace('_', ' ') || '',
+      'Status': emp.status,
+      'Join Date': emp.hire_date ? dayjs(emp.hire_date).format(DATE_FORMATS.DISPLAY) : ''
+    }));
+    
+    const csv = Papa.unparse(dataToExport);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `employees_${dayjs().format('YYYY-MM-DD')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportToExcel = () => {
+    const dataToExport = filteredData.map(emp => ({
+      'Employee ID': emp.employee_id,
+      'Name': emp.name,
+      'Email': emp.email,
+      'Department': emp.department,
+      'Position': emp.position,
+      'Role': emp.role?.charAt(0).toUpperCase() + emp.role?.slice(1) || '',
+      'Manager': emp.manager || 'No Manager',
+      'Salary': emp.salary || 'Not Set',
+      'Work Location': emp.work_location,
+      'Employment Type': emp.employment_type?.replace('_', ' ') || '',
+      'Status': emp.status,
+      'Join Date': emp.hire_date ? dayjs(emp.hire_date).format(DATE_FORMATS.DISPLAY) : ''
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Employees');
+    XLSX.writeFile(wb, `employees_${dayjs().format('YYYY-MM-DD')}.xlsx`);
+  };
+
   const columns: any = [
     {
       title: "Employee ID",
@@ -182,6 +237,7 @@ const EmployeeManagement = () => {
       title: "Role",
       dataIndex: "role",
       key: "role",
+      render: (role: string) => role ? role.charAt(0).toUpperCase() + role.slice(1) : "-",
     },
     {
       title: "Supervisor",
@@ -318,7 +374,7 @@ const EmployeeManagement = () => {
 
   if (isLoading) {
     return (
-      <Wrapper isDarkMode={isDarkMode}>
+      <Wrapper $isDarkMode={isDarkMode}>
         <div
           style={{
             display: "flex",
@@ -335,7 +391,7 @@ const EmployeeManagement = () => {
 
   if (error) {
     return (
-      <Wrapper isDarkMode={isDarkMode}>
+      <Wrapper $isDarkMode={isDarkMode}>
         <div style={{ textAlign: "center", padding: "50px" }}>
           <h3>Error loading employees</h3>
           <p>Please try refreshing the page</p>
@@ -345,7 +401,7 @@ const EmployeeManagement = () => {
   }
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <Wrapper $isDarkMode={isDarkMode}>
       <HeaderComponent
         isDarkMode={isDarkMode}
         title="Employee Management"
@@ -421,12 +477,28 @@ const EmployeeManagement = () => {
       <Card
         title="Employee List"
         extra={
-          <SearchInput
-            placeholder="Search employees..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 300 }}
-          />
+          <Space>
+            <SearchInput
+              placeholder="Search employees..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ width: 300 }}
+            />
+            <Tooltip title="Export to CSV">
+              <Button
+                type="text"
+                icon={<CsvIcon size={20} />}
+                onClick={exportToCSV}
+              />
+            </Tooltip>
+            <Tooltip title="Export to Excel">
+              <Button
+                type="text"
+                icon={<ExcelIcon size={20} />}
+                onClick={exportToExcel}
+              />
+            </Tooltip>
+          </Space>
         }
       >
         <Table

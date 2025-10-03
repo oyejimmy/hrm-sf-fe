@@ -465,7 +465,7 @@ const NotificationManagement: React.FC = () => {
   ];
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <Wrapper $isDarkMode={isDarkMode}>
       <HeaderComponent
         isDarkMode={isDarkMode}
         title="Notification Management"

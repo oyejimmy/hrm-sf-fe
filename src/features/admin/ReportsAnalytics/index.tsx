@@ -197,7 +197,7 @@ const ReportsAnalytics: React.FC = () => {
   const chartLayout = screens.xs ? { span: 24 } : { span: 12 };
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <Wrapper $isDarkMode={isDarkMode}>
       <HeaderComponent
         isDarkMode={isDarkMode}
         title="Reports Management"

@@ -262,7 +262,7 @@ const PerformanceManagement: React.FC = () => {
   ];
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <Wrapper $isDarkMode={isDarkMode}>
       <HeaderComponent
         title="Performance Management"
         subtitle="Manage employee performance reviews and evaluations"
