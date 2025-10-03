@@ -389,6 +389,11 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             label: "Attendance & Leave",
           },
           {
+            key: "/admin/attendance-management",
+            icon: <CalendarOutlined />,
+            label: "Attendance Management",
+          },
+          {
             key: "/admin/reports",
             icon: <BarChartOutlined />,
             label: "Reports",
@@ -463,6 +468,11 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             key: "/employee/attendance",
             icon: <CalendarOutlined />,
             label: "Attendance",
+          },
+          {
+            key: "/employee/attendance-tracker",
+            icon: <CalendarOutlined />,
+            label: "Attendance Tracker",
           },
           {
             key: "/employee/leave",
