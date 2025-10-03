@@ -8,7 +8,7 @@ const AdminLeaveManagementPage: React.FC = () => {
   const { isDarkMode } = useTheme();
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <Wrapper $isDarkMode={isDarkMode}>
       <HeaderComponent
         isDarkMode={isDarkMode}
         title="Leave Management Administration"

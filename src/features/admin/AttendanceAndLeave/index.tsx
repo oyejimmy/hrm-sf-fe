@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Row, Col, Tabs, message, Button, Space } from 'antd';
+import { Row, Col, Tabs, message, Button, Space, Spin, Alert } from 'antd';
 import { Users, BarChart3, Bell, Download, Settings, CheckCircle, XCircle, Clock, Coffee } from 'lucide-react';
 import { StateCard } from '../../../components/StateCard';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -17,7 +17,13 @@ import {
   AttendanceStats 
 } from '../../employee/EmployeeAttendance/types';
 import { Attendance } from './types';
-import { attendanceApi } from '../../../services/api/attendanceApi';
+import { 
+  useAllAttendanceToday, 
+  useAttendanceStats, 
+  useAdminAttendanceNotifications,
+  useExportAttendanceReport,
+  useProcessAutoAbsence
+} from '../../../hooks/api/useAttendance';
 import { leaveApi } from '../../../services/api/leaveApi';
 
 const { TabPane } = Tabs;
@@ -29,24 +35,14 @@ const AdminAttendanceManagement: React.FC = () => {
   const { isDarkMode } = useTheme();
   const queryClient = useQueryClient();
 
-  // Queries
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['admin-attendance-stats'],
-    queryFn: attendanceApi.getAttendanceStats,
-    refetchInterval: 30000,
-  });
-
-  const { data: attendanceRecords = [], isLoading: recordsLoading } = useQuery({
-    queryKey: ['admin-attendance-today'],
-    queryFn: attendanceApi.getAllAttendanceToday,
-    refetchInterval: 30000,
-  });
-
-  const { data: attendanceNotifications = [] } = useQuery({
-    queryKey: ['admin-attendance-notifications'],
-    queryFn: attendanceApi.getAdminAttendanceNotifications,
-    refetchInterval: 30000,
-  });
+  // API Hooks
+  const { data: stats = {}, isLoading: statsLoading, error: statsError } = useAttendanceStats();
+  const { data: attendanceRecords = [], isLoading: recordsLoading, error: recordsError } = useAllAttendanceToday();
+  const { data: attendanceNotifications = [] } = useAdminAttendanceNotifications();
+  
+  // Mutations
+  const exportReportMutation = useExportAttendanceReport();
+  const processAutoAbsenceMutation = useProcessAutoAbsence();
 
   const { data: leaveNotifications = [] } = useQuery({
     queryKey: ['admin-leave-notifications'],
@@ -103,35 +99,7 @@ const AdminAttendanceManagement: React.FC = () => {
     },
   });
 
-  const exportReportMutation = useMutation({
-    mutationFn: attendanceApi.exportAttendanceReport,
-    onSuccess: (blob) => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `attendance-report-${new Date().toISOString().split('T')[0]}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      message.success('Attendance report exported successfully');
-    },
-    onError: () => {
-      message.error('Failed to export attendance report');
-    },
-  });
-
-  const processAutoAbsenceMutation = useMutation({
-    mutationFn: attendanceApi.processAutoAbsence,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-attendance-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-attendance-today'] });
-      message.success('Auto-absence processing completed');
-    },
-    onError: () => {
-      message.error('Failed to process auto-absence');
-    },
-  });
+  // Remove the old mutations since we're using the new hooks
 
   const approveLeaveRequestMutation = useMutation({
     mutationFn: ({ requestId }: { requestId: string }) => 
@@ -225,9 +193,34 @@ const AdminAttendanceManagement: React.FC = () => {
   const combinedNotifications = [...attendanceNotifications, ...leaveNotifications, ...allNotifications];
   const unreadNotifications = unreadCountData?.count || 0;
   const loading = statsLoading || recordsLoading;
+  const hasError = statsError || recordsError;
+
+  // Show error state if there's a critical error
+  if (hasError) {
+    return (
+      <Wrapper $isDarkMode={isDarkMode}>
+        <HeaderComponent
+          isDarkMode={isDarkMode}
+          title="Attendance Management System"
+          subtitle="Monitor and manage employee attendance with real-time tracking"
+          breadcrumbItems={[
+            { title: 'Home', href: '/' },
+            { title: 'Admin', href: '/admin' }
+          ]}
+        />
+        <Alert
+          message="Error Loading Attendance Data"
+          description="There was an issue loading attendance information. Please try refreshing the page or contact support."
+          type="error"
+          showIcon
+          style={{ margin: '20px 0' }}
+        />
+      </Wrapper>
+    );
+  }
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <Wrapper $isDarkMode={isDarkMode}>
       <HeaderComponent
         isDarkMode={isDarkMode}
         title="Attendance Management System"
@@ -240,19 +233,33 @@ const AdminAttendanceManagement: React.FC = () => {
           <Button 
             icon={<Download size={16} />} 
             onClick={handleExportReport}
+            loading={exportReportMutation.isPending}
+            disabled={loading}
           >
             Export Report
           </Button>,
           <Button 
             icon={<Settings size={16} />} 
             onClick={handleProcessAutoAbsence}
+            loading={processAutoAbsenceMutation.isPending}
+            disabled={loading}
           >
             Process Auto-Absence
           </Button>
         ]}
       />
 
-      <Tabs activeKey={activeTab} onChange={setActiveTab}>
+      {/* Loading State */}
+      {loading && (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Spin size="large" />
+          <div style={{ marginTop: '16px' }}>Loading attendance data...</div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      {!loading && (
+        <Tabs activeKey={activeTab} onChange={setActiveTab}>
         <TabPane
           tab={
             <span>
@@ -263,60 +270,58 @@ const AdminAttendanceManagement: React.FC = () => {
           key="attendance"
         >
           {/* Attendance Stats Cards */}
-          {stats && (
-            <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-              <Col xs={24} sm={12} lg={6}>
-                <StateCard
-                  label="Present Today"
-                  value={`${stats.todayPresent}/${stats.totalEmployees}`}
-                  icon={<CheckCircle />}
-                  tone="pastelGreen"
-                  description={`${((stats.todayPresent / stats.totalEmployees) * 100).toFixed(1)}% present`}
-                  loading={loading}
-                />
-              </Col>
-              <Col xs={24} sm={12} lg={6}>
-                <StateCard
-                  label="Absent Today"
-                  value={stats.todayAbsent}
-                  icon={<XCircle />}
-                  tone="pastelPink"
-                  description="Not checked in"
-                  loading={loading}
-                />
-              </Col>
-              <Col xs={24} sm={12} lg={6}>
-                <StateCard
-                  label="Late Today"
-                  value={stats.todayLate}
-                  icon={<Clock />}
-                  tone="lightPeach"
-                  description="Late arrivals"
-                  loading={loading}
-                />
-              </Col>
-              <Col xs={24} sm={12} lg={6}>
-                <StateCard
-                  label="On Break"
-                  value={stats.onBreak}
-                  icon={<Coffee />}
-                  tone="softLavender"
-                  description="Currently on break"
-                  loading={loading}
-                />
-              </Col>
-            </Row>
-          )}
+          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            <Col xs={24} sm={12} lg={6}>
+              <StateCard
+                label="Present Today"
+                value={`${stats.todayPresent || 0}/${stats.totalEmployees || 0}`}
+                icon={<CheckCircle />}
+                tone="pastelGreen"
+                description={`${stats.totalEmployees ? ((stats.todayPresent || 0) / stats.totalEmployees * 100).toFixed(1) : 0}% present`}
+                loading={loading}
+              />
+            </Col>
+            <Col xs={24} sm={12} lg={6}>
+              <StateCard
+                label="Absent Today"
+                value={stats.todayAbsent || 0}
+                icon={<XCircle />}
+                tone="pastelPink"
+                description="Not checked in"
+                loading={loading}
+              />
+            </Col>
+            <Col xs={24} sm={12} lg={6}>
+              <StateCard
+                label="Late Today"
+                value={stats.todayLate || 0}
+                icon={<Clock />}
+                tone="lightPeach"
+                description="Late arrivals"
+                loading={loading}
+              />
+            </Col>
+            <Col xs={24} sm={12} lg={6}>
+              <StateCard
+                label="On Break"
+                value={stats.onBreak || 0}
+                icon={<Coffee />}
+                tone="softLavender"
+                description="Currently on break"
+                loading={loading}
+              />
+            </Col>
+          </Row>
           
           <TodayAttendanceTable
-            data={attendanceRecords.map((record: any) => ({
-              id: parseInt(record.id),
-              employeeName: record.employeeName,
-              date: record.date,
-              status: record.status as 'Present' | 'Absent' | 'Late' | 'Half Day',
-              hoursWorked: record.totalHours || 0,
-              remarks: record.notes
-            }))}
+            data={Array.isArray(attendanceRecords) ? attendanceRecords.map((record: any) => ({
+              id: parseInt(record.id || record.employee_id || '0'),
+              employeeName: record.employeeName || record.employee_name || 'Unknown',
+              date: record.date || new Date().toISOString().split('T')[0],
+              status: (record.status || 'Present') as 'Present' | 'Absent' | 'Late' | 'Half Day',
+              hoursWorked: record.totalHours || record.total_hours || 0,
+              remarks: record.notes || record.remarks || ''
+            })) : []}
             onEdit={handleEditAttendance}
             onDelete={handleDeleteAttendance}
             loading={loading}
@@ -392,7 +397,8 @@ const AdminAttendanceManagement: React.FC = () => {
             showEmployeeStats={false}
           />
         </TabPane>
-      </Tabs>
+        </Tabs>
+      )}
 
       {/* Modals */}
       <TodayAttendanceModal
@@ -404,8 +410,6 @@ const AdminAttendanceManagement: React.FC = () => {
         onSave={handleSaveAttendance}
         record={selectedAttendance}
       />
-
-
     </Wrapper>
   );
 };
