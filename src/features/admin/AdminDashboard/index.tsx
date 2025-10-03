@@ -17,7 +17,7 @@ const AdminDashboard = () => {
 
   if (isLoading) {
     return (
-      <Wrapper isDarkMode={isDarkMode}>
+      <Wrapper $isDarkMode={isDarkMode}>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
           <Spin size="large" />
         </div>
@@ -28,7 +28,7 @@ const AdminDashboard = () => {
   if (error) {
     console.error('Dashboard error:', error);
     return (
-      <Wrapper isDarkMode={isDarkMode}>
+      <Wrapper $isDarkMode={isDarkMode}>
         <div style={{ textAlign: 'center', padding: '50px' }}>
           <h3>Error loading dashboard data</h3>
           <p>Please try refreshing the page</p>
@@ -49,7 +49,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <Wrapper $isDarkMode={isDarkMode}>
       <HeaderComponent
         isDarkMode={isDarkMode}
         title="Dashboard"
