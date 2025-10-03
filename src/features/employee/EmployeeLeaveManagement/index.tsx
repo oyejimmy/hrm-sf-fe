@@ -118,7 +118,7 @@ const EmployeeLeaveManagement: React.FC = () => {
 
   if (error) {
     return (
-      <Wrapper isDarkMode={isDarkMode}>
+      <Wrapper $isDarkMode={isDarkMode}>
         <div style={{ textAlign: 'center', padding: '50px' }}>
           <h3>Error loading leave data</h3>
           <p>Please try refreshing the page</p>
@@ -128,7 +128,7 @@ const EmployeeLeaveManagement: React.FC = () => {
   }
 
   return ( // Render the Employee Leave Management component
-    <Wrapper isDarkMode={isDarkMode}> {/* Wrapper component with dark mode support */}
+    <Wrapper $isDarkMode={isDarkMode}> {/* Wrapper component with dark mode support */}
       <HeaderComponent // Page header component
         title="Leave Management" // Title of the page
         subtitle="Manage your leave requests and track your leave balance" // Subtitle of the page

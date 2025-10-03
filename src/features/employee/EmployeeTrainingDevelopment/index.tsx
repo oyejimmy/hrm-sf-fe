@@ -546,7 +546,7 @@ const EmployeeTrainingDevelopment = () => {
   ];
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <Wrapper $isDarkMode={isDarkMode}>
       <HeaderComponent
         isDarkMode={isDarkMode}
         title="Training & Development"

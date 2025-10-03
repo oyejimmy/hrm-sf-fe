@@ -66,7 +66,7 @@ const EmployeeRequestContent = () => {
   };
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <Wrapper $isDarkMode={isDarkMode}>
       <HeaderComponent
         isDarkMode={isDarkMode}
         title="Employee Requests"

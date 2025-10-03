@@ -116,7 +116,7 @@ const EmployeePayslip: React.FC = () => {
 
   if (error) {
     return (
-      <Wrapper isDarkMode={isDarkMode}>
+      <Wrapper $isDarkMode={isDarkMode}>
         <Alert
           message="Error"
           description="Failed to load payslips. Please try again later."
@@ -128,7 +128,7 @@ const EmployeePayslip: React.FC = () => {
   }
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <Wrapper $isDarkMode={isDarkMode}>
       <HeaderComponent
         isDarkMode={isDarkMode}
         title="Payslip Management"

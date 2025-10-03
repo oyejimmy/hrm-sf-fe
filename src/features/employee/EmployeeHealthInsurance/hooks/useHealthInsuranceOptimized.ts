@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { healthInsuranceApi } from '../../../../services/api/healthInsuranceApiOptimized';
+import { healthInsuranceApi } from '../../../../services/api/healthInsuranceApi';
 
 export const useHealthInsuranceData = () => {
   return useQuery({
