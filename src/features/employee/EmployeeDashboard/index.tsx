@@ -45,7 +45,7 @@ const EmployeeDashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Wrapper isDarkMode={isDarkMode}>
+      <Wrapper $isDarkMode={isDarkMode}>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
           <Spin size="large" />
         </div>
@@ -55,7 +55,7 @@ const EmployeeDashboard: React.FC = () => {
 
   if (error) {
     return (
-      <Wrapper isDarkMode={isDarkMode}>
+      <Wrapper $isDarkMode={isDarkMode}>
         <div style={{ textAlign: 'center', padding: '50px' }}>
           <h3>Error loading dashboard data</h3>
           <p>Please try refreshing the page</p>
@@ -114,7 +114,7 @@ const EmployeeDashboard: React.FC = () => {
   ];
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <Wrapper $isDarkMode={isDarkMode}>
       <PageContainer isDarkMode={isDarkMode}>
         <WelcomeHeader isDarkMode={isDarkMode} />
         <div style={{ marginBottom: '24px' }}>

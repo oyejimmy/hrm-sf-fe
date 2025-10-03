@@ -53,7 +53,7 @@ const EmployeeComplain = () => {
 
   if (isLoading) {
     return (
-      <Wrapper isDarkMode={isDarkMode}>
+      <Wrapper $isDarkMode={isDarkMode}>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
           <Spin size="large" />
         </div>
@@ -62,7 +62,7 @@ const EmployeeComplain = () => {
   }
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <Wrapper $isDarkMode={isDarkMode}>
       <HeaderComponent
         isDarkMode={isDarkMode}
         title="Complaint Management"

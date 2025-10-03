@@ -3,7 +3,7 @@ import { Badge, Button, Space, Typography, Tag, Empty, message } from 'antd';
 import { Bell, Clock, Coffee, LogIn, LogOut, AlertTriangle, User } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { leaveApi } from '../../../../services/api/leaveApi';
-import { attendanceApi } from '../../../../services/api/attendanceApi';
+// Attendance notifications will be handled by the attendance hooks
 import {
   NotificationPanelCard,
   NotificationCard,
@@ -28,8 +28,23 @@ const AttendanceNotificationPanel: React.FC = () => {
 
   const { data: attendanceNotifications = [], isLoading: attendanceLoading } = useQuery({
     queryKey: ['attendance-notifications'],
-    queryFn: attendanceApi.getAttendanceNotifications,
+    queryFn: async () => {
+      try {
+        const response = await fetch('/api/attendance/notifications', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        if (!response.ok) throw new Error('Failed to fetch');
+        return response.json();
+      } catch (error) {
+        console.warn('Attendance notifications not available:', error);
+        return [];
+      }
+    },
     refetchInterval: 60000,
+    retry: 1,
   });
 
   // Combine all notifications

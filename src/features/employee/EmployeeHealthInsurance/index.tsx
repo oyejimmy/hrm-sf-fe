@@ -66,7 +66,7 @@ const EmployeeHealthInsurance: React.FC = () => {
     }
   };
 
-  const stats = data?.stats || {
+  const stats = (data && typeof data === 'object' && 'stats' in data) ? data.stats : {
     totalCoverage: 0,
     usedAmount: 0,
     remainingAmount: 0,
@@ -162,7 +162,7 @@ const EmployeeHealthInsurance: React.FC = () => {
   ];
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <Wrapper $isDarkMode={isDarkMode}>
       <HeaderComponent
         title="Health Insurance"
         subtitle="Manage your health insurance policy, claims, and coverage details"
@@ -322,7 +322,7 @@ const EmployeeHealthInsurance: React.FC = () => {
           >
             <Table
               columns={claimColumns}
-              dataSource={data?.claims || []}
+              dataSource={(data && typeof data === 'object' && 'claims' in data) ? data.claims : []}
               rowKey="id"
               pagination={{ pageSize: 10 }}
             />
@@ -338,7 +338,7 @@ const EmployeeHealthInsurance: React.FC = () => {
           >
             <Table
               columns={dependentColumns}
-              dataSource={data?.dependents || []}
+              dataSource={(data && typeof data === 'object' && 'dependents' in data) ? data.dependents : []}
               rowKey="id"
               pagination={false}
             />
@@ -357,7 +357,7 @@ const EmployeeHealthInsurance: React.FC = () => {
       <MyCardModal 
         visible={cardModalVisible}
         onCancel={() => setCardModalVisible(false)}
-        policy={data?.policy}
+        policy={(data && typeof data === 'object' && 'policy' in data) ? data.policy : null}
         isDarkMode={isDarkMode}
       />
 

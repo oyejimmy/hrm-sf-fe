@@ -87,7 +87,7 @@ const EmployeeDocuments = () => {
 
   if (documentsLoading || sharedLoading) {
     return (
-      <Wrapper isDarkMode={isDarkMode}>
+      <Wrapper $isDarkMode={isDarkMode}>
         <div
           style={{
             display: "flex",
@@ -103,7 +103,7 @@ const EmployeeDocuments = () => {
   }
 
   return (
-    <Wrapper isDarkMode={isDarkMode}>
+    <Wrapper $isDarkMode={isDarkMode}>
       <HeaderComponent
         isDarkMode={isDarkMode}
         title="Document Management"

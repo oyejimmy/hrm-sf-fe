@@ -1,34 +1,62 @@
 import React from "react";
-import { Row, Col, Progress, Space, Typography } from "antd";
+import { Row, Col, Progress, Space, Typography, Alert } from "antd";
 import { TrendingUp, UserCheck, UserX, AlertCircle, Coffee } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "../../../../services/api/api";
 import { StateCard } from "../../../../components/StateCard";
 import { OverviewCard, OverviewContent, EqualHeightContainer } from "./styles";
+import { useMyAttendanceRecords } from "../../../../hooks/api/useAttendance";
+import dayjs from 'dayjs';
 
 const { Text } = Typography;
 
 const AttendanceOverviewPanel: React.FC = () => {
-  const { data: attendanceData, isLoading } = useQuery({
-    queryKey: ['attendance-overview'],
-    queryFn: () => api.get('/api/attendance/records').then(res => res.data),
-  });
+  const { data: attendanceData = [], isLoading, error } = useMyAttendanceRecords(30);
   const calculateStats = () => {
-    if (!attendanceData?.length) return { presentDays: 0, absentDays: 0, lateDays: 0, onLeaveDays: 0, attendancePercentage: 0 };
-    const present = attendanceData.filter((record: any) => record.status === 'present').length;
-    const absent = attendanceData.filter((record: any) => record.status === 'absent').length;
-    const late = attendanceData.filter((record: any) => record.status === 'late').length;
-    const onLeave = attendanceData.filter((record: any) => record.status === 'on_leave').length;
-    const total = attendanceData.length;
+    if (!Array.isArray(attendanceData) || !attendanceData.length) {
+      return { presentDays: 0, absentDays: 0, lateDays: 0, onLeaveDays: 0, attendancePercentage: 0, totalWorkingDays: 0 };
+    }
+
+    // Filter records for current month
+    const currentMonth = dayjs().format('YYYY-MM');
+    const monthRecords = attendanceData.filter((record: any) => 
+      record.date && record.date.startsWith(currentMonth)
+    );
+
+    const present = monthRecords.filter((record: any) => record.status === 'present').length;
+    const absent = monthRecords.filter((record: any) => record.status === 'absent').length;
+    const late = monthRecords.filter((record: any) => record.status === 'late').length;
+    const onLeave = monthRecords.filter((record: any) => record.status === 'on_leave').length;
+    const halfDay = monthRecords.filter((record: any) => record.status === 'half_day').length;
+    
+    const totalWorkingDays = present + late + halfDay;
+    const totalDays = monthRecords.length;
+    
     return {
       presentDays: present,
       absentDays: absent,
       lateDays: late,
       onLeaveDays: onLeave,
-      attendancePercentage: total > 0 ? Math.round((present / total) * 100) : 0
+      totalWorkingDays,
+      attendancePercentage: totalDays > 0 ? Math.round((totalWorkingDays / totalDays) * 100) : 0
     };
   };
+
   const stats = calculateStats();
+
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <EqualHeightContainer>
+        <OverviewCard title="Attendance Overview">
+          <Alert
+            message="Error Loading Overview"
+            description="Unable to load attendance overview data."
+            type="error"
+            showIcon
+          />
+        </OverviewCard>
+      </EqualHeightContainer>
+    );
+  }
   return (
     <EqualHeightContainer>
       <OverviewCard
