@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Card, Tabs, Avatar, Flex, Typography, Form } from 'antd';
+import { Card, Tabs, Avatar, Flex, Typography, Form, Row, Col } from 'antd';
 
 const { Title } = Typography;
 
@@ -24,6 +24,13 @@ export const CoverSection = styled.div<{ bgImage?: string; isDarkMode: boolean }
   align-items: flex-end;
   justify-content: flex-end;
   padding: 24px;
+  overflow: hidden;
+  
+  &:hover {
+    .edit-button {
+      opacity: 1;
+    }
+  }
 `;
 
 export const CoverOverlay = styled.div`
@@ -167,6 +174,7 @@ export const SideInfoItem = styled.div<{ isDarkMode: boolean }>`
     font-weight: 500;
     color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.65)' : '#666'};
     margin-bottom: 4px;
+    gap: 8px;
   }
   
   .value {
@@ -176,6 +184,29 @@ export const SideInfoItem = styled.div<{ isDarkMode: boolean }>`
   
   a {
     color: ${props => props.isDarkMode ? '#1890ff' : '#1890ff'};
+  }
+`;
+
+export const IconWrapper = styled.span<{ color: string }>`
+  color: ${props => props.color};
+  display: inline-flex;
+  align-items: center;
+`;
+
+export const TabContent = styled(Row)`
+  margin-top: 24px;
+`;
+
+export const TabIcon = styled.span<{ color: string }>`
+  margin-right: 8px;
+  color: ${props => props.color};
+  display: inline-flex;
+  align-items: center;
+`;
+
+export const ResponsiveCol = styled(Col)`
+  @media (max-width: 768px) {
+    margin-bottom: 16px;
   }
 `;
 
@@ -200,16 +231,6 @@ export const ContactDetails = styled.div`
 `;
 
 // Avatar Styles
-export const AvatarContainer = styled.div`
-  position: relative;
-  display: inline-block;
-`;
-
-export const AvatarImage = styled(Avatar)`
-  border: 4px solid white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-`;
-
 export const AvatarEditOverlay = styled.div`
   position: absolute;
   bottom: 0;
@@ -223,11 +244,57 @@ export const AvatarEditOverlay = styled.div`
   justify-content: center;
   cursor: pointer;
   border: 3px solid white;
+  opacity: 0;
+  transition: opacity 0.3s;
+  
+  &:hover {
+    background: #40a9ff;
+  }
 `;
+
+export const AvatarContainer = styled.div`
+  position: relative;
+  display: inline-block;
+  
+  &:hover {
+    ${AvatarEditOverlay} {
+      opacity: 1;
+    }
+  }
+`;
+
+export const AvatarImage = styled(Avatar)`
+  border: 4px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.2s;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+`;
+
+
 
 // Form Styles
 export const FormItem = styled(Form.Item)<{ isDarkMode: boolean }>`
   .ant-form-item-label > label {
     color: ${props => props.isDarkMode ? 'rgba(255, 255, 255, 0.85)' : 'inherit'};
   }
+`;
+
+// Image Modal Styles
+export const ImageAdjustmentContainer = styled.div`
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+`;
+
+export const AdjustableImage = styled.img<{ offsetY: number }>`
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  object-fit: cover;
+  transform: translateY(${props => props.offsetY}px);
+  transition: transform 0.3s ease;
 `;
