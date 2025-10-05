@@ -42,6 +42,9 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../../services/api/api';
 import { masterDataApi } from '../../../services/api/masterDataApi';
+import { profileApi } from '../../../services/api/profileApi';
+import EditProfileImageModal from './EditProfileImageModal';
+import CroppedAvatar from '../../../components/CroppedAvatar';
 import * as S from './styles';
 
 const { Text } = Typography;
@@ -54,10 +57,29 @@ const EditProfile: React.FC = () => {
   const { isDarkMode } = useTheme();
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [avatarImage, setAvatarImage] = useState<string | null>(null);
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
+  
+  // Update image mutation
+  const updateImageMutation = useMutation({
+    mutationFn: (data: { avatar: string | null; coverImage: string | null; coverOffset?: number; profileCrop?: { scale: number; offsetX: number; offsetY: number } }) => 
+      profileApi.updateProfileImages(data),
+    onSuccess: (response, variables) => {
+      setCoverImage(variables.coverImage);
+      setAvatarImage(variables.avatar);
+      setIsImageModalVisible(false);
+      message.success('Profile images updated successfully!');
+      // Invalidate all related queries
+      queryClient.invalidateQueries({ queryKey: ['employee-profile'] });
+      queryClient.refetchQueries({ queryKey: ['employee-profile'] });
+    },
+    onError: (error: any) => {
+      message.error(error.message || 'Failed to update profile images');
+    }
+  });
   
   // Fetch current profile data
   const { data: employeeData, isLoading } = useQuery({
@@ -122,17 +144,13 @@ const EditProfile: React.FC = () => {
     message.success('Cover image uploaded successfully');
   };
 
-  const handleAvatarUpload = (info: any) => {
-    const file = info.file.originFileObj || info.file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64 = e.target?.result as string;
-      setAvatarImage(base64);
-      // Immediately save to database
-      updateProfileMutation.mutate({ avatar_url: base64 });
-    };
-    reader.readAsDataURL(file);
-    message.success('Profile picture updated successfully');
+  const handleImageSave = (profileImage: string | null, coverImage: string | null, coverOffset?: number, profileCrop?: { scale: number; offsetX: number; offsetY: number }) => {
+    updateImageMutation.mutate({
+      avatar: profileImage,
+      coverImage: coverImage,
+      coverOffset: coverOffset,
+      profileCrop: profileCrop
+    });
   };
 
   const getProfilePath = () => {
@@ -182,9 +200,16 @@ const EditProfile: React.FC = () => {
       addField('marital_status', allFormData.maritalStatus);
       addField('nationality', allFormData.nationality);
       addField('religion', allFormData.religion);
-      addField('languages_known', allFormData.languagesKnown);
+      if (allFormData.languagesKnown && Array.isArray(allFormData.languagesKnown)) {
+        const languageNames = allFormData.languagesKnown.map((langId: number) => {
+          const language = languages.find((l: any) => l.id === langId);
+          return language ? language.name : langId.toString();
+        });
+        addField('languages_known', languageNames.join(', '));
+      }
       addField('hobbies', allFormData.hobbies);
       addField('address', allFormData.address);
+      addField('office_address', allFormData.officeAddress);
       addField('personal_email', allFormData.personalEmail);
       
       // Job info
@@ -204,7 +229,11 @@ const EditProfile: React.FC = () => {
       addField('certifications', allFormData.certifications);
       addField('skills_summary', allFormData.skillsSummary);
       if (allFormData.technicalSkills && Array.isArray(allFormData.technicalSkills)) {
-        addField('technical_skills', allFormData.technicalSkills);
+        const skillNames = allFormData.technicalSkills.map((skillId: number) => {
+          const skill = technicalSkills.find((s: any) => s.id === skillId);
+          return skill ? skill.name : skillId.toString();
+        });
+        addField('technical_skills', skillNames);
       }
       
       // Compensation
@@ -276,45 +305,67 @@ const EditProfile: React.FC = () => {
         emergencyContactHomePhone: employeeData?.personalInfo?.emergency_contact_home_phone,
         emergencyContactAddress: employeeData?.personalInfo?.emergency_contact_address,
         // Technical skills
-        technicalSkills: employeeData?.personalInfo?.technical_skills || []
+        technicalSkills: employeeData?.personalInfo?.technical_skills || [],
+        // Office address
+        officeAddress: employeeData?.personalInfo?.office_address
       }}>
         <S.StyledCard bodyStyle={{ padding: 0 }} isDarkMode={isDarkMode}>
         <S.CoverSection bgImage={coverImage || employeeData?.personalInfo?.coverImage || employeeData?.personalInfo?.cover_image_url || undefined} isDarkMode={isDarkMode}>
-          <S.CoverOverlay>
-            <Upload {...uploadProps} onChange={handleCoverUpload} accept="image/*">
-              <Button type="primary" icon={<Camera size={16} />}>
-                Change Cover
-              </Button>
-            </Upload>
-          </S.CoverOverlay>
+          {(coverImage || employeeData?.personalInfo?.coverImage) && (
+            <img 
+              src={coverImage || employeeData?.personalInfo?.coverImage} 
+              alt="Cover" 
+              style={{
+                width: '100%',
+                height: 'auto',
+                minHeight: '100%',
+                objectFit: 'cover',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                transform: `translateY(${employeeData?.personalInfo?.coverOffset || 0}px)`
+              }}
+            />
+          )}
+          <Button
+            type="primary"
+            icon={<Camera size={16} />}
+            onClick={() => setIsImageModalVisible(true)}
+            style={{ 
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              background: 'rgba(0, 0, 0, 0.6)',
+              border: 'none',
+              zIndex: 2
+            }}
+          >
+            Edit Profile Image
+          </Button>
         </S.CoverSection>
 
         <S.ProfileCard isDarkMode={isDarkMode}>
           <S.ProfileContent>
             <S.UserInfoContainer align="flex-end">
               <S.AvatarContainer>
-                <S.AvatarImage
+                <CroppedAvatar
                   size={140}
-                  src={avatarImage || employeeData?.personalInfo?.avatar || employeeData?.personalInfo?.avatar_url || "https://images.unsplash.com/photo-1580489944761-15a19d65463f?q=80&w=1961&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
+                  src={avatarImage || employeeData?.personalInfo?.avatar || employeeData?.personalInfo?.avatar_url}
+                  crop={employeeData?.personalInfo?.profileCrop}
                 />
-                <Upload {...uploadProps} onChange={handleAvatarUpload} accept="image/*">
-                  <S.AvatarEditOverlay>
-                    <Camera size={16} color="white" />
-                  </S.AvatarEditOverlay>
-                </Upload>
               </S.AvatarContainer>
 
               <S.UserInfo>
-                <Form.Item name="name">
+                <Form.Item name="name" style={{ margin: 0 }}>
                   <Input
                     style={{ fontSize: '28px', fontWeight: 600, color: isDarkMode ? 'white' : '#262626', border: 'none', background: 'transparent', padding: 0 }}
                     bordered={false}
                   />
                 </Form.Item>
-                <S.UserDetailsVertical>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                   <S.UserDetailItem>
                     <Briefcase size={18} color="#1890ff" />
-                    <Form.Item name="position" style={{ margin: 0 }}>
+                    <Form.Item name="position" style={{ margin: 0, marginBottom: 0 }}>
                       <Input
                         style={{ color: '#555', border: 'none', background: 'transparent', padding: 0 }}
                         bordered={false}
@@ -323,14 +374,14 @@ const EditProfile: React.FC = () => {
                   </S.UserDetailItem>
                   <S.UserDetailItem>
                     <MapPin size={18} color="#ff4d4f" />
-                    <Form.Item name="location" style={{ margin: 0 }}>
+                    <Form.Item name="location" style={{ margin: 0, marginBottom: 0 }}>
                       <Input
                         style={{ color: '#555', border: 'none', background: 'transparent', padding: 0 }}
                         bordered={false}
                       />
                     </Form.Item>
                   </S.UserDetailItem>
-                </S.UserDetailsVertical>
+                </div>
               </S.UserInfo>
 
               <Flex gap="small">
@@ -380,6 +431,11 @@ const EditProfile: React.FC = () => {
                     <Descriptions.Item label="Employment type">{employeeData?.jobInfo?.employmentType || '-'}</Descriptions.Item>
                     <Descriptions.Item label="Employee ID">{employeeData?.personalInfo?.employeeId || '-'}</Descriptions.Item>
                     <Descriptions.Item label="Manager">{employeeData?.personalInfo?.manager || '-'}</Descriptions.Item>
+                    <Descriptions.Item label="Office Address" span={3}>
+                      <S.FormItem name="officeAddress" isDarkMode={isDarkMode} style={{ margin: 0 }}>
+                        <TextArea rows={2} placeholder="Enter office address" style={{ width: '100%', minWidth: '300px' }} />
+                      </S.FormItem>
+                    </Descriptions.Item>
                   </Descriptions>
                 </S.StyledCard>
               </Col>
@@ -399,7 +455,7 @@ const EditProfile: React.FC = () => {
                       <Row gutter={16}>
                         <Col span={12}>
                           <S.FormItem name="gender" label="Gender" isDarkMode={isDarkMode} rules={[{ required: true, message: 'Select gender' }]}>
-                            <Select>
+                            <Select allowClear>
                               <Option value="male">Male</Option>
                               <Option value="female">Female</Option>
                               <Option value="other">Other</Option>
@@ -413,7 +469,7 @@ const EditProfile: React.FC = () => {
                             />
                           </S.FormItem>
                           <S.FormItem name="maritalStatus" label="Marital Status" isDarkMode={isDarkMode} rules={[{ required: true, message: 'Select marital status' }]}>
-                            <Select>
+                            <Select allowClear>
                               <Option value="single">Single</Option>
                               <Option value="married">Married</Option>
                               <Option value="divorced">Divorced</Option>
@@ -421,7 +477,7 @@ const EditProfile: React.FC = () => {
                             </Select>
                           </S.FormItem>
                           <S.FormItem name="bloodGroup" label="Blood Group" isDarkMode={isDarkMode}>
-                            <Select>
+                            <Select allowClear>
                               <Option value="A+">A+</Option>
                               <Option value="A-">A-</Option>
                               <Option value="B+">B+</Option>
@@ -441,7 +497,7 @@ const EditProfile: React.FC = () => {
                             <Input />
                           </S.FormItem>
                           <S.FormItem name="languagesKnown" label="Languages Known" isDarkMode={isDarkMode}>
-                            <Select mode="multiple" placeholder="Select languages">
+                            <Select mode="multiple" allowClear placeholder="Select languages">
                               {languages.map((lang: any) => <Option key={lang.id} value={lang.id}>{lang.name}</Option>)}
                             </Select>
                           </S.FormItem>
@@ -474,21 +530,10 @@ const EditProfile: React.FC = () => {
                           <S.FormItem name="emergencyContactName" label="Contact Name" isDarkMode={isDarkMode} rules={[{ required: true, message: 'Enter contact name' }]}>
                             <Input />
                           </S.FormItem>
-                          <S.FormItem name="emergencyContactPhone" label="Mobile Number" isDarkMode={isDarkMode} rules={[{ required: true, message: 'Enter mobile number' }]}>
-                            <Input 
-                              addonBefore={
-                                <Form.Item name="emergencyMobileCountryCode" noStyle initialValue="+92">
-                                  <Select style={{ width: 100 }}>
-                                    {COUNTRY_CODES.map(cc => <Option key={cc.code} value={cc.code}>{cc.flag} {cc.code}</Option>)}
-                                  </Select>
-                                </Form.Item>
-                              }
-                            />
-                          </S.FormItem>
                         </Col>
                         <Col span={12}>
                           <S.FormItem name="emergencyContactRelationship" label="Relationship" isDarkMode={isDarkMode} rules={[{ required: true, message: 'Select relationship' }]}>
-                            <Select>
+                            <Select allowClear>
                               <Option value="spouse">Spouse</Option>
                               <Option value="parent">Parent</Option>
                               <Option value="sibling">Sibling</Option>
@@ -497,6 +542,23 @@ const EditProfile: React.FC = () => {
                               <Option value="other">Other</Option>
                             </Select>
                           </S.FormItem>
+                        </Col>
+                      </Row>
+                      <Row gutter={16}>
+                        <Col span={12}>
+                          <S.FormItem name="emergencyContactPhone" label="Mobile Number" isDarkMode={isDarkMode} rules={[{ required: true, message: 'Enter mobile number' }]}>
+                            <Input 
+                              addonBefore={
+                                <Form.Item name="emergencyMobileCountryCode" noStyle initialValue="+92">
+                                  <Select style={{ width: 100 }} allowClear>
+                                    {COUNTRY_CODES.map(cc => <Option key={cc.code} value={cc.code}>{cc.flag} {cc.code}</Option>)}
+                                  </Select>
+                                </Form.Item>
+                              }
+                            />
+                          </S.FormItem>
+                        </Col>
+                        <Col span={12}>
                           <S.FormItem name="emergencyContactHomePhone" label="Home Phone" isDarkMode={isDarkMode}>
                             <Input />
                           </S.FormItem>
@@ -576,37 +638,51 @@ const EditProfile: React.FC = () => {
                     <S.StyledCard title="Education & Skills" isDarkMode={isDarkMode}>
                       <Row gutter={16}>
                         <Col span={12}>
-                          <S.FormItem name="qualification" label="Qualification" isDarkMode={isDarkMode}>
+                          <S.FormItem name="university" label="University" isDarkMode={isDarkMode}>
                             <Input />
                           </S.FormItem>
+                        </Col>
+                        <Col span={12}>
                           <S.FormItem name="educationLevel" label="Education Level" isDarkMode={isDarkMode}>
-                            <Select>
+                            <Select allowClear>
                               <Option value="high_school">High School</Option>
                               <Option value="bachelor">Bachelor's Degree</Option>
                               <Option value="master">Master's Degree</Option>
                               <Option value="phd">PhD</Option>
                             </Select>
                           </S.FormItem>
-                          <S.FormItem name="university" label="University" isDarkMode={isDarkMode}>
+                        </Col>
+                      </Row>
+                      <Row gutter={16}>
+                        <Col span={12}>
+                          <S.FormItem name="qualification" label="Qualification" isDarkMode={isDarkMode}>
                             <Input />
                           </S.FormItem>
+                        </Col>
+                        <Col span={12}>
                           <S.FormItem name="graduationYear" label="Graduation Year" isDarkMode={isDarkMode}>
                             <Input type="number" />
                           </S.FormItem>
                         </Col>
+                      </Row>
+                      <Row gutter={16}>
                         <Col span={12}>
                           <S.FormItem name="certifications" label="Certifications" isDarkMode={isDarkMode}>
                             <TextArea rows={2} />
                           </S.FormItem>
+                        </Col>
+                        <Col span={12}>
                           <S.FormItem name="skillsSummary" label="Skills Summary" isDarkMode={isDarkMode}>
-                            <TextArea rows={4} />
+                            <TextArea rows={2} />
                           </S.FormItem>
                         </Col>
                       </Row>
+                      <Row gutter={16}>
                         <Col span={24}>
                           <S.FormItem name="technicalSkills" label="Technical Skills" isDarkMode={isDarkMode}>
                             <Select
                               mode="multiple"
+                              allowClear
                               placeholder="Select your technical skills"
                               style={{ width: '100%' }}
                             >
@@ -614,6 +690,7 @@ const EditProfile: React.FC = () => {
                             </Select>
                           </S.FormItem>
                         </Col>
+                      </Row>
                     </S.StyledCard>
                   </TabPane>
                 </S.StyledTabs>
@@ -622,6 +699,15 @@ const EditProfile: React.FC = () => {
           </S.ProfileContent>
         </S.ProfileCard>
         </S.StyledCard>
+        
+        <EditProfileImageModal
+          visible={isImageModalVisible}
+          onCancel={() => setIsImageModalVisible(false)}
+          onSave={handleImageSave}
+          loading={updateImageMutation.isPending}
+          currentProfileImage={avatarImage || employeeData?.personalInfo?.avatar}
+          currentCoverImage={coverImage || employeeData?.personalInfo?.coverImage}
+        />
       </Form>
     </S.PageContainer>
   );
