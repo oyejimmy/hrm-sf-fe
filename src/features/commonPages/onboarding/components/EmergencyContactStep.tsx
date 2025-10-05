@@ -15,8 +15,22 @@ const EmergencyContactStep: React.FC = () => {
           </Form.Item>
         </Col>
         <Col xs={24} sm={12} md={12}>
-          <Form.Item name="emergency_contact_relationship" label="Relationship" rules={[{ required: true, message: 'Enter relationship' }]}>
-            <Input placeholder="e.g., Father, Mother, Spouse" />
+          <Form.Item name="emergency_contact_relationship" label="Relationship" rules={[{ required: true, message: 'Select relationship' }]}>
+            <Select placeholder="Select relationship">
+              <Option value="spouse">Spouse</Option>
+              <Option value="father">Father</Option>
+              <Option value="mother">Mother</Option>
+              <Option value="parent">Parent</Option>
+              <Option value="sibling">Sibling</Option>
+              <Option value="brother">Brother</Option>
+              <Option value="sister">Sister</Option>
+              <Option value="child">Child</Option>
+              <Option value="son">Son</Option>
+              <Option value="daughter">Daughter</Option>
+              <Option value="friend">Friend</Option>
+              <Option value="colleague">Colleague</Option>
+              <Option value="other">Other</Option>
+            </Select>
           </Form.Item>
         </Col>
         <Col xs={24} sm={12} md={12}>
