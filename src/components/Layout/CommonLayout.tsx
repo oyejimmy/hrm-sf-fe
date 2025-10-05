@@ -41,6 +41,7 @@ import { api } from '../../services/api/api';
 import { useTheme } from "../../contexts/ThemeContext";
 import { useResponsive } from "../../hooks";
 import styled from "styled-components";
+import CroppedAvatar from '../CroppedAvatar';
 
 const { Header: AntHeader, Content, Sider } = Layout;
 
@@ -470,11 +471,6 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             label: "Attendance",
           },
           {
-            key: "/employee/attendance-tracker",
-            icon: <CalendarOutlined />,
-            label: "Attendance Tracker",
-          },
-          {
             key: "/employee/leave",
             icon: <FileTextOutlined />,
             label: "Leave Management",
@@ -627,10 +623,11 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
               <PanelLeftClose size={16} />
             </CollapseButton>
           )}
-          <UserAvatar
+          <CroppedAvatar
             size={96}
-            icon={<UserOutlined />}
             src={profileData?.personalInfo?.avatar_url || profileData?.personalInfo?.avatar || user?.profile_picture}
+            crop={profileData?.personalInfo?.profileCrop}
+            fallback={undefined}
           />
           <UserName>{profileData?.personalInfo?.name || `${user?.first_name} ${user?.last_name}` || "User"}</UserName>
           <Tag color={isDarkMode ? currentTheme?.colors?.secondary : "purple"}>
@@ -713,10 +710,10 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             trigger={["click"]}
           >
             <UserDropdownButton type="text">
-              <Avatar
-                size={isMobile ? 24 : "small"}
-                icon={<UserOutlined />}
+              <CroppedAvatar
+                size={isMobile ? 24 : 32}
                 src={profileData?.personalInfo?.avatar_url || profileData?.personalInfo?.avatar || user?.profile_picture}
+                crop={profileData?.personalInfo?.profileCrop}
               />
               {!isMobile && (
                 <span>
