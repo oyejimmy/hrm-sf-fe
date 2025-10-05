@@ -16,6 +16,7 @@ export const ROUTES = {
     DOCUMENTS: '/admin/documents',
     COMMUNICATION: '/admin/communication',
     NOTIFICATIONS: '/admin/notifications',
+    PROFILE: '/admin/profile',
   },
   
   // Employee Routes
@@ -29,6 +30,7 @@ export const ROUTES = {
     DOCUMENTS: '/employee/documents',
     COMPLAIN: '/employee/complain',
     REQUEST: '/employee/request',
+    PROFILE: '/employee/profile',
   },
   
   // Team Lead Routes
@@ -38,6 +40,7 @@ export const ROUTES = {
     LEAVE_REQUESTS: '/team-lead/leave-requests',
     PERFORMANCE: '/team-lead/performance',
     TRAINING: '/team-lead/training',
+    PROFILE: '/team-lead/profile',
   },
   
   // Common Routes
@@ -57,6 +60,7 @@ export const ROUTE_PERMISSIONS = {
   [ROUTES.ADMIN.TRAINING]: ['admin', 'hr'],
   [ROUTES.ADMIN.DOCUMENTS]: ['admin', 'hr'],
   [ROUTES.ADMIN.COMMUNICATION]: ['admin', 'hr'],
+  [ROUTES.ADMIN.PROFILE]: ['admin', 'hr'],
   
   [ROUTES.EMPLOYEE.DASHBOARD]: ['employee'],
   [ROUTES.EMPLOYEE.ATTENDANCE]: ['employee'],
@@ -67,12 +71,14 @@ export const ROUTE_PERMISSIONS = {
   [ROUTES.EMPLOYEE.DOCUMENTS]: ['employee'],
   [ROUTES.EMPLOYEE.COMPLAIN]: ['employee'],
   [ROUTES.EMPLOYEE.REQUEST]: ['employee'],
+  [ROUTES.EMPLOYEE.PROFILE]: ['employee'],
   
   [ROUTES.TEAM_LEAD.DASHBOARD]: ['team_lead'],
   [ROUTES.TEAM_LEAD.ATTENDANCE]: ['team_lead'],
   [ROUTES.TEAM_LEAD.LEAVE_REQUESTS]: ['team_lead'],
   [ROUTES.TEAM_LEAD.PERFORMANCE]: ['team_lead'],
   [ROUTES.TEAM_LEAD.TRAINING]: ['team_lead'],
+  [ROUTES.TEAM_LEAD.PROFILE]: ['team_lead'],
   
   [ROUTES.PROFILE]: ['admin', 'hr', 'team_lead', 'employee'],
   [ROUTES.EDITPROFILE]: ['admin', 'hr', 'team_lead', 'employee'],
