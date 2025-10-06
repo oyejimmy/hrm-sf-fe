@@ -227,3 +227,13 @@ export const useEmployeeDetails = (id: number) => {
     enabled: !!id,
   });
 };
+
+export const useMyEmployeeDetails = () => {
+  return useQuery({
+    queryKey: ['my-employee-details'],
+    queryFn: async (): Promise<DetailedEmployee> => {
+      const response = await api.get('/api/employees/me');
+      return response.data;
+    },
+  });
+};
