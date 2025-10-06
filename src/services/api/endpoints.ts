@@ -21,6 +21,7 @@ export const API_ENDPOINTS = {
   LEAVES: {
     BASE: '/api/leaves',
     MY_LEAVES: '/api/leaves/my-leaves',
+    BALANCE: '/api/leaves/balance',
     APPROVE: (id: string) => `/api/leaves/${id}/approve`,
     REJECT: (id: string) => `/api/leaves/${id}/reject`,
   },
@@ -118,8 +119,12 @@ export const API_ENDPOINTS = {
   PAYROLL: {
     PAYSLIPS: '/api/payroll/payslips',
     MY_PAYSLIPS: '/api/payroll/my-payslips',
+    ADMIN_PAYSLIPS: '/api/payroll/admin/payslips',
+    PAYSLIP_DETAILS: (id: string) => `/api/payroll/payslips/${id}/details`,
+    PAYSLIP_PDF: (id: string) => `/api/payroll/payslips/${id}/pdf`,
     SALARY_STRUCTURE: '/api/payroll/my-salary-structure',
     BONUSES: '/api/payroll/my-bonuses',
+    APPROVE_PAYSLIP: (id: string) => `/api/payroll/payslips/${id}/approve`,
   },
 
   // Requests
