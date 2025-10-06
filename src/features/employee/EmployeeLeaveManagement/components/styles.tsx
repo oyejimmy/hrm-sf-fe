@@ -19,12 +19,17 @@ export const StyledCard = styled(Card) <{ isDarkMode: boolean }>`
 
   .ant-card-head {
     border-bottom: 1px solid ${props => props.isDarkMode ? '#434343' : '#f0f0f0'}; // Bottom border for card header
+    padding: 12px 16px; // Reduced padding for card header
   }
 
   .ant-card-head-title {
     font-weight: 600; // Bold font weight for card title
     font-size: 16px; // Font size for card title
     color: ${props => props.isDarkMode ? '#e6e6e6' : 'var(--text-color)'}; // Text color based on dark mode
+  }
+
+  .ant-card-body {
+    padding: 16px; // Reduced padding for card body
   }
 `;
 
