@@ -7,7 +7,12 @@ import {
   Button,
   Badge,
   message,
-  Tabs
+  Tabs,
+  Input,
+  Select,
+  DatePicker,
+  Grid,
+  Spin
 } from 'antd';
 import { Bell, Users, Clock, CheckCircle } from 'lucide-react';
 import styled from 'styled-components';
@@ -21,12 +26,56 @@ import {
 } from '../../../employee/EmployeeLeaveManagement/types';
 import { LeaveRequest } from '../types';
 import { leaveApi } from '../../../../services/api/leaveApi';
+import { useLeaves, useApproveLeave, useRejectLeave } from '../../../../hooks/api/useLeaves';
+import { useTheme } from '../../../../contexts/ThemeContext';
 
 const { TabPane } = Tabs;
+const { Search: SearchInput } = Input;
+const { Option } = Select;
+const { RangePicker } = DatePicker;
+const { useBreakpoint } = Grid;
 
-const AdminCard = styled(Card)`
+const AdminCard = styled(Card)<{ $isDarkMode?: boolean }>`
+  background: ${props => props.$isDarkMode ? 'var(--surface)' : '#ffffff'};
+  border: 1px solid ${props => props.$isDarkMode ? 'var(--border)' : '#d9d9d9'};
+  
+  .ant-card-head {
+    background: ${props => props.$isDarkMode ? 'var(--surface)' : '#ffffff'};
+    border-bottom: 1px solid ${props => props.$isDarkMode ? 'var(--border)' : '#f0f0f0'};
+  }
+  
   .ant-card-head-title {
-    color: var(--text-color);
+    color: ${props => props.$isDarkMode ? 'var(--text-primary)' : '#000000d9'};
+  }
+  
+  .ant-card-body {
+    background: ${props => props.$isDarkMode ? 'var(--surface)' : '#ffffff'};
+  }
+`;
+
+const FilterSection = styled.div<{ $isDarkMode: boolean }>`
+  background: ${props => props.$isDarkMode ? 'var(--surfaceSecondary)' : '#fafafa'};
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px solid ${props => props.$isDarkMode ? 'var(--border)' : '#f0f0f0'};
+`;
+
+const StyledTabs = styled(Tabs)<{ $isDarkMode: boolean }>`
+  .ant-tabs-nav {
+    background: ${props => props.$isDarkMode ? 'var(--surface)' : '#ffffff'};
+  }
+  
+  .ant-tabs-tab {
+    color: ${props => props.$isDarkMode ? 'var(--text-secondary)' : '#000000d9'};
+  }
+  
+  .ant-tabs-tab-active {
+    color: var(--primary) !important;
+  }
+  
+  .ant-tabs-content-holder {
+    background: ${props => props.$isDarkMode ? 'var(--background)' : '#f0f2f5'};
   }
 `;
 
@@ -89,73 +138,135 @@ const mockAdminStats: DashboardStats = {
 };
 
 const LeaveApprovalDashboard: React.FC = () => {
+  const { isDarkMode } = useTheme();
+  const screens = useBreakpoint();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(mockAdminRequests);
+  const [filteredRequests, setFilteredRequests] = useState<LeaveRequest[]>(mockAdminRequests);
   const [notifications, setNotifications] = useState<LeaveNotification[]>(mockAdminNotifications);
   const [stats, setStats] = useState<DashboardStats>(mockAdminStats);
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [dateRange, setDateRange] = useState<[any, any] | null>(null);
+  
+  // API hooks
+  const { data: apiLeaves, isLoading: leavesLoading, refetch } = useLeaves();
+  const approveMutation = useApproveLeave();
+  const rejectMutation = useRejectLeave();
+  
+  // Filter requests based on search and filters
+  useEffect(() => {
+    let filtered = leaveRequests;
+    
+    if (searchTerm) {
+      filtered = filtered.filter(req => 
+        req.employee.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        req.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        req.reason.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(req => req.status === statusFilter);
+    }
+    
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(req => req.type === typeFilter);
+    }
+    
+    setFilteredRequests(filtered);
+  }, [leaveRequests, searchTerm, statusFilter, typeFilter]);
 
-  const handleApprovalAction = async (approval: LeaveApprovalRequest) => {
-    setLoading(true);
+  const handleApprove = async (id: string, comments?: string) => {
     try {
-      // Process approval - API not implemented yet
-      // await leaveApi.processLeaveApproval(approval);
-
-      // Update request status
+      await approveMutation.mutateAsync({ id, comments });
+      
+      // Update local state
       setLeaveRequests(prev => prev.map(req => 
-        req.id === approval.requestId 
+        req.id === id 
           ? { 
               ...req, 
-              status: approval.action === 'approve' ? 'Approved' : 
-                     approval.action === 'reject' ? 'Rejected' : 
-                     approval.action === 'hold' ? 'On Hold' : req.status,
-              adminComments: approval.comments,
-              approvedBy: approval.action === 'approve' ? 'Current Admin' : undefined,
-              approvedAt: approval.action === 'approve' ? new Date().toISOString() : undefined,
-              rejectedBy: approval.action === 'reject' ? 'Current Admin' : undefined,
-              rejectedAt: approval.action === 'reject' ? new Date().toISOString() : undefined
+              status: 'Approved',
+              adminComments: comments,
+              approvedBy: 'Current Admin',
+              approvedAt: new Date().toISOString()
             }
           : req
       ));
-
-      // Send notification email to employee
-      const request = leaveRequests.find(r => r.id === approval.requestId);
-      if (request) {
-        // Email notification API not implemented yet
-        // await leaveApi.sendLeaveNotificationEmail({
-        //   requestId: approval.requestId,
-        //   recipientIds: [request.employeeId || request.employee],
-        //   type: approval.action === 'approve' ? 'approval' : 
-        //        approval.action === 'reject' ? 'rejection' : 
-        //        approval.action === 'hold' ? 'hold' : 'details_request'
-        // });
-      }
-
+      
       // Update stats
-      if (approval.action === 'approve') {
-        setStats(prev => ({ 
-          ...prev, 
-          pendingRequests: prev.pendingRequests - 1,
-          approvedThisMonth: prev.approvedThisMonth + 1
-        }));
-      } else if (approval.action === 'reject') {
-        setStats(prev => ({ 
-          ...prev, 
-          pendingRequests: prev.pendingRequests - 1,
-          rejectedThisMonth: prev.rejectedThisMonth + 1
-        }));
-      }
-
-      const actionText = approval.action === 'approve' ? 'approved' :
-                        approval.action === 'reject' ? 'rejected' :
-                        approval.action === 'hold' ? 'placed on hold' :
-                        'updated with additional details request';
-
-      message.success(`Leave request ${actionText} successfully. Employee has been notified.`);
+      setStats(prev => ({ 
+        ...prev, 
+        pendingRequests: prev.pendingRequests - 1,
+        approvedThisMonth: prev.approvedThisMonth + 1
+      }));
+      
+      refetch();
     } catch (error) {
-      message.error('Failed to process approval');
-    } finally {
-      setLoading(false);
+      // Error handled by mutation
     }
+  };
+  
+  const handleReject = async (id: string, comments: string) => {
+    try {
+      await rejectMutation.mutateAsync({ id, comments });
+      
+      // Update local state
+      setLeaveRequests(prev => prev.map(req => 
+        req.id === id 
+          ? { 
+              ...req, 
+              status: 'Rejected',
+              adminComments: comments,
+              rejectedBy: 'Current Admin',
+              rejectedAt: new Date().toISOString()
+            }
+          : req
+      ));
+      
+      // Update stats
+      setStats(prev => ({ 
+        ...prev, 
+        pendingRequests: prev.pendingRequests - 1,
+        rejectedThisMonth: prev.rejectedThisMonth + 1
+      }));
+      
+      refetch();
+    } catch (error) {
+      // Error handled by mutation
+    }
+  };
+  
+  const handleHold = async (id: string, comments: string) => {
+    try {
+      // Update local state for hold action
+      setLeaveRequests(prev => prev.map(req => 
+        req.id === id 
+          ? { 
+              ...req, 
+              status: 'On Hold',
+              adminComments: comments
+            }
+          : req
+      ));
+      
+      message.success('Leave request put on hold successfully');
+    } catch (error) {
+      message.error('Failed to put leave request on hold');
+    }
+  };
+  
+  const clearFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+    setTypeFilter('all');
+    setDateRange(null);
+  };
+  
+  const exportData = () => {
+    // Export functionality
+    message.info('Export functionality will be implemented');
   };
 
   const handleNotificationClick = (notification: LeaveNotification) => {
@@ -187,84 +298,157 @@ const LeaveApprovalDashboard: React.FC = () => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }}>
-      {/* Dashboard Stats */}
-      <LeaveDashboardStats stats={stats} loading={loading} />
+    <Spin spinning={leavesLoading || approveMutation.isPending || rejectMutation.isPending}>
+      <Space direction="vertical" style={{ width: '100%' }}>
+        {/* Dashboard Stats */}
+        <LeaveDashboardStats stats={stats} loading={loading} />
 
-      <Tabs defaultActiveKey="approvals">
-        <TabPane
-          tab={
-            <Space>
-              <Clock size={16} />
-              Pending Approvals
-              {stats.pendingRequests > 0 && <Badge count={stats.pendingRequests} />}
-            </Space>
-          }
-          key="approvals"
-        >
-          <LeaveApprovalTable
-            requests={leaveRequests}
-            onApprove={(id) => handleApprovalAction({ requestId: id, action: 'approve', comments: '' })}
-            onReject={(id) => handleApprovalAction({ requestId: id, action: 'reject', comments: '' })}
-            loading={loading}
-          />
-        </TabPane>
-
-        <TabPane
-          tab={
-            <Space>
-              <Bell size={16} />
-              Notifications
-              {unreadCount > 0 && <Badge count={unreadCount} />}
-            </Space>
-          }
-          key="notifications"
-        >
-          <Row gutter={[16, 16]}>
-            <Col span={24}>
-              <LeaveNotificationPanel
-                notifications={notifications}
-                onMarkAsRead={handleMarkAsRead}
-                onMarkAllAsRead={handleMarkAllAsRead}
-                onNotificationClick={handleNotificationClick}
+        <StyledTabs defaultActiveKey="approvals" $isDarkMode={isDarkMode}>
+          <TabPane
+            tab={
+              <Space>
+                <Clock size={16} />
+                {screens.xs ? 'Pending' : 'Pending Approvals'}
+                {stats.pendingRequests > 0 && <Badge count={stats.pendingRequests} />}
+              </Space>
+            }
+            key="approvals"
+          >
+            <FilterSection $isDarkMode={isDarkMode}>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={12} md={6}>
+                  <SearchInput
+                    placeholder="Search employee, department..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    allowClear
+                  />
+                </Col>
+                <Col xs={12} sm={6} md={4}>
+                  <Select
+                    placeholder="Status"
+                    value={statusFilter}
+                    onChange={setStatusFilter}
+                    style={{ width: '100%' }}
+                  >
+                    <Option value="all">All Status</Option>
+                    <Option value="Pending">Pending</Option>
+                    <Option value="Approved">Approved</Option>
+                    <Option value="Rejected">Rejected</Option>
+                    <Option value="On Hold">On Hold</Option>
+                  </Select>
+                </Col>
+                <Col xs={12} sm={6} md={4}>
+                  <Select
+                    placeholder="Type"
+                    value={typeFilter}
+                    onChange={setTypeFilter}
+                    style={{ width: '100%' }}
+                  >
+                    <Option value="all">All Types</Option>
+                    <Option value="Annual">Annual</Option>
+                    <Option value="Sick">Sick</Option>
+                    <Option value="Casual">Casual</Option>
+                    <Option value="Maternity">Maternity</Option>
+                    <Option value="Paternity">Paternity</Option>
+                    <Option value="Unpaid">Unpaid</Option>
+                  </Select>
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                  <RangePicker
+                    style={{ width: '100%' }}
+                    value={dateRange}
+                    onChange={setDateRange}
+                    placeholder={['Start Date', 'End Date']}
+                  />
+                </Col>
+                <Col xs={24} sm={12} md={4}>
+                  <Space>
+                    <Button 
+                      onClick={clearFilters}
+                      disabled={!searchTerm && statusFilter === 'all' && typeFilter === 'all' && !dateRange}
+                    >
+                      Clear
+                    </Button>
+                    <Button onClick={exportData}>
+                      Export
+                    </Button>
+                  </Space>
+                </Col>
+              </Row>
+            </FilterSection>
+            
+            <AdminCard $isDarkMode={isDarkMode}>
+              <LeaveApprovalTable
+                requests={filteredRequests}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onHold={handleHold}
+                loading={loading || approveMutation.isPending || rejectMutation.isPending}
               />
-            </Col>
-          </Row>
-        </TabPane>
+            </AdminCard>
+          </TabPane>
 
-        <TabPane
-          tab={
-            <Space>
-              <Users size={16} />
-              All Requests
-            </Space>
-          }
-          key="all-requests"
-        >
-          <AdminCard title="All Leave Requests">
-            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-secondary)' }}>
-              All leave requests table would go here
-            </div>
-          </AdminCard>
-        </TabPane>
+          <TabPane
+            tab={
+              <Space>
+                <Bell size={16} />
+                {screens.xs ? 'Alerts' : 'Notifications'}
+                {unreadCount > 0 && <Badge count={unreadCount} />}
+              </Space>
+            }
+            key="notifications"
+          >
+            <Row gutter={[16, 16]}>
+              <Col span={24}>
+                <LeaveNotificationPanel
+                  notifications={notifications}
+                  onMarkAsRead={handleMarkAsRead}
+                  onMarkAllAsRead={handleMarkAllAsRead}
+                  onNotificationClick={handleNotificationClick}
+                />
+              </Col>
+            </Row>
+          </TabPane>
 
-        <TabPane
-          tab={
-            <Space>
-              <CheckCircle size={16} />
-              Reports
-            </Space>
-          }
-          key="reports"
-        >
-          <AdminCard title="Leave Reports & Analytics">
-            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-secondary)' }}>
-              Leave reports and analytics would go here
-            </div>
-          </AdminCard>
-        </TabPane>
-      </Tabs>
-    </Space>
+          <TabPane
+            tab={
+              <Space>
+                <Users size={16} />
+                {screens.xs ? 'All' : 'All Requests'}
+              </Space>
+            }
+            key="all-requests"
+          >
+            <AdminCard title="All Leave Requests" $isDarkMode={isDarkMode}>
+              <LeaveApprovalTable
+                requests={leaveRequests}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onHold={handleHold}
+                loading={loading || approveMutation.isPending || rejectMutation.isPending}
+              />
+            </AdminCard>
+          </TabPane>
+
+          <TabPane
+            tab={
+              <Space>
+                <CheckCircle size={16} />
+                {screens.xs ? 'Reports' : 'Reports & Analytics'}
+              </Space>
+            }
+            key="reports"
+          >
+            <AdminCard title="Leave Reports & Analytics" $isDarkMode={isDarkMode}>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-secondary)' }}>
+                Leave reports and analytics dashboard coming soon...
+              </div>
+            </AdminCard>
+          </TabPane>
+        </StyledTabs>
+      </Space>
+    </Spin>
   );
 };
 
