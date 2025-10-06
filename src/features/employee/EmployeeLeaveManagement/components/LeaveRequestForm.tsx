@@ -1,248 +1,499 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Form,
   Input,
   DatePicker,
   Select,
-  Upload,
   Button,
   Space,
   Radio,
-  Divider,
-  Avatar,
   message,
   Row,
-  Col
-} from 'antd';
-import { Send, Upload as UploadIcon, User, Mail, Building, X } from 'lucide-react';
-import styled from 'styled-components';
-import { DurationType, Employee } from '../types';
-import { DATE_FORMATS } from '../../../../constants';
+  Col,
+  Alert,
+  Grid,
+  Avatar,
+  Typography,
+} from "antd";
+import { Send, User, X } from "lucide-react";
+import styled from "styled-components";
+import { DurationType, Employee } from "../types";
+import { DATE_FORMATS } from "../../../../constants";
+import { useTheme } from "../../../../contexts/ThemeContext";
+import { useMyEmployeeDetails } from "../../../../hooks/api/useEmployees";
+import { generateLeavePDF } from "./helper";
+import dayjs from "dayjs";
 
-const { RangePicker } = DatePicker; // Destructure RangePicker from DatePicker
-const { TextArea } = Input; // Destructure TextArea from Input
-const { Option } = Select; // Destructure Option from Select
+const { RangePicker } = DatePicker;
+const { TextArea } = Input;
+const { Option } = Select;
+const { useBreakpoint } = Grid;
+const { Text } = Typography;
 
-// Styled component for recipient card
-const RecipientCard = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  margin: 4px 0;
-  background: var(--surface);
-`;
-
-// Styled component for recipient information
-const RecipientInfo = styled.div`
-  margin-left: 8px;
-  flex: 1;
-`;
-
-// Styled component for the modal to apply custom styles
-const StyledModal = styled(Modal)`
-  .ant-modal-body {
-    padding: 20px;
+const StyledModal = styled(Modal)<{ $isDarkMode: boolean }>`
+  .ant-modal-content {
+    background: ${(props) =>
+      props.$isDarkMode ? "var(--surface)" : "#ffffff"};
+    border-radius: 12px;
+    overflow: hidden;
   }
-  
-  @media (max-width: 576px) {
+
+  .ant-modal-header {
+    background: ${(props) =>
+      props.$isDarkMode ? "var(--surface)" : "#ffffff"};
+    border-bottom: 1px solid
+      ${(props) => (props.$isDarkMode ? "var(--border)" : "#f0f0f0")};
+    padding: 20px 24px;
+  }
+
+  .ant-modal-body {
+    padding: 24px;
+    background: ${(props) =>
+      props.$isDarkMode ? "var(--surface)" : "#ffffff"};
+  }
+
+  .ant-modal-footer {
+    background: ${(props) =>
+      props.$isDarkMode ? "var(--surface)" : "#ffffff"};
+    border-top: 1px solid
+      ${(props) => (props.$isDarkMode ? "var(--border)" : "#f0f0f0")};
+    padding: 16px 24px;
+  }
+
+  @media (max-width: 768px) {
     .ant-modal-body {
       padding: 16px;
+    }
+
+    .ant-modal-header {
+      padding: 16px;
+    }
+
+    .ant-modal-footer {
+      padding: 12px 16px;
     }
   }
 `;
 
-// Interface for LeaveRequestForm component props
+const RecipientCard = styled.div<{ $isDarkMode: boolean }>`
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid
+    ${(props) => (props.$isDarkMode ? "var(--border)" : "#d9d9d9")};
+  border-radius: 8px;
+  margin: 8px 0;
+  background: ${(props) => (props.$isDarkMode ? "var(--surface)" : "#ffffff")};
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(41, 88, 196, 0.1);
+  }
+`;
+
 interface LeaveRequestFormProps {
-  visible: boolean; // Controls modal visibility
-  onCancel: () => void; // Callback for modal cancellation
-  onSubmit: (values: any) => void; // Callback for form submission
-  loading?: boolean; // Loading state for the form
-  employees: Employee[]; // List of employees for recipient selection
+  visible: boolean;
+  onCancel: () => void;
+  onSubmit: (values: any) => void;
+  loading?: boolean;
+  employees: Employee[];
+  leaveBalances?: Array<{
+    type: string;
+    remaining: number;
+    totalAllocated: number;
+  }>;
 }
 
-// LeaveRequestForm functional component
 const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
   visible,
   onCancel,
   onSubmit,
   loading = false,
-  employees
+  employees,
+  leaveBalances = [],
 }) => {
-  const [form] = Form.useForm(); // Initialize Ant Design form hook
-  const [selectedRecipients, setSelectedRecipients] = useState<Employee[]>([]); // State for selected recipients
-  const [durationType, setDurationType] = useState<DurationType>('Full Day'); // State for leave duration type
+  const { isDarkMode } = useTheme();
+  const screens = useBreakpoint();
+  const [form] = Form.useForm();
+  const { data: employeeDetails } = useMyEmployeeDetails();
+  const [selectedRecipients, setSelectedRecipients] = useState<Employee[]>([]);
+  const [durationType, setDurationType] = useState<DurationType>("Full Day");
+  const [selectedDates, setSelectedDates] = useState<any[]>([]);
+  const [selectedLeaveType, setSelectedLeaveType] = useState<string>("");
+  const [calculatedDuration, setCalculatedDuration] = useState<number>(0);
+  const [availableBalance, setAvailableBalance] = useState<number>(0);
 
-  // Handler for form submission
+  // Calculate duration when dates change
+  useEffect(() => {
+    if (selectedDates && selectedDates.length === 2) {
+      const start = dayjs(selectedDates[0]);
+      const end = dayjs(selectedDates[1]);
+      const duration = end.diff(start, "days") + 1;
+      setCalculatedDuration(duration);
+    }
+  }, [selectedDates]);
+
+  // Update available balance when leave type changes
+  useEffect(() => {
+    if (selectedLeaveType && leaveBalances && leaveBalances.length > 0) {
+      const balance = leaveBalances.find((b) => b.type === selectedLeaveType);
+      setAvailableBalance(balance?.remaining || 0);
+    } else {
+      setAvailableBalance(0);
+    }
+  }, [selectedLeaveType, leaveBalances]);
+
   const handleSubmit = (values: any) => {
+    console.log("Form submitted with values:", values);
+
     if (selectedRecipients.length === 0) {
-      message.error('Please select at least one recipient'); // Show error if no recipients selected
+      message.error("Please select at least one recipient");
       return;
     }
 
-    // Prepare form data for submission
+    if (
+      selectedLeaveType !== "Unpaid" &&
+      leaveBalances &&
+      leaveBalances.length > 0 &&
+      calculatedDuration > availableBalance
+    ) {
+      message.error(
+        `Insufficient leave balance. Available: ${availableBalance} days, Requested: ${calculatedDuration} days`
+      );
+      return;
+    }
+
     const formData = {
       ...values,
-      recipients: selectedRecipients.map(r => r.id), // Map selected recipients to their IDs
-      recipientDetails: selectedRecipients, // Include full recipient details
+      recipients: selectedRecipients.map((r) => r.id),
+      recipientDetails: selectedRecipients,
       durationType,
-      appliedAt: new Date().toISOString(), // Set application date to current ISO string
-      status: 'Pending' // Set initial status to Pending
+      duration: calculatedDuration,
+      appliedAt: new Date().toISOString(),
+      status: "Pending",
     };
 
-    onSubmit(formData); // Call onSubmit prop with prepared data
+    console.log("Calling onSubmit with:", formData);
+    onSubmit(formData);
+    handleCancel();
   };
 
-  // Handler for recipient selection change
   const handleRecipientChange = (recipientIds: string[]) => {
-    const recipients = employees.filter(emp => recipientIds.includes(emp.id)); // Filter employees based on selected IDs
-    setSelectedRecipients(recipients); // Update selected recipients state
+    const recipients = employees.filter((emp) => recipientIds.includes(emp.id));
+    setSelectedRecipients(recipients);
+    form.setFieldsValue({ recipients: recipientIds });
   };
 
-  // Handler to remove a recipient
   const removeRecipient = (id: string) => {
-    setSelectedRecipients(prev => prev.filter(r => r.id !== id)); // Remove recipient from state
-    const currentRecipients = form.getFieldValue('recipients') || []; // Get current form recipients
-    form.setFieldsValue({
-      recipients: currentRecipients.filter((r: string) => r !== id) // Update form field value
-    });
+    const newRecipients = selectedRecipients.filter((r) => r.id !== id);
+    setSelectedRecipients(newRecipients);
+    form.setFieldsValue({ recipients: newRecipients.map((r) => r.id) });
   };
 
-  // Handler for modal cancellation
   const handleCancel = () => {
-    form.resetFields(); // Reset form fields
-    setSelectedRecipients([]); // Clear selected recipients
-    setDurationType('Full Day'); // Reset duration type
-    onCancel(); // Call onCancel prop
+    form.resetFields();
+    setSelectedRecipients([]);
+    setDurationType("Full Day");
+    setSelectedDates([]);
+    setSelectedLeaveType("");
+    setCalculatedDuration(0);
+    setAvailableBalance(0);
+    onCancel();
+  };
+
+  const handleDateChange = (dates: any) => {
+    setSelectedDates(dates);
+    form.setFieldsValue({ dates });
+  };
+
+  const handleLeaveTypeChange = (type: string) => {
+    setSelectedLeaveType(type);
+    form.setFieldsValue({ type });
+  };
+
+  const isFormValid = () => {
+    const values = form.getFieldsValue();
+    return (
+      values.type &&
+      values.dates &&
+      values.reason &&
+      selectedRecipients.length > 0
+    );
+  };
+
+  const handleDownloadPDF = async () => {
+    const values = form.getFieldsValue();
+    const formData = {
+      type: values.type,
+      dates: selectedDates,
+      reason: values.reason,
+      recipients: selectedRecipients,
+      durationType,
+      duration: calculatedDuration,
+    };
+    
+    await generateLeavePDF(formData, employeeDetails, leaveBalances);
   };
 
   return (
     <StyledModal
-      title="Submit Leave Request" // Modal title
-      open={visible} // Control modal visibility
-      onCancel={handleCancel} // Handle modal close
+      title="Submit Leave Request"
+      open={visible}
+      onCancel={handleCancel}
       footer={[
-        <Button onClick={handleCancel}>Cancel</Button>, // Cancel button
-        <Button type="primary" htmlType="submit" icon={<Send size={16} />} loading={loading}>
-          Submit Request
+        <Button
+          key="cancel"
+          onClick={handleCancel}
+          size={screens.xs ? "small" : "middle"}
+        >
+          Cancel
         </Button>,
-      ]}
-      width={700} // Modal width
-      centered // Center modal on screen
-      style={{ maxWidth: '90vw' }} // Max width for responsiveness
-      closeIcon={null} // Hide default close icon
+        selectedLeaveType === "Annual" && (
+          <Button
+            key="download"
+            onClick={handleDownloadPDF}
+            disabled={!isFormValid()}
+            size={screens.xs ? "small" : "middle"}
+          >
+            Download Form
+          </Button>
+        ),
+        <Button
+          key="submit"
+          type="primary"
+          loading={loading}
+          onClick={() => {
+            console.log("Submit button clicked");
+            form.submit();
+          }}
+          size={screens.xs ? "small" : "middle"}
+        >
+          {screens.xs ? "Submit" : "Submit Request"}
+        </Button>,
+      ].filter(Boolean)}
+      width={800}
+      centered
+      $isDarkMode={isDarkMode}
+      destroyOnClose
     >
       <Form
-        form={form} // Pass form instance
-        layout="vertical" // Form layout
-        onFinish={handleSubmit} // Handle form submission
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        scrollToFirstError
       >
-        <Row gutter={16}> {/* Row for layout with gutter */}
-          <Col xs={24} sm={12}> {/* Column for responsive layout */}
-            <Form.Item
-              label="Leave Type" // Label for leave type input
-              name="type" // Name of the form item
-              rules={[{ required: true, message: 'Please select leave type' }]} // Validation rules
-            >
-              <Select placeholder="Select leave type"> {/* Select component for leave type */}
-                <Option value="Annual">Annual Leave</Option>
-                <Option value="Sick">Sick Leave</Option>
-                <Option value="Casual">Casual Leave</Option>
-                <Option value="Maternity">Maternity Leave</Option>
-                <Option value="Paternity">Paternity Leave</Option>
-                <Option value="Unpaid">Unpaid Leave</Option>
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}> {/* Column for responsive layout */}
-            <Form.Item label="Duration Type"> {/* Label for duration type radio group */}
-              <Radio.Group
-                value={durationType}
-                onChange={(e) => setDurationType(e.target.value)} // Handle duration type change
-                buttonStyle="solid" // Solid button style
+        <div style={{ marginBottom: 16 }}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Leave Type"
+                name="type"
+                rules={[
+                  { required: true, message: "Please select leave type" },
+                ]}
               >
-                <Radio.Button value="Full Day">Full Day</Radio.Button>
-                <Radio.Button value="Half Day - Morning">Half Day AM</Radio.Button>
-                <Radio.Button value="Half Day - Afternoon">Half Day PM</Radio.Button>
-              </Radio.Group>
-            </Form.Item>
-          </Col>
-        </Row>
+                <Select
+                  placeholder="Select leave type"
+                  onChange={handleLeaveTypeChange}
+                  size={screens.xs ? "small" : "middle"}
+                  loading={!leaveBalances}
+                >
+                  {leaveBalances && leaveBalances.length > 0
+                    ? leaveBalances.map((balance) => (
+                        <Option key={balance.type} value={balance.type}>
+                          <span>
+                            {balance.type} Leave ({balance.remaining} days left)
+                          </span>
+                        </Option>
+                      ))
+                    : [
+                        "Annual",
+                        "Sick",
+                        "Casual",
+                        "Maternity",
+                        "Paternity",
+                      ].map((type) => (
+                        <Option key={type} value={type}>
+                          <span>{type} Leave</span>
+                        </Option>
+                      ))}
+                  <Option value="Unpaid">
+                    <span>Unpaid Leave</span>
+                  </Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item label="Duration Type">
+                <Radio.Group
+                  value={durationType}
+                  onChange={(e) => setDurationType(e.target.value)}
+                  buttonStyle="solid"
+                  size={screens.xs ? "small" : "middle"}
+                >
+                  <Radio.Button value="Full Day">Full Day</Radio.Button>
+                  <Radio.Button value="Half Day - Morning">AM</Radio.Button>
+                  <Radio.Button value="Half Day - Afternoon">PM</Radio.Button>
+                </Radio.Group>
+              </Form.Item>
+            </Col>
+          </Row>
 
-        <Form.Item
-          label="Date Range" // Label for date range picker
-          name="dates" // Name of the form item
-          rules={[{ required: true, message: 'Please select dates' }]} // Validation rules
-        >
-          <RangePicker style={{ width: '100%' }} format={DATE_FORMATS.DISPLAY} /> {/* Date range picker component */}
-        </Form.Item>
+          {selectedLeaveType && selectedLeaveType !== "Unpaid" && (
+            <Alert
+              message={
+                leaveBalances && leaveBalances.length > 0
+                  ? `Available ${selectedLeaveType} Leave Balance: ${availableBalance} days`
+                  : `Leave balance information loading...`
+              }
+              type={
+                leaveBalances &&
+                leaveBalances.length > 0 &&
+                availableBalance > 0
+                  ? "info"
+                  : "warning"
+              }
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          )}
+        </div>
 
-        <Form.Item
-          label="Reason" // Label for reason textarea
-          name="reason" // Name of the form item
-          rules={[{ required: true, message: 'Please provide reason' }]} // Validation rules
-        >
-          <TextArea rows={3} placeholder="Please provide details for your leave request" /> {/* Textarea for reason */}
-        </Form.Item>
-
-        <Form.Item label="Attachment (Optional)"> {/* Label for attachment upload */}
-          <Upload> {/* Upload component */}
-            <Button icon={<UploadIcon size={16} />}>Upload Document</Button>
-          </Upload>
-        </Form.Item>
-        <Divider>Select Recipients</Divider> {/* Divider for recipient selection section */}
-        <Form.Item
-          label="Notify Recipients" // Label for recipient selection
-          name="recipients" // Name of the form item
-          rules={[{ required: true, message: 'Please select at least one recipient' }]} // Validation rules
-          help="Select HR managers, team leads, or other Team member who should be notified" // Help text
-        >
-          <Select
-            mode="multiple" // Allow multiple selections
-            placeholder="Select recipients to notify" // Placeholder text
-            onChange={handleRecipientChange} // Handle recipient change
-            style={{ width: '100%' }} // Full width select
+        <div style={{ marginBottom: 16 }}>
+          <Form.Item
+            label="Date Range"
+            name="dates"
+            rules={[{ required: true, message: "Please select dates" }]}
           >
-            {employees.map(emp => ( // Map through employees to create options
-              <Option key={emp.id} value={emp.id}> {/* Option for each employee */}
-                <Space>
-                  <Avatar size="small" icon={<User size={14} />} /> {/* Employee avatar */}
-                  {emp.name} - {emp.role}
-                </Space>
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
-        {selectedRecipients.length > 0 && ( // Conditionally render selected recipients section
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ marginBottom: 8, fontWeight: 500 }}>Selected Recipients:</div>
-            {selectedRecipients.map(recipient => ( // Map through selected recipients
-              <RecipientCard key={recipient.id}> {/* Recipient card component */}
-                <Avatar size="small" icon={<User size={14} />} /> {/* Recipient avatar */}
-                <RecipientInfo> {/* Recipient information */}
-                  <div style={{ fontWeight: 500 }}>{recipient.name}</div> {/* Recipient name */}
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                    <Mail size={12} style={{ marginRight: 4 }} /> {/* Mail icon */}
-                    {recipient.email}
-                    <Building size={12} style={{ marginLeft: 8, marginRight: 4 }} /> {/* Building icon */}
-                    {recipient.department}
+            <RangePicker
+              style={{ width: "100%" }}
+              format={DATE_FORMATS.DISPLAY}
+              onChange={handleDateChange}
+              size={screens.xs ? "small" : "middle"}
+              disabledDate={(current) =>
+                current && current < dayjs().startOf("day")
+              }
+            />
+          </Form.Item>
+
+          {calculatedDuration > 0 && (
+            <div
+              style={{
+                padding: 16,
+                background: isDarkMode ? "var(--surface)" : "#f8f9fa",
+                border: `1px solid ${isDarkMode ? "var(--border)" : "#e9ecef"}`,
+                borderRadius: 8,
+                marginTop: 16,
+              }}
+            >
+              <Row gutter={16}>
+                <Col span={12}>
+                  <span>
+                    <strong>
+                      Duration: {calculatedDuration} day
+                      {calculatedDuration !== 1 ? "s" : ""}
+                    </strong>
+                  </span>
+                </Col>
+                <Col span={12}>
+                  <span>
+                    <strong>Type: {durationType}</strong>
+                  </span>
+                </Col>
+              </Row>
+              {selectedLeaveType !== "Unpaid" &&
+                leaveBalances &&
+                leaveBalances.length > 0 &&
+                calculatedDuration > availableBalance && (
+                  <Alert
+                    message="Insufficient leave balance"
+                    description={`You are requesting ${calculatedDuration} days but only have ${availableBalance} days available.`}
+                    type="warning"
+                    showIcon
+                    style={{ marginTop: 8 }}
+                  />
+                )}
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <Form.Item
+            label="Reason"
+            name="reason"
+            rules={[{ required: true, message: "Please provide reason" }]}
+          >
+            <TextArea
+              rows={4}
+              placeholder="Please provide detailed reason for your leave request"
+              maxLength={500}
+              showCount
+            />
+          </Form.Item>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <Form.Item
+            label="Notify Recipients"
+            name="recipients"
+            rules={[
+              {
+                required: true,
+                message: "Please select at least one recipient",
+              },
+            ]}
+            help="Select managers, HR personnel, or team leads who should be notified"
+          >
+            <Select
+              mode="multiple"
+              placeholder="Select recipients to notify"
+              onChange={handleRecipientChange}
+              style={{ width: "100%" }}
+              size={screens.xs ? "small" : "middle"}
+              value={selectedRecipients.map((r) => r.id)}
+            >
+              {employees.map((emp) => (
+                <Option key={emp.id} value={emp.id}>
+                  <Space>
+                    <Avatar size="small" icon={<User size={14} />} />
+                    <span>{emp.name}</span>
+                    <Text type="secondary">- {emp.role}</Text>
+                  </Space>
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          {selectedRecipients.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <div style={{ marginBottom: 8, fontWeight: 500 }}>
+                Selected Recipients:
+              </div>
+              {selectedRecipients.map((recipient) => (
+                <RecipientCard key={recipient.id} $isDarkMode={isDarkMode}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 500 }}>{recipient.name}</div>
+                    <div style={{ fontSize: "12px", opacity: 0.7 }}>
+                      {recipient.email} • {recipient.department}
+                    </div>
                   </div>
-                </RecipientInfo>
-                <Button
-                  type="text"
-                  icon={<X size={14} />} // Close icon for removing recipient
-                  onClick={() => removeRecipient(recipient.id)} // Handle recipient removal
-                  size="small"
-                />
-              </RecipientCard>
-            ))}
-          </div>
-        )}
+                  <Button
+                    type="text"
+                    icon={<X size={14} />}
+                    onClick={() => removeRecipient(recipient.id)}
+                    size="small"
+                    danger
+                  />
+                </RecipientCard>
+              ))}
+            </div>
+          )}
+        </div>
       </Form>
     </StyledModal>
   );
 };
 
-export default LeaveRequestForm; 
+export default LeaveRequestForm;
