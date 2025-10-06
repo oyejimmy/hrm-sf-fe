@@ -1,9 +1,9 @@
-// components/EmployeePayslip/components/PayslipTable.tsx
 import React from 'react';
 import { Button, Space, Tag, Typography, Empty } from 'antd';
 import { Eye, Download } from 'lucide-react';
 import { Payslip } from '../../../../services/api/types';
 import { StyledTable } from './styles';
+import { pakCurrency } from '../../../../constants';
 
 const { Text } = Typography;
 
@@ -23,52 +23,57 @@ const PayslipTable: React.FC<PayslipTableProps> = ({
   const columns: any = [
     {
       title: 'Pay Period',
-      dataIndex: 'pay_period',
       key: 'pay_period',
+      render: (record: Payslip) => {
+        const startDate = new Date(record.pay_period_start).toLocaleDateString();
+        const endDate = new Date(record.pay_period_end).toLocaleDateString();
+        return `${startDate} - ${endDate}`;
+      },
       sorter: (a: Payslip, b: Payslip) =>
-        a.pay_period.localeCompare(b.pay_period),
-      responsive: ['xs', 'sm', 'md'],
+        new Date(a.pay_period_start).getTime() - new Date(b.pay_period_start).getTime(),
     },
     {
-      title: 'Issue Date',
-      dataIndex: 'generated_at',
-      key: 'generated_at',
+      title: 'Payslip Number',
+      dataIndex: 'payslip_number',
+      key: 'payslip_number',
+    },
+    {
+      title: 'Pay Date',
+      dataIndex: 'pay_date',
+      key: 'pay_date',
+      render: (date: string) => new Date(date).toLocaleDateString(),
       sorter: (a: Payslip, b: Payslip) =>
-        new Date(a.generated_at).getTime() - new Date(b.generated_at).getTime(),
-      responsive: ['sm', 'md'],
+        new Date(a.pay_date).getTime() - new Date(b.pay_date).getTime(),
     },
     {
       title: 'Gross Pay',
-      dataIndex: 'gross_pay',
-      key: 'gross_pay',
-      render: (amount: number) => `PKR${amount.toFixed(2)}`,
-      sorter: (a: Payslip, b: Payslip) => a.gross_pay - b.gross_pay,
-      responsive: ['md'],
+      dataIndex: 'gross_salary',
+      key: 'gross_salary',
+      render: (amount: number) => `${pakCurrency}${amount.toFixed(2)}`,
+      sorter: (a: Payslip, b: Payslip) => a.gross_salary - b.gross_salary,
     },
     {
       title: 'Deductions',
       dataIndex: 'total_deductions',
       key: 'total_deductions',
-      render: (amount: number) => `PKR${amount.toFixed(2)}`,
+      render: (amount: number) => `${pakCurrency}${amount.toFixed(2)}`,
       sorter: (a: Payslip, b: Payslip) => a.total_deductions - b.total_deductions,
-      responsive: ['lg'],
     },
     {
       title: 'Net Pay',
-      dataIndex: 'net_pay',
-      key: 'net_pay',
-      render: (amount: number) => <Text strong>PKR{amount.toFixed(2)}</Text>,
-      sorter: (a: Payslip, b: Payslip) => a.net_pay - b.net_pay,
-      responsive: ['sm', 'md', 'lg'],
+      dataIndex: 'net_salary',
+      key: 'net_salary',
+      render: (amount: number) => <Text strong>{pakCurrency}{amount.toFixed(2)}</Text>,
+      sorter: (a: Payslip, b: Payslip) => a.net_salary - b.net_salary,
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => (
-        <Tag color={status === 'Paid' ? 'green' : 'default'}>{status}</Tag>
-      ),
-      responsive: ['md', 'lg'],
+      render: (status: string) => {
+        const color = status === 'paid' ? 'green' : status === 'approved' ? 'blue' : 'orange';
+        return <Tag color={color}>{status.toUpperCase()}</Tag>;
+      },
     },
     {
       title: 'Actions',
@@ -91,7 +96,6 @@ const PayslipTable: React.FC<PayslipTableProps> = ({
           </Button>
         </Space>
       ),
-      responsive: ['xs', 'sm', 'md', 'lg'],
     },
   ];
 
@@ -100,7 +104,12 @@ const PayslipTable: React.FC<PayslipTableProps> = ({
       columns={columns}
       dataSource={data}
       rowKey="id"
-      pagination={{ pageSize: 5 }}
+      pagination={{ 
+        pageSize: 10,
+        showSizeChanger: true,
+        showQuickJumper: true,
+        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+      }}
       scroll={{ x: true }}
       loading={loading}
       locale={{
