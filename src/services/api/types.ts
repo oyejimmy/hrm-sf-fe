@@ -209,12 +209,36 @@ export interface InsuranceClaim {
 export interface Payslip {
   id: number;
   employee_id: number;
-  pay_period: string;
-  gross_pay: number;
+  pay_period_start: string;
+  pay_period_end: string;
+  pay_date: string;
+  basic_salary: number;
+  gross_salary: number;
+  net_salary: number;
+  total_earnings: number;
   total_deductions: number;
-  net_pay: number;
-  status: 'draft' | 'finalized';
-  generated_at: string;
+  status: 'generated' | 'approved' | 'paid';
+  payslip_number: string;
+  generated_by: number;
+  approved_by?: number;
+  approved_at?: string;
+  created_at: string;
+  updated_at?: string;
+  earnings?: PayslipEarning[];
+  deductions?: PayslipDeduction[];
+  employee_name?: string;
+}
+
+export interface PayslipEarning {
+  type: string;
+  amount: number;
+  description?: string;
+}
+
+export interface PayslipDeduction {
+  type: string;
+  amount: number;
+  description?: string;
 }
 
 // Request Types
