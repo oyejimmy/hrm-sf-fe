@@ -132,21 +132,7 @@ const AttendanceHistoryTable = ({
         <TimeText $type="primary">{formatTime(record.checkOut || record.check_out)}</TimeText>
       ),
     },
-    {
-      title: "Break Time",
-      key: "break",
-      render: (record: any) => (
-        <TimeCell>
-          {(record.breakMinutes || record.break_minutes) ? (
-            <TimeText $type="primary">
-              {record.breakMinutes || record.break_minutes || 0} min
-            </TimeText>
-          ) : (
-            <TimeText $type="secondary">No breaks</TimeText>
-          )}
-        </TimeCell>
-      ),
-    },
+
     {
       title: "Working Hours",
       key: "workingHours",

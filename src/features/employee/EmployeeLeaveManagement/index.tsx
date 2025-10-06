@@ -8,6 +8,7 @@ import {
   Spin,
   Modal,
   Grid,
+  Space
 } from 'antd';
 import { Plus, Calendar } from 'lucide-react';
 import HeaderComponent from '../../../components/PageHeader';
@@ -30,7 +31,9 @@ import {
 import {
   StyledCard,
 } from './components/styles';
-import { useMyLeaves, useCreateLeave } from '../../../hooks/api/useLeaves';
+import { useMyLeaves, useCreateLeave, useDeleteLeave } from '../../../hooks/api/useLeaves';
+import { useLeaveBalance } from '../../../hooks/api/useLeaveBalance';
+import dayjs from 'dayjs';
 
 const { useBreakpoint } = Grid; // Destructure useBreakpoint hook from Ant Design Grid
 
@@ -63,40 +66,92 @@ const generateMockNotifications = (): LeaveNotification[] => [
 const EmployeeLeaveManagement: React.FC = () => { 
   const { isDarkMode } = useTheme();
   const [notifications, setNotifications] = useState<LeaveNotification[]>(generateMockNotifications());
-  const [leaveBalances, setLeaveBalances] = useState<LeaveBalance[]>(generateMockLeaveBalances());
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [policyGuidelinesVisible, setPolicyGuidelinesVisible] = useState(false);
   const screens = useBreakpoint();
 
-  // Use API hooks
+  // Use API hooks with fallback data
   const { data: leaveRequests, isLoading, error, refetch } = useMyLeaves();
+  const { data: leaveBalances, isLoading: balanceLoading } = useLeaveBalance();
   const createLeaveMutation = useCreateLeave();
+  const { mutate: cancelLeave } = useDeleteLeave();
+  
+  // Mock data fallback
+  const mockLeaveRequests = [
+    {
+      id: 1,
+      employee_id: 1,
+      leave_type: 'Annual',
+      start_date: '2024-01-15',
+      end_date: '2024-01-20',
+      duration: 5,
+      reason: 'Family vacation',
+      status: 'pending' as const,
+      created_at: '2024-01-10'
+    },
+    {
+      id: 2,
+      employee_id: 1,
+      leave_type: 'Sick',
+      start_date: '2024-01-25',
+      end_date: '2024-01-26',
+      duration: 2,
+      reason: 'Medical appointment',
+      status: 'approved' as const,
+      created_at: '2024-01-20'
+    }
+  ];
+  
+  const displayLeaves = leaveRequests || mockLeaveRequests;
 
-  // Mock stats for now - in real app, this would come from API
+  // Calculate stats from data
   const stats: DashboardStats = {
-    pendingRequests: leaveRequests?.filter(req => req.status === 'pending').length || 0,
-    approvedThisMonth: leaveRequests?.filter(req => req.status === 'approved').length || 0,
-    rejectedThisMonth: leaveRequests?.filter(req => req.status === 'rejected').length || 0,
-    onLeaveToday: 2
+    pendingRequests: (displayLeaves as any[]).filter((req: any) => req.status === 'pending').length || 0,
+    approvedThisMonth: (displayLeaves as any[]).filter((req: any) => {
+      const isThisMonth = dayjs(req.created_at).isSame(dayjs(), 'month');
+      return req.status === 'approved' && isThisMonth;
+    }).length || 0,
+    rejectedThisMonth: (displayLeaves as any[]).filter((req: any) => {
+      const isThisMonth = dayjs(req.created_at).isSame(dayjs(), 'month');
+      return req.status === 'rejected' && isThisMonth;
+    }).length || 0,
+    onLeaveToday: (displayLeaves as any[]).filter((req: any) => {
+      const today = dayjs();
+      return req.status === 'approved' && 
+             today.isBetween(dayjs(req.start_date), dayjs(req.end_date), 'day', '[]');
+    }).length || 0
   };
 
-  // Handle submission of leave request form
   const handleLeaveRequestSubmit = async (formData: any) => {
+    console.log('Form data received:', formData);
     try {
       const leaveData = {
         leave_type: formData.type,
         start_date: formData.dates[0].format('YYYY-MM-DD'),
         end_date: formData.dates[1].format('YYYY-MM-DD'),
         reason: formData.reason,
-        duration: formData.dates[1].diff(formData.dates[0], 'days') + 1
+        duration: formData.duration || (formData.dates[1].diff(formData.dates[0], 'days') + 1)
       };
-
+      
+      console.log('Submitting leave data:', leaveData);
       await createLeaveMutation.mutateAsync(leaveData);
-      setShowRequestForm(false);
-      refetch(); // Refresh the leave requests list
+      refetch();
     } catch (error) {
-      // Error is handled by the mutation
+      console.error('Error submitting leave request:', error);
     }
+  };
+  
+  // Handle cancellation of leave request
+  const handleCancelRequest = (id: string) => {
+    cancelLeave(id, {
+      onSuccess: () => {
+        refetch();
+        message.success('Leave request cancelled successfully');
+      },
+      onError: () => {
+        message.error('Failed to cancel leave request');
+      }
+    });
   };
 
   // Notification Handlers
@@ -146,36 +201,52 @@ const EmployeeLeaveManagement: React.FC = () => {
           >
             {screens.xs ? "Request" : "Request Leave"} {/* Responsive button text */}
           </Button>,
-          <Button // Policy Guidelines button
+          <Button
             key="policy-guidelines"
-            icon={<Calendar size={16} />} // Calendar icon (can be changed)
-            onClick={() => setPolicyGuidelinesVisible(true)} // Open policy guidelines modal on click
-            size={screens.xs ? "small" : "middle"} // Responsive button size
+            icon={<Calendar size={16} />}
+            onClick={() => setPolicyGuidelinesVisible(true)}
+            size={screens.xs ? "small" : "middle"}
           >
-            {screens.xs ? "Policies" : "Policy Guidelines"} {/* Responsive button text */}
-          </Button>
+            {screens.xs ? "Policies" : "Policy Guidelines"}
+          </Button>,
+
         ]}
         isDarkMode={isDarkMode} // Pass dark mode status to header
       />
 
-      <Spin spinning={isLoading || createLeaveMutation.isPending}> {/* Show spinner when loading */}
+      <Spin spinning={isLoading || createLeaveMutation.isPending || balanceLoading}> {/* Show spinner when loading */}
         <Row gutter={[16, 16]}> {/* Ant Design Row with gutter */}
           {/* Left Column - Main Content */}
           <Col xs={24} lg={16}> {/* Column for main content, responsive sizing */}
             <LeaveDashboardStats stats={stats} loading={isLoading} /> {/* Render LeaveDashboardStats */}
-            <StyledCard // Styled card for Leave History
+            <StyledCard
               title="Leave History"
               isDarkMode={isDarkMode}
               style={{ marginTop: 16 }}
+              extra={
+                <Space>
+                  <Button 
+                    size="small" 
+                    icon={<Calendar size={14} />}
+                    onClick={() => message.info('Calendar view coming soon')}
+                  >
+                    {screens.xs ? 'Calendar' : 'Calendar View'}
+                  </Button>
+                </Space>
+              }
             >
-              <LeaveHistoryTable leaveRequests={leaveRequests || []} loading={isLoading} /> {/* Leave history table component */}
+              <LeaveHistoryTable 
+                leaveRequests={displayLeaves} 
+                loading={isLoading}
+                onCancelRequest={handleCancelRequest}
+              />
             </StyledCard>
           </Col>
 
           {/* Right Column - Sidebar */}
           <Col xs={24} lg={8}> {/* Column for sidebar, responsive sizing */}
-            <StyledCard title="Leave Balance" isDarkMode={isDarkMode}> {/* Styled card for Leave Balance */}
-              <LeaveSummaryPanel leaveBalances={leaveBalances} /> {/* Leave summary panel component */}
+            <StyledCard title="Leave Balance" isDarkMode={isDarkMode}>
+              <LeaveSummaryPanel leaveBalances={leaveBalances || generateMockLeaveBalances()} />
             </StyledCard>
             <LeaveNotificationPanel // Leave notification panel component
               notifications={notifications}
@@ -197,12 +268,13 @@ const EmployeeLeaveManagement: React.FC = () => {
       >
         <PolicyGuidelines /> {/* Policy guidelines component */}
       </Modal>
-      <LeaveRequestForm // Leave request form component
+      <LeaveRequestForm
         visible={showRequestForm}
-        onCancel={() => setShowRequestForm(false)} // Close form on cancel
-        onSubmit={handleLeaveRequestSubmit} // Handle form submission
+        onCancel={() => setShowRequestForm(false)}
+        onSubmit={handleLeaveRequestSubmit}
         loading={createLeaveMutation.isPending}
         employees={mockEmployees}
+        leaveBalances={leaveBalances || generateMockLeaveBalances()}
       />
     </Wrapper>
   );
