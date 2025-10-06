@@ -36,6 +36,7 @@ import DocumentManagement from './features/admin/DocumentManagement';
 import CommunicationAndNotification from './features/admin/CommunicationAndNotification';
 import TrainingManagement from './features/admin/TrainingManagement';
 import NotificationManagement from './features/admin/NotificationManagement';
+import AdminPayslipManagement from './features/admin/AdminPayslipManagement';
 
 // Employee Components
 import EmployeeDashboard from './features/employee/EmployeeDashboard';
@@ -109,6 +110,7 @@ const AppContent: React.FC = () => {
             <Route path="documents" element={<DocumentManagement />} />
             <Route path="communication" element={<CommunicationAndNotification />} />
             <Route path="notifications" element={<NotificationManagement />} />
+            <Route path="payslips" element={<AdminPayslipManagement />} />
             <Route path="profile" element={<EmployeeProfile />} />
             <Route path="profile/edit" element={<EditProfile />} />
           </Route>
