@@ -174,24 +174,6 @@ const AttendanceClockPanel = ({
           >
             Check Out
           </ActionButton>
-
-          <ActionButton
-            $variant="break"
-            icon={<Coffee size={20} />}
-            onClick={handleBreakStart}
-            loading={isStartingBreak}
-          >
-            Start Break
-          </ActionButton>
-
-          <ActionButton
-            $variant="break"
-            icon={<Coffee size={20} />}
-            onClick={handleBreakEnd}
-            loading={isEndingBreak}
-          >
-            End Break
-          </ActionButton>
         </Space>
         </ClockContainer>
       </ClockPanelCard>
