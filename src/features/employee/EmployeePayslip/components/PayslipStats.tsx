@@ -2,15 +2,25 @@ import React from "react";
 import { Row, Col } from "antd";
 import { Wallet, DollarSign, CreditCard, Calendar } from "lucide-react";
 import { StateCard } from "../../../../components/StateCard";
+import { pakCurrency } from "../../../../constants";
 
-const PayslipStats: React.FC = () => {
+interface PayslipStatsProps {
+  stats: {
+    totalPayslips: number;
+    totalEarnings: number;
+    totalDeductions: number;
+    avgNetPay: number;
+  };
+}
+
+const PayslipStats: React.FC<PayslipStatsProps> = ({ stats }) => {
   return (
     <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
       <Col xs={24} sm={12} lg={6}>
         <StateCard
           icon={<Wallet />}
-          label="Net Pay (Current)"
-          value="PKR5,200.50"
+          label="Average Net Pay"
+          value={`${pakCurrency}${stats.avgNetPay.toFixed(2)}`}
           tone="pastelGreen"
           valueStyle={{ color: "#52c41a" }}
         />
@@ -19,8 +29,8 @@ const PayslipStats: React.FC = () => {
       <Col xs={24} sm={12} lg={6}>
         <StateCard
           icon={<DollarSign />}
-          label="Gross Pay"
-          value="PKR6,500.00"
+          label="Total Earnings"
+          value={`${pakCurrency}${stats.totalEarnings.toFixed(2)}`}
           tone="pastelBlue"
           valueStyle={{ color: "#1890ff" }}
         />
@@ -29,8 +39,8 @@ const PayslipStats: React.FC = () => {
       <Col xs={24} sm={12} lg={6}>
         <StateCard
           icon={<CreditCard />}
-          label="Deductions"
-          value="PKR1,299.50"
+          label="Total Deductions"
+          value={`${pakCurrency}${stats.totalDeductions.toFixed(2)}`}
           tone="pastelPink"
           valueStyle={{ color: "#f5222d" }}
         />
@@ -39,8 +49,8 @@ const PayslipStats: React.FC = () => {
       <Col xs={24} sm={12} lg={6}>
         <StateCard
           icon={<Calendar />}
-          label="Pay Period"
-          value="Oct 2023"
+          label="Total Payslips"
+          value={stats.totalPayslips.toString()}
           tone="softLavender"
           valueStyle={{ color: "#722ed1" }}
         />
