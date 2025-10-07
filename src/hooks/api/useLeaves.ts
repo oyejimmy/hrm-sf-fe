@@ -19,37 +19,31 @@ export const useMyLeaves = () => {
     queryKey: ['leaves', 'my'],
     queryFn: async (): Promise<Leave[]> => {
       try {
+        console.log('Fetching my leaves...');
         const response = await api.get(API_ENDPOINTS.LEAVES.MY_LEAVES);
-        return response.data;
-      } catch (error) {
-        console.error('API Error:', error);
-        // Return mock data if API fails
-        return [
-          {
-            id: 1,
-            employee_id: 1,
-            leave_type: 'Annual',
-            start_date: '2024-01-15',
-            end_date: '2024-01-20',
-            duration: 5,
-            reason: 'Family vacation',
-            status: 'pending' as const,
-            created_at: '2024-01-10'
-          },
-          {
-            id: 2,
-            employee_id: 1,
-            leave_type: 'Sick',
-            start_date: '2024-01-25',
-            end_date: '2024-01-26',
-            duration: 2,
-            reason: 'Medical appointment',
-            status: 'approved' as const,
-            created_at: '2024-01-20'
-          }
-        ];
+        console.log('My leaves response:', response.data);
+        
+        // Ensure each leave has the duration field
+        const leaves = response.data.map((leave: any) => ({
+          ...leave,
+          duration: leave.duration || leave.days_requested || 0
+        }));
+        
+        return leaves;
+      } catch (error: any) {
+        console.error('API Error fetching my leaves:', error);
+        
+        // If it's a network error or server error, throw it to show loading state
+        if (error.response?.status >= 500 || !error.response) {
+          throw error;
+        }
+        
+        // For other errors, return empty array
+        return [];
       }
     },
+    retry: 2,
+    retryDelay: 1000,
   });
 };
 
@@ -58,15 +52,23 @@ export const useCreateLeave = () => {
   
   return useMutation({
     mutationFn: async (leaveData: Partial<Leave>) => {
+      console.log('API call - sending leave data:', leaveData);
       const response = await api.post(API_ENDPOINTS.LEAVES.BASE, leaveData);
+      console.log('API call - received response:', response.data);
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Leave creation successful:', data);
+      // Invalidate both general leaves and my-leaves queries
       queryClient.invalidateQueries({ queryKey: ['leaves'] });
-      message.success('Leave request submitted successfully');
+      queryClient.invalidateQueries({ queryKey: ['leaves', 'my'] });
+      // Don't show success message here - let the component handle it
     },
     onError: (error: any) => {
-      message.error(error.response?.data?.detail || 'Failed to submit leave request');
+      console.error('Leave creation failed:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to submit leave request';
+      // Don't show error message here - let the component handle it
+      throw new Error(errorMessage);
     },
   });
 };
