@@ -42,6 +42,9 @@ import { useTheme } from "../../contexts/ThemeContext";
 import { useResponsive } from "../../hooks";
 import styled from "styled-components";
 import CroppedAvatar from '../CroppedAvatar';
+import { NotificationDropdown } from '../NotificationDropdown';
+import { DefaultAvatar } from '../DefaultAvatar';
+import { Logo } from '../Logo';
 
 const { Header: AntHeader, Content, Sider } = Layout;
 
@@ -346,9 +349,7 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
     navigate("/login");
   };
 
-  const handleNotificationsClick = () => {
-    navigate("/notifications");
-  };
+
 
   const toggleSider = () => {
     if (isMobile) {
@@ -585,8 +586,7 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
     },
   ];
 
-  // User dropdown menu
-  const userDropdownMenu = <Menu items={userMenuItems} />;
+
 
   const renderSiderContent = () => (
     <>
@@ -623,11 +623,15 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
               <PanelLeftClose size={16} />
             </CollapseButton>
           )}
-          <CroppedAvatar
+          <DefaultAvatar
             size={96}
             src={profileData?.personalInfo?.avatar_url || profileData?.personalInfo?.avatar || user?.profile_picture}
-            crop={profileData?.personalInfo?.profileCrop}
-            fallback={undefined}
+            name={profileData?.personalInfo?.name || `${user?.first_name} ${user?.last_name}` || "User"}
+            style={{
+              border: `2px solid ${isDarkMode ? '#434343' : '#d9d9d9'}`,
+              marginBottom: '12px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+            }}
           />
           <UserName>{profileData?.personalInfo?.name || `${user?.first_name} ${user?.last_name}` || "User"}</UserName>
           <Tag color={isDarkMode ? currentTheme?.colors?.secondary : "purple"}>
@@ -657,16 +661,7 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             onClick={toggleSider}
             type="text"
           />
-          <Image
-            src="/logo.png"
-            alt="logo"
-            preview={false}
-            width={isMobile ? 30 : 80}
-            height={isMobile ? 30 : 80}
-            style={{
-              objectFit: "contain",
-            }}
-          />
+          <Logo size={isMobile ? 'small' : 'medium'} showText={!isMobile} />
         </LogoContainer>
 
         <Space size={isMobile ? "small" : "middle"}>
@@ -688,32 +683,31 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             size={isMobile ? "small" : "middle"}
           />
 
-          <NotificationButton
-            icon={
-              <Badge dot count={3} size="small">
+          <NotificationDropdown>
+            <NotificationButton
+              icon={
                 <BellOutlined
                   style={{ fontSize: isMobile ? "14px" : "16px" }}
                 />
-              </Badge>
-            }
-            onClick={handleNotificationsClick}
-            type="text"
-            size={isMobile ? "small" : "middle"}
-          />
+              }
+              type="text"
+              size={isMobile ? "small" : "middle"}
+            />
+          </NotificationDropdown>
 
           {!isMobile && <VerticalDivider />}
 
           {/* User dropdown */}
           <Dropdown
-            overlay={userDropdownMenu}
+            menu={{ items: userMenuItems }}
             placement="bottomRight"
             trigger={["click"]}
           >
             <UserDropdownButton type="text">
-              <CroppedAvatar
+              <DefaultAvatar
                 size={isMobile ? 24 : 32}
                 src={profileData?.personalInfo?.avatar_url || profileData?.personalInfo?.avatar || user?.profile_picture}
-                crop={profileData?.personalInfo?.profileCrop}
+                name={profileData?.personalInfo?.name || `${user?.first_name} ${user?.last_name}` || "User"}
               />
               {!isMobile && (
                 <span>
