@@ -70,39 +70,13 @@ const EmployeeLeaveManagement: React.FC = () => {
   const [policyGuidelinesVisible, setPolicyGuidelinesVisible] = useState(false);
   const screens = useBreakpoint();
 
-  // Use API hooks with fallback data
+  // Use API hooks
   const { data: leaveRequests, isLoading, error, refetch } = useMyLeaves();
   const { data: leaveBalances, isLoading: balanceLoading } = useLeaveBalance();
   const createLeaveMutation = useCreateLeave();
   const { mutate: cancelLeave } = useDeleteLeave();
   
-  // Mock data fallback
-  const mockLeaveRequests = [
-    {
-      id: 1,
-      employee_id: 1,
-      leave_type: 'Annual',
-      start_date: '2024-01-15',
-      end_date: '2024-01-20',
-      duration: 5,
-      reason: 'Family vacation',
-      status: 'pending' as const,
-      created_at: '2024-01-10'
-    },
-    {
-      id: 2,
-      employee_id: 1,
-      leave_type: 'Sick',
-      start_date: '2024-01-25',
-      end_date: '2024-01-26',
-      duration: 2,
-      reason: 'Medical appointment',
-      status: 'approved' as const,
-      created_at: '2024-01-20'
-    }
-  ];
-  
-  const displayLeaves = leaveRequests || mockLeaveRequests;
+  const displayLeaves = leaveRequests || [];
 
   // Calculate stats from data
   const stats: DashboardStats = {
@@ -125,19 +99,29 @@ const EmployeeLeaveManagement: React.FC = () => {
   const handleLeaveRequestSubmit = async (formData: any) => {
     console.log('Form data received:', formData);
     try {
+      const days_requested = formData.duration || (formData.dates[1].diff(formData.dates[0], 'days') + 1);
+      
       const leaveData = {
         leave_type: formData.type,
         start_date: formData.dates[0].format('YYYY-MM-DD'),
         end_date: formData.dates[1].format('YYYY-MM-DD'),
-        reason: formData.reason,
-        duration: formData.duration || (formData.dates[1].diff(formData.dates[0], 'days') + 1)
+        days_requested: days_requested,
+        reason: formData.reason
       };
       
       console.log('Submitting leave data:', leaveData);
-      await createLeaveMutation.mutateAsync(leaveData);
-      refetch();
-    } catch (error) {
+      const result = await createLeaveMutation.mutateAsync(leaveData);
+      console.log('Leave request created successfully:', result);
+      
+      // Refresh the leave requests list
+      await refetch();
+      
+      message.success('Leave request submitted successfully!');
+      setShowRequestForm(false);
+    } catch (error: any) {
       console.error('Error submitting leave request:', error);
+      const errorMessage = error?.response?.data?.detail || error?.message || 'Failed to submit leave request';
+      message.error(errorMessage);
     }
   };
   

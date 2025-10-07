@@ -181,12 +181,15 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({
       title: 'Duration',
       key: 'duration',
       width: screens.xs ? 80 : 120,
-      render: (record: Leave) => (
-        <div>
-          <div style={{ fontWeight: 500 }}>{record.duration} day{record.duration !== 1 ? 's' : ''}</div>
-          <div style={{ fontSize: '11px', opacity: 0.7 }}>Full Day</div>
-        </div>
-      )
+      render: (record: Leave) => {
+        const duration = record.duration || (record as any).days_requested || 0;
+        return (
+          <div>
+            <div style={{ fontWeight: 500 }}>{duration} day{duration !== 1 ? 's' : ''}</div>
+            <div style={{ fontSize: '11px', opacity: 0.7 }}>Full Day</div>
+          </div>
+        );
+      }
     },
     {
       title: 'Date Range',
@@ -324,7 +327,7 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({
                 </div>
                 <div>
                   <Text type="secondary">Duration:</Text>
-                  <div><Text strong>{selectedLeave.duration} day{selectedLeave.duration !== 1 ? 's' : ''}</Text></div>
+                  <div><Text strong>{selectedLeave.duration || (selectedLeave as any).days_requested || 0} day{(selectedLeave.duration || (selectedLeave as any).days_requested || 0) !== 1 ? 's' : ''}</Text></div>
                 </div>
                 <div>
                   <Text type="secondary">Duration Type:</Text>

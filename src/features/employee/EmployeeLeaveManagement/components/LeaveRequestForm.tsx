@@ -145,7 +145,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
     }
   }, [selectedLeaveType, leaveBalances]);
 
-  const handleSubmit = (values: any) => {
+  const handleSubmit = async (values: any) => {
     console.log("Form submitted with values:", values);
 
     if (selectedRecipients.length === 0) {
@@ -176,8 +176,13 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
     };
 
     console.log("Calling onSubmit with:", formData);
-    onSubmit(formData);
-    handleCancel();
+    try {
+      await onSubmit(formData);
+      handleCancel();
+    } catch (error) {
+      console.error('Error in form submission:', error);
+      // Don't close the form if there's an error
+    }
   };
 
   const handleRecipientChange = (recipientIds: string[]) => {
@@ -264,7 +269,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
           key="submit"
           type="primary"
           loading={loading}
-          onClick={() => {
+          onClick={async () => {
             console.log("Submit button clicked");
             form.submit();
           }}
