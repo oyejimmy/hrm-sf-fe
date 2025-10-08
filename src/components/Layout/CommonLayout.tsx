@@ -386,14 +386,14 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             label: "Employees",
           },
           {
-            key: "/admin/attendance-leave",
-            icon: <CalendarOutlined />,
-            label: "Attendance & Leave",
-          },
-          {
             key: "/admin/attendance-management",
             icon: <CalendarOutlined />,
             label: "Attendance Management",
+          },
+          {
+            key: "/admin/leave-management",
+            icon: <FileTextOutlined />,
+            label: "Leave Management",
           },
           {
             key: "/admin/reports",
@@ -683,7 +683,7 @@ export const CommonLayout: React.FC<CommonLayoutProps> = ({ userRole }) => {
             size={isMobile ? "small" : "middle"}
           />
 
-          <NotificationDropdown>
+          <NotificationDropdown userRole={userRole}>
             <NotificationButton
               icon={
                 <BellOutlined
