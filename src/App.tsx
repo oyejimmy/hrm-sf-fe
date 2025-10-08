@@ -28,7 +28,8 @@ import ChangePassword from './features/auth/ChangePassword';
 // Admin Components
 import AdminDashboard from './features/admin/AdminDashboard';
 import EmployeeManagement from './features/admin/EmployeeManagement';
-import AttendanceAndLeave from './features/admin/AttendanceAndLeave';
+import AdminAttendanceManagement from './features/admin/AttendanceManagement';
+import AdminLeaveManagement from './features/admin/AdminLeaveManagement';
 import ReportsAnalytics from './features/admin/ReportsAnalytics';
 import Recruitments from './features/admin/Recruitments';
 import PerformanceManagement from './features/admin/PerformanceManagement';
@@ -102,7 +103,8 @@ const AppContent: React.FC = () => {
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="employees" element={<EmployeeManagement />} />
-            <Route path="attendance-leave" element={<AttendanceAndLeave />} />
+            <Route path="attendance-management" element={<AdminAttendanceManagement />} />
+            <Route path="leave-management" element={<AdminLeaveManagement />} />
             <Route path="reports" element={<ReportsAnalytics />} />
             <Route path="recruitment" element={<Recruitments />} />
             <Route path="performance" element={<PerformanceManagement />} />
