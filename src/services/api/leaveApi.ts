@@ -24,8 +24,8 @@ export const leaveApi = {
   },
 
   // Approval Workflow
-  approveLeaveRequest: async (requestId: string, data?: any) => {
-    const response = await api.put(`/api/leaves/${requestId}/approve`, data || {});
+  approveLeaveRequest: async (requestId: string) => {
+    const response = await api.put(`/api/leaves/${requestId}/approve`);
     return response.data;
   },
 
