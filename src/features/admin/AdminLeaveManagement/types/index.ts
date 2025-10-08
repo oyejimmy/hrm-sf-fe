@@ -1,40 +1,47 @@
 export interface LeaveRequest {
-  id: string;
-  employee: string;
-  employeeId?: string;
-  department: string;
-  type: "Annual" | "Sick" | "Casual" | "Compensatory";
-  fromDate: string;
-  toDate: string;
-  duration: string;
+  id: number;
+  employee_id: number;
+  employeeId: string;
+  employeeName: string;
+  department?: string;
+  position?: string;
+  leave_type: string;
+  leaveType: string;
+  start_date: string;
+  startDate: string;
+  end_date: string;
+  endDate: string;
+  days_requested: number;
+  daysRequested: number;
   reason: string;
-  status: "Pending" | "Approved" | "Rejected" | "On Hold";
-  adminComments?: string;
+  status: string;
+  created_at: string;
+  createdAt: string;
+  approved_by?: number;
   approvedBy?: string;
+  approved_at?: string;
   approvedAt?: string;
-  rejectedBy?: string;
-  rejectedAt?: string;
+  rejection_reason?: string;
+  rejectionReason?: string;
+  approverComments?: string;
+  updatedAt?: string;
 }
 
-export interface TeamLeaveSummary {
-  department: string;
-  totalEmployees: number;
-  onLeave: number;
-  pending: number;
-  approved: number;
-  rejected: number;
+export interface LeaveStats {
+  pendingRequests: number;
+  approvedThisMonth: number;
+  rejectedRequests: number;
+  totalRequests: number;
 }
 
-export interface LeaveAnalyticsData {
-  month: string;
-  approved: number;
-  rejected: number;
-  pending: number;
+export interface AllLeavesTableProps {
+  onViewDetails: (leave: LeaveRequest) => void;
+  onApprove: (leave: LeaveRequest) => void;
+  onReject: (leave: LeaveRequest) => void;
 }
 
-export interface LeaveReport {
-  id: string;
-  title: string;
-  generatedAt: string;
-  url: string;
+export interface StatusIndicatorProps {
+  isOnline: boolean;
+  lastUpdate: Date;
+  isLoading?: boolean;
 }
