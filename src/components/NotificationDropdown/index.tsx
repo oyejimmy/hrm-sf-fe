@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Dropdown, List, Avatar, Button, Badge, Typography, Empty, Spin } from 'antd';
 import { BellOutlined, TeamOutlined, CalendarOutlined, BarChartOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { notificationApi } from '../../services/api/notificationApi';
+import { leaveApi } from '../../services/api/leaveApi';
 import styled from 'styled-components';
 
 const { Text } = Typography;
@@ -11,37 +13,13 @@ const NotificationContainer = styled.div`
   width: 350px;
   max-height: 400px;
   overflow-y: auto;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e8e8e8;
 `;
 
-const NotificationHeader = styled.div`
-  padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 600;
-`;
 
-const NotificationItem = styled(List.Item)<{ $isRead: boolean }>`
-  padding: 12px 16px !important;
-  cursor: pointer;
-  background: ${props => props.$isRead ? 'transparent' : '#f6f8ff'};
-  border-bottom: 1px solid #f0f0f0;
-  
-  &:hover {
-    background: #f5f5f5;
-  }
-  
-  .ant-list-item-meta-title {
-    font-size: 14px;
-    margin-bottom: 4px;
-  }
-  
-  .ant-list-item-meta-description {
-    font-size: 12px;
-    color: #666;
-  }
-`;
 
 const TimeText = styled(Text)`
   font-size: 11px;
@@ -50,7 +28,8 @@ const TimeText = styled(Text)`
 
 const ViewAllButton = styled(Button)`
   width: 100%;
-  margin-top: 8px;
+  text-align: center;
+  font-weight: 500;
 `;
 
 interface Notification {
@@ -61,55 +40,95 @@ interface Notification {
   priority: string;
   is_read: boolean;
   created_at: string;
+  route?: string;
 }
 
 interface NotificationDropdownProps {
   children: React.ReactNode;
+  userRole?: 'admin' | 'hr' | 'employee' | 'team_lead';
 }
 
-export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ children }) => {
+export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ children, userRole = 'admin' }) => {
   const [open, setOpen] = useState(false);
+  const [clickedNotifications, setClickedNotifications] = useState<Set<number>>(new Set());
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const { data: notifications = [], isLoading } = useQuery({
+  const { data: leaveNotifications = [] } = useQuery({
+    queryKey: ['admin-leave-notifications'],
+    queryFn: async () => {
+      try {
+        return await leaveApi.getAdminLeaveNotifications();
+      } catch (error) {
+        console.error('Leave notifications API error:', error);
+        return [];
+      }
+    },
+    enabled: open && (userRole === 'admin' || userRole === 'hr'),
+    refetchInterval: 30000,
+  });
+
+  const { data: generalNotifications = [], isLoading } = useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {
       try {
         return await notificationApi.getNotifications();
       } catch (error) {
-        // Fallback mock data when API is not available
-        return [
-          {
-            id: 1,
-            title: 'Leave Request Approved',
-            message: 'Your leave request for Dec 25-26 has been approved',
-            type: 'leave',
-            priority: 'medium',
-            is_read: false,
-            created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-          },
-          {
-            id: 2,
-            title: 'New Announcement',
-            message: 'Company holiday schedule updated',
-            type: 'announcement',
-            priority: 'high',
-            is_read: false,
-            created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-          },
-          {
-            id: 3,
-            title: 'Attendance Reminder',
-            message: 'Please check in for today',
-            type: 'attendance',
-            priority: 'low',
-            is_read: true,
-            created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-          }
-        ];
+        return [];
       }
     },
     enabled: open,
   });
+
+  const getNotificationRoute = (type: string, userRole: string = 'admin') => {
+    if (userRole === 'employee') {
+      switch (type) {
+        case 'leave': return '/employee/leave';
+        case 'attendance': return '/employee/attendance';
+        case 'performance': return '/employee/dashboard';
+        case 'announcement': return '/employee/dashboard';
+        case 'training': return '/employee/training';
+        case 'document': return '/employee/documents';
+        default: return '/employee/dashboard';
+      }
+    }
+    // Admin routes
+    switch (type) {
+      case 'leave': return '/admin/leave-management';
+      case 'attendance': return '/admin/attendance-management';
+      case 'performance': return '/admin/performance';
+      case 'announcement': return '/admin/communication';
+      case 'employee': return '/admin/employees';
+      case 'recruitment': return '/admin/recruitment';
+      case 'training': return '/admin/training';
+      case 'document': return '/admin/documents';
+      default: return '/admin/dashboard';
+    }
+  };
+
+  // Combine leave notifications with general notifications
+  const notifications = [
+    ...(userRole === 'admin' || userRole === 'hr' ? leaveNotifications.map((notification: any) => {
+      const mappedNotification = {
+        id: notification.id,
+        title: notification.title || 'New Leave Request',
+        message: notification.message,
+        type: 'leave',
+        priority: 'medium',
+        is_read: clickedNotifications.has(notification.id) || notification.is_read || false,
+        created_at: notification.createdAt || notification.created_at || new Date().toISOString(),
+        route: getNotificationRoute('leave', userRole)
+      };
+      console.log('Mapped leave notification:', mappedNotification);
+      return mappedNotification;
+    }) : []),
+    ...generalNotifications.map((notification: any) => ({
+      ...notification,
+      route: notification.route || getNotificationRoute(notification.type, userRole)
+    }))
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  
+  console.log('All notifications:', notifications);
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -142,23 +161,43 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ chil
     return 'Just now';
   };
 
-  const handleMarkAsRead = async (notificationId: number) => {
+  const handleNotificationClick = async (notification: Notification) => {
+    console.log('Notification clicked:', notification);
     try {
-      await notificationApi.markAsRead(notificationId.toString());
+      if (notification.type === 'leave') {
+        // Mark as read locally
+        setClickedNotifications(prev => new Set(prev).add(notification.id));
+      } else {
+        try {
+          await notificationApi.markAsRead(notification.id.toString());
+          // Invalidate queries to refresh data
+          queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        } catch (error) {
+          console.error('Failed to mark general notification as read:', error);
+        }
+      }
+      
+      if (notification.route) {
+        console.log('Navigating to:', notification.route);
+        navigate(notification.route);
+      } else {
+        console.log('No route defined for notification');
+      }
+      setOpen(false);
     } catch (error) {
-      console.error('Failed to mark notification as read:', error);
+      console.error('Failed to handle notification click:', error);
+      // Still navigate even if marking as read fails
+      if (notification.route) {
+        navigate(notification.route);
+      }
+      setOpen(false);
     }
   };
 
-  const unreadCount = notifications.filter((n: Notification) => !n.is_read).length;
+  const unreadCount = notifications.filter((n: Notification) => !n.is_read && !clickedNotifications.has(n.id)).length;
 
   const dropdownContent = (
     <NotificationContainer>
-      <NotificationHeader>
-        <span>Notifications</span>
-        <Badge count={unreadCount} size="small" />
-      </NotificationHeader>
-      
       {isLoading ? (
         <div style={{ padding: '20px', textAlign: 'center' }}>
           <Spin />
@@ -175,9 +214,16 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ chil
           <List
             dataSource={notifications.slice(0, 5)}
             renderItem={(item: Notification) => (
-              <NotificationItem 
-                $isRead={item.is_read}
-                onClick={() => handleMarkAsRead(item.id)}
+              <List.Item
+                style={{
+                  padding: '12px 16px',
+                  cursor: 'pointer',
+                  background: item.is_read || clickedNotifications.has(item.id) ? '#ffffff' : '#f6f8ff',
+                  borderBottom: '1px solid #f0f0f0'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
+                onMouseLeave={(e) => e.currentTarget.style.background = item.is_read || clickedNotifications.has(item.id) ? '#ffffff' : '#f6f8ff'}
+                onClick={() => handleNotificationClick(item)}
               >
                 <List.Item.Meta
                   avatar={
@@ -187,20 +233,26 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ chil
                       size="small"
                     />
                   }
-                  title={item.title}
-                  description={item.message}
+                  title={<span style={{ fontSize: '14px', fontWeight: 500 }}>{item.title}</span>}
+                  description={<span style={{ fontSize: '12px', color: '#666' }}>{item.message}</span>}
                 />
                 <TimeText>{getTimeAgo(item.created_at)}</TimeText>
-              </NotificationItem>
+              </List.Item>
             )}
           />
-          {notifications.length > 5 && (
-            <div style={{ padding: '12px 16px' }}>
-              <ViewAllButton type="link" size="small">
-                View all notifications
-              </ViewAllButton>
-            </div>
-          )}
+          <div style={{ padding: '12px 16px', borderTop: '1px solid #f0f0f0' }}>
+            <ViewAllButton 
+              type="link" 
+              size="small"
+              onClick={() => {
+                const notificationsRoute = userRole === 'employee' ? '/employee/dashboard' : '/admin/notifications';
+                navigate(notificationsRoute);
+                setOpen(false);
+              }}
+            >
+              View All Notifications
+            </ViewAllButton>
+          </div>
         </>
       )}
     </NotificationContainer>
