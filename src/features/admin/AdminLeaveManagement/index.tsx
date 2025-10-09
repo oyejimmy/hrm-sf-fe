@@ -72,6 +72,7 @@ const AdminLeaveManagement: React.FC = () => {
       title: 'Approve Leave Request',
       content: `Are you sure you want to approve ${leave.employeeName}'s ${leave.leaveType} leave request?`,
       onOk: () => approveMutation.mutate(leave.id.toString()),
+      centered: true,
     });
   };
 
