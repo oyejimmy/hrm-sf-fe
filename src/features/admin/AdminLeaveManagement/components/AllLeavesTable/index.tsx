@@ -91,14 +91,20 @@ const AllLeavesTable: React.FC<AllLeavesTableProps> = ({ onViewDetails, onApprov
       width: 180,
       sorter: (a: LeaveRequest, b: LeaveRequest) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
       render: (record: LeaveRequest) => (
-        <Space direction="vertical" size={0}>
-          <span style={{ fontSize: '13px', color: '#262626' }}>
-            {dayjs(record.startDate).format('MMM DD')} - {dayjs(record.endDate).format('MMM DD, YYYY')}
-          </span>
-          <span style={{ fontSize: '12px', color: '#1890ff', fontWeight: 500 }}>
-            {record.daysRequested} day{record.daysRequested !== 1 ? 's' : ''}
-          </span>
-        </Space>
+        <span style={{ fontSize: '13px', color: '#262626' }}>
+          {dayjs(record.startDate).format('MMM DD')} - {dayjs(record.endDate).format('MMM DD, YYYY')}
+        </span>
+      ),
+    },
+    {
+      title: 'Days',
+      dataIndex: 'days_requested',
+      width: 80,
+      sorter: (a: LeaveRequest, b: LeaveRequest) => a.days_requested - b.days_requested,
+      render: (days: number) => (
+        <span style={{ fontSize: '14px', color: '#1890ff', fontWeight: 500 }}>
+          {days} day{days !== 1 ? 's' : ''}
+        </span>
       ),
     },
     {
