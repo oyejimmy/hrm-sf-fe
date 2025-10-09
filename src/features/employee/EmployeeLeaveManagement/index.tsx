@@ -8,21 +8,21 @@ import {
   Spin,
   Modal,
   Grid,
-  Space
+  Space,
+  Input
 } from 'antd';
-import { Plus, Calendar } from 'lucide-react';
+import { Plus, Calendar, PieChart, Search } from 'lucide-react';
 import HeaderComponent from '../../../components/PageHeader';
 import { Wrapper } from '../../../components/Wrapper';
 import { useTheme } from '../../../contexts/ThemeContext';
 import LeaveRequestForm from './components/LeaveRequestForm';
-import LeaveNotificationPanel from './components/LeaveNotificationPanel';
+
 import LeaveDashboardStats from './components/LeaveDashboardStats';
 import LeaveHistoryTable from './components/LeaveHistoryTable';
 import LeaveSummaryPanel from './components/LeaveSummaryPanel';
 import PolicyGuidelines from './components/PolicyGuidelines';
 import {
   LeaveRequest,
-  LeaveNotification,
   DashboardStats,
   LeaveBalance,
   LeavePolicy,
@@ -50,24 +50,15 @@ const generateMockLeaveBalances = (): LeaveBalance[] => [ // Function to generat
   { type: 'Paternity', totalAllocated: 10, taken: 0, remaining: 10 } // Paternity leave balance
 ];
 
-const generateMockNotifications = (): LeaveNotification[] => [
-  {
-    id: 'notif-1',
-    type: 'leave_approved',
-    message: 'Your leave request has been approved',
-    fromEmployee: 'HR Department',
-    timestamp: new Date().toLocaleDateString(),
-    read: false,
-    priority: 'high',
-    leaveRequestId: 'req-1'
-  }
-];
+
 
 const EmployeeLeaveManagement: React.FC = () => { 
   const { isDarkMode } = useTheme();
-  const [notifications, setNotifications] = useState<LeaveNotification[]>(generateMockNotifications());
+
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [policyGuidelinesVisible, setPolicyGuidelinesVisible] = useState(false);
+  const [leaveBalanceModalVisible, setLeaveBalanceModalVisible] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const screens = useBreakpoint();
 
   // Use API hooks
@@ -138,22 +129,7 @@ const EmployeeLeaveManagement: React.FC = () => {
     });
   };
 
-  // Notification Handlers
-  const handleMarkAsRead = async (notificationId: string) => {
-    setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, read: true } : n));
-  };
 
-  const handleMarkAllAsRead = async () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    message.success('All notifications marked as read');
-  };
-
-  const handleNotificationClick = (notification: LeaveNotification) => {
-    if (!notification.read) {
-      handleMarkAsRead(notification.id);
-    }
-    message.info(`Notification: ${notification.message}`);
-  };
 
   if (error) {
     return (
@@ -186,6 +162,14 @@ const EmployeeLeaveManagement: React.FC = () => {
             {screens.xs ? "Request" : "Request Leave"} {/* Responsive button text */}
           </Button>,
           <Button
+            key="leave-balance"
+            icon={<PieChart size={16} />}
+            onClick={() => setLeaveBalanceModalVisible(true)}
+            size={screens.xs ? "small" : "middle"}
+          >
+            {screens.xs ? "Balance" : "Leave Balance"}
+          </Button>,
+          <Button
             key="policy-guidelines"
             icon={<Calendar size={16} />}
             onClick={() => setPolicyGuidelinesVisible(true)}
@@ -200,47 +184,53 @@ const EmployeeLeaveManagement: React.FC = () => {
 
       <Spin spinning={isLoading || createLeaveMutation.isPending || balanceLoading}> {/* Show spinner when loading */}
         <Row gutter={[16, 16]}> {/* Ant Design Row with gutter */}
-          {/* Left Column - Main Content */}
-          <Col xs={24} lg={16}> {/* Column for main content, responsive sizing */}
+          {/* Main Content */}
+          <Col xs={24}> {/* Column for main content, full width */}
             <LeaveDashboardStats stats={stats} loading={isLoading} /> {/* Render LeaveDashboardStats */}
             <StyledCard
               title="Leave History"
               isDarkMode={isDarkMode}
               style={{ marginTop: 16 }}
               extra={
-                <Space>
-                  <Button 
-                    size="small" 
-                    icon={<Calendar size={14} />}
-                    onClick={() => message.info('Calendar view coming soon')}
-                  >
-                    {screens.xs ? 'Calendar' : 'Calendar View'}
-                  </Button>
-                </Space>
+                <Input
+                  placeholder="Search leave history..."
+                  prefix={<Search size={16} />}
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  style={{ width: 300 }}
+                  allowClear
+                />
               }
             >
               <LeaveHistoryTable 
                 leaveRequests={displayLeaves} 
                 loading={isLoading}
                 onCancelRequest={handleCancelRequest}
+                searchText={searchText}
               />
             </StyledCard>
           </Col>
 
-          {/* Right Column - Sidebar */}
-          <Col xs={24} lg={8}> {/* Column for sidebar, responsive sizing */}
-            <StyledCard title="Leave Balance" isDarkMode={isDarkMode}>
-              <LeaveSummaryPanel leaveBalances={leaveBalances || generateMockLeaveBalances()} />
-            </StyledCard>
-            <LeaveNotificationPanel // Leave notification panel component
-              notifications={notifications}
-              onNotificationClick={handleNotificationClick}
-              onMarkAsRead={handleMarkAsRead}
-              onMarkAllAsRead={handleMarkAllAsRead}
-            />
-          </Col>
+
         </Row>
       </Spin>
+      <Modal // Modal for Leave Balance
+        title="Leave Balance"
+        open={leaveBalanceModalVisible}
+        closable={false}
+        maskClosable={false}
+        onCancel={() => setLeaveBalanceModalVisible(false)}
+        footer={[
+          <Button key="close" type="primary" onClick={() => setLeaveBalanceModalVisible(false)}>
+            Close
+          </Button>
+        ]}
+        width={screens.xs ? "100%" : 800}
+        centered
+        bodyStyle={{ padding: screens.xs ? '8px' : '16px' }}
+      >
+        <LeaveSummaryPanel leaveBalances={leaveBalances || generateMockLeaveBalances()} />
+      </Modal>
       <Modal // Modal for Policy Guidelines
         title="Policy Guidelines"
         open={policyGuidelinesVisible}

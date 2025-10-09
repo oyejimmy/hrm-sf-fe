@@ -82,7 +82,7 @@ const LeaveDashboardStats: React.FC<LeaveDashboardStatsProps> = ({
   return (
     <Spin spinning={loading}>
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={8}>
+        <Col xs={24} sm={12} lg={6}>
           <StateCard
             loading={loading}
             label="Pending Requests"
@@ -93,7 +93,7 @@ const LeaveDashboardStats: React.FC<LeaveDashboardStatsProps> = ({
           />
         </Col>
 
-        <Col xs={24} sm={12} lg={8}>
+        <Col xs={24} sm={12} lg={6}>
           <StateCard
             loading={loading}
             label="Approved This Month"
@@ -104,7 +104,7 @@ const LeaveDashboardStats: React.FC<LeaveDashboardStatsProps> = ({
           />
         </Col>
 
-        <Col xs={24} sm={12} lg={8}>
+        <Col xs={24} sm={12} lg={6}>
           <StateCard
             loading={loading}
             label="Rejected This Month"
@@ -115,69 +115,19 @@ const LeaveDashboardStats: React.FC<LeaveDashboardStatsProps> = ({
           />
         </Col>
 
+        <Col xs={24} sm={12} lg={6}>
+          <StateCard
+            loading={loading}
+            label="Total Requests"
+            value={totalRequests}
+            icon={<Users />}
+            tone="pastelBlue"
+            description="All time requests"
+          />
+        </Col>
 
-        
-        {!screens.xs && (
-          <>
-            <Col xs={24} lg={24}>
-              <StatCard title="Quick Insights" loading={loading}>
-                <Space direction="vertical" style={{ width: "100%" }}>
-                  {stats.pendingRequests > 5 && (
-                    <Space>
-                      <AlertTriangle size={16} color="#faad14" />
-                      <Text type="warning">
-                        High number of pending requests ({stats.pendingRequests})
-                      </Text>
-                    </Space>
-                  )}
-                  {approvalRate > 90 && (
-                    <Space>
-                      <TrendingUp size={16} color="#52c41a" />
-                      <Text type="success">
-                        Excellent approval rate ({Math.round(approvalRate)}%)
-                      </Text>
-                    </Space>
-                  )}
-                  {stats.onLeaveToday > 0 && (
-                    <Space>
-                      <Calendar size={16} color="#1890ff" />
-                      <Text>
-                        {stats.onLeaveToday} employee
-                        {stats.onLeaveToday !== 1 ? "s" : ""} on leave today
-                      </Text>
-                    </Space>
-                  )}
-                  {totalRequests === 0 && (
-                    <Space>
-                      <CheckCircle size={16} color="#52c41a" />
-                      <Text type="secondary">No leave requests this month</Text>
-                    </Space>
-                  )}
-                  <div style={{ 
-                    padding: '8px 0', 
-                    borderTop: `1px solid ${isDarkMode ? 'var(--border)' : '#f0f0f0'}`,
-                    marginTop: '8px'
-                  }}>
-                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Text type="secondary" style={{ fontSize: '12px' }}>Total Requests:</Text>
-                        <Text strong style={{ fontSize: '12px' }}>{totalRequests}</Text>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Text type="secondary" style={{ fontSize: '12px' }}>Avg. Processing:</Text>
-                        <Text strong style={{ fontSize: '12px' }}>2.3 days</Text>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Text type="secondary" style={{ fontSize: '12px' }}>Most Common:</Text>
-                        <Text strong style={{ fontSize: '12px' }}>Annual Leave</Text>
-                      </div>
-                    </Space>
-                  </div>
-                </Space>
-              </StatCard>
-            </Col>
-          </>
-        )}
+
+
       </Row>
     </Spin>
   );
