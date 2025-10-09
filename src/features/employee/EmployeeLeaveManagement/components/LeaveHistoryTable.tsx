@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Table, 
   Tag, 
@@ -13,7 +13,8 @@ import {
   Col, 
   Divider,
   Progress,
-  Grid
+  Grid,
+  Input
 } from 'antd';
 import { 
   Download, 
@@ -22,11 +23,13 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Clock
+  Clock,
+  Search
 } from 'lucide-react';
 import styled from 'styled-components';
 import { Leave } from '../../../../services/api/types';
 import { useTheme } from '../../../../contexts/ThemeContext';
+import { DATE_FORMATS } from '../../../../constants';
 import dayjs from 'dayjs';
 
 const { Text, Title } = Typography;
@@ -36,6 +39,8 @@ interface LeaveHistoryTableProps {
   leaveRequests: Leave[];
   loading?: boolean;
   onCancelRequest?: (id: string) => void;
+  searchText?: string;
+  onSearchChange?: (value: string) => void;
 }
 
 const StyledTable = styled(Table)<{ $isDarkMode: boolean }>`
@@ -73,7 +78,7 @@ const DetailModal = styled(Modal)<{ $isDarkMode: boolean }>`
   
   .ant-modal-header {
     background: ${props => props.$isDarkMode ? 'var(--surface)' : '#ffffff'};
-    border-bottom: 1px solid ${props => props.$isDarkMode ? 'var(--border)' : '#f0f0f0'};
+    border-bottom: none;
   }
   
   .ant-modal-body {
@@ -100,29 +105,39 @@ const StatusCard = styled(Card)<{ $isDarkMode: boolean; $status: string }>`
 const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({
   leaveRequests,
   loading = false,
-  onCancelRequest
+  onCancelRequest,
+  searchText = ''
 }) => {
   const { isDarkMode } = useTheme();
   const screens = useBreakpoint();
   const [selectedLeave, setSelectedLeave] = useState<Leave | null>(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const filteredLeaveRequests = useMemo(() => {
+    if (!searchText) return leaveRequests;
+    
+    return leaveRequests.filter(leave => 
+      leave.leave_type.toLowerCase().includes(searchText.toLowerCase()) ||
+      leave.status.toLowerCase().includes(searchText.toLowerCase()) ||
+      leave.reason?.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }, [leaveRequests, searchText]);
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      'Approved': 'success',
-      'Rejected': 'error',
-      'On Hold': 'warning',
-      'Pending': 'processing'
+      'approved': 'green',
+      'rejected': 'red',
+      'pending': 'orange',
+      'on_hold': 'yellow'
     };
-    return colors[status] || 'default';
+    return colors[status.toLowerCase()] || 'blue';
   };
   
   const getStatusIcon = (status: string) => {
     const icons: Record<string, React.ReactNode> = {
-      'Approved': <CheckCircle size={14} />,
-      'Rejected': <XCircle size={14} />,
-      'Pending': <Clock size={14} />
+      'approved': <CheckCircle size={32} />,
+      'rejected': <XCircle size={32} />,
+      'pending': <Clock size={32} />
     };
-    return icons[status] || <AlertCircle size={14} />;
+    return icons[status.toLowerCase()] || <AlertCircle size={32} />;
   };
 
   const getLeaveTypeColor = (type: string) => {
@@ -171,17 +186,24 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({
   const columns = [
     {
       title: 'Leave Type',
-      key: 'type',
+      dataIndex: 'leave_type',
+      key: 'leave_type',
       width: screens.xs ? 100 : 150,
-      render: (record: Leave) => (
-        <div style={{ fontWeight: 500 }}>{record.leave_type}</div>
+      sorter: (a: any, b: any) => a.leave_type.localeCompare(b.leave_type),
+      render: (type: string) => (
+        <div style={{ fontWeight: 500 }}>{type}</div>
       )
     },
     {
       title: 'Duration',
       key: 'duration',
       width: screens.xs ? 80 : 120,
-      render: (record: Leave) => {
+      sorter: (a: any, b: any) => {
+        const aDuration = a.duration || a.days_requested || 0;
+        const bDuration = b.duration || b.days_requested || 0;
+        return aDuration - bDuration;
+      },
+      render: (record: any) => {
         const duration = record.duration || (record as any).days_requested || 0;
         return (
           <div>
@@ -193,17 +215,19 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({
     },
     {
       title: 'Date Range',
-      key: 'dates',
+      dataIndex: 'start_date',
+      key: 'start_date',
       width: screens.xs ? 120 : 180,
-      render: (record: Leave) => {
-        const startDate = dayjs(record.start_date);
-        const endDate = dayjs(record.end_date);
-        const daysUntil = getDaysUntilLeave(record.start_date);
+      sorter: (a: any, b: any) => dayjs(a.start_date).valueOf() - dayjs(b.start_date).valueOf(),
+      render: (startDate: string, record: any) => {
+        const start = dayjs(startDate);
+        const end = dayjs(record.end_date);
+        const daysUntil = getDaysUntilLeave(startDate);
         
         return (
           <div>
             <div style={{ fontSize: '12px' }}>
-              {startDate.format('MMM DD')} - {endDate.format('MMM DD, YYYY')}
+              {start.format('DD MMM, YYYY')} - {end.format('DD MMM, YYYY')}
             </div>
             <div style={{ fontSize: '11px', opacity: 0.7 }}>
               {record.status === 'approved' && daysUntil !== 'Started' ? `Starts in ${daysUntil}` : ''}
@@ -214,10 +238,14 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({
     },
     {
       title: 'Status',
+      dataIndex: 'status',
       key: 'status',
       width: screens.xs ? 80 : 120,
-      render: (record: Leave) => (
-        <Tag color={getStatusColor(record.status)}>{record.status}</Tag>
+      sorter: (a: any, b: any) => a.status.localeCompare(b.status),
+      render: (status: string) => (
+        <Tag color={getStatusColor(status)} style={{ fontWeight: 500 }}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Tag>
       )
     },
     {
@@ -225,9 +253,10 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({
       dataIndex: 'created_at',
       key: 'created_at',
       width: screens.xs ? 80 : 120,
+      sorter: (a: any, b: any) => dayjs(a.created_at).valueOf() - dayjs(b.created_at).valueOf(),
       render: (date: string) => (
         <div style={{ fontSize: '12px' }}>
-          {dayjs(date).format('MMM DD, YYYY')}
+          {dayjs(date).format('DD MMM, YYYY')}
         </div>
       )
     },
@@ -235,10 +264,11 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({
       title: 'Actions',
       key: 'actions',
       width: screens.xs ? 80 : 120,
-      render: (record: Leave) => (
+      render: (record: any) => (
         <Space>
           <Button 
             size="small" 
+            icon={<Eye size={14} />}
             onClick={() => handleViewDetails(record)}
           >
             View
@@ -264,17 +294,20 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({
       <DetailModal
         title="Leave Request Details"
         open={detailModalVisible}
+        closable={false}
+        maskClosable={false}
         onCancel={() => {
           setDetailModalVisible(false);
           setSelectedLeave(null);
         }}
         footer={[
-          <Button key="close" onClick={() => setDetailModalVisible(false)}>
+          <Button key="close" type="primary" onClick={() => setDetailModalVisible(false)}>
             Close
           </Button>,
           selectedLeave.status === 'pending' && (
             <Button 
               key="cancel" 
+              type="primary"
               danger 
               onClick={() => {
                 handleCancelRequest(selectedLeave.id.toString());
@@ -292,11 +325,15 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({
         <StatusCard $isDarkMode={isDarkMode} $status={selectedLeave.status}>
           <Row gutter={16} align="middle">
             <Col span={4}>
-              {getStatusIcon(selectedLeave.status)}
+              <div style={{ color: selectedLeave.status === 'approved' ? '#52c41a' : selectedLeave.status === 'rejected' ? '#ff4d4f' : '#faad14' }}>
+                {getStatusIcon(selectedLeave.status)}
+              </div>
             </Col>
             <Col span={20}>
-              <Title level={5} style={{ margin: 0 }}>Request Status: {selectedLeave.status}</Title>
-              <Text type="secondary">
+              <Title level={5} style={{ margin: 0, color: selectedLeave.status === 'approved' ? '#52c41a' : selectedLeave.status === 'rejected' ? '#ff4d4f' : '#faad14' }}>
+                Request Status: {selectedLeave.status}
+              </Title>
+              <Text style={{ color: selectedLeave.status === 'approved' ? '#52c41a' : selectedLeave.status === 'rejected' ? '#ff4d4f' : '#faad14' }}>
                 {selectedLeave.status === 'approved' && 'Your leave request has been approved'}
                 {selectedLeave.status === 'rejected' && 'Your leave request has been rejected'}
                 {selectedLeave.status === 'pending' && 'Your leave request is under review'}
@@ -341,15 +378,15 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({
               <Space direction="vertical" style={{ width: '100%' }}>
                 <div>
                   <Text type="secondary">From:</Text>
-                  <div><Text strong>{dayjs(selectedLeave.start_date).format('MMMM DD, YYYY')}</Text></div>
+                  <div><Text strong>{dayjs(selectedLeave.start_date).format('DD MMM, YYYY')}</Text></div>
                 </div>
                 <div>
                   <Text type="secondary">To:</Text>
-                  <div><Text strong>{dayjs(selectedLeave.end_date).format('MMMM DD, YYYY')}</Text></div>
+                  <div><Text strong>{dayjs(selectedLeave.end_date).format('DD MMM, YYYY')}</Text></div>
                 </div>
                 <div>
                   <Text type="secondary">Applied On:</Text>
-                  <div><Text>{dayjs(selectedLeave.created_at).format('MMMM DD, YYYY')}</Text></div>
+                  <div><Text>{dayjs(selectedLeave.created_at).format('DD MMM, YYYY')}</Text></div>
                 </div>
               </Space>
             </Card>
@@ -385,7 +422,7 @@ const LeaveHistoryTable: React.FC<LeaveHistoryTableProps> = ({
     <>
       <StyledTable
         columns={columns}
-        dataSource={leaveRequests}
+        dataSource={filteredLeaveRequests}
         loading={loading}
         rowKey="id"
         pagination={{
