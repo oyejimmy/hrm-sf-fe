@@ -176,9 +176,9 @@ export const useAttendanceRecords = (params?: PaginationParams & FilterParams) =
 // Get admin attendance stats
 export const useAttendanceStats = () => {
   return useQuery({
-    queryKey: ['attendance-stats'],
+    queryKey: ['admin-attendance-stats'],
     queryFn: async () => {
-      const response = await api.get('/api/attendance/admin/stats');
+      const response = await api.get('/api/admin/attendance/stats');
       return response.data;
     },
     refetchInterval: 60000, // Refetch every minute
@@ -190,9 +190,9 @@ export const useAttendanceStats = () => {
 // Get all attendance today (Admin)
 export const useAllAttendanceToday = () => {
   return useQuery({
-    queryKey: ['all-attendance-today'],
+    queryKey: ['admin-attendance'],
     queryFn: async () => {
-      const response = await api.get('/api/attendance/admin/all-today');
+      const response = await api.get('/api/admin/attendance');
       return response.data || [];
     },
     refetchInterval: 30000, // Refetch every 30 seconds
