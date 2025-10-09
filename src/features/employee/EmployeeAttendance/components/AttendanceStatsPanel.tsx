@@ -116,50 +116,6 @@ const AttendanceStatsPanel = ({
   if (stats) {
     return (
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={6}>
-          <StateCard
-            label="Present Today"
-            value={`${stats.todayPresent}/${stats.totalEmployees}`}
-            icon={<CheckCircle />}
-            tone="pastelGreen"
-            description={`${((stats.todayPresent / stats.totalEmployees) * 100).toFixed(1)}% present`}
-            loading={loading}
-          />
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <StateCard
-            label="Absent Today"
-            value={stats.todayAbsent}
-            icon={<XCircle />}
-            tone="pastelPink"
-            description="Not checked in"
-            loading={loading}
-          />
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <StateCard
-            label="Late Today"
-            value={stats.todayLate}
-            icon={<Clock />}
-            tone="lightPeach"
-            description="Late arrivals"
-            loading={loading}
-          />
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <StateCard
-            label="On Break"
-            value={stats.onBreak}
-            icon={<Coffee />}
-            tone="softLavender"
-            description="Currently on break"
-            loading={loading}
-          />
-        </Col>
-
         <Col xs={24}>
           <Card title="Today's Attendance Overview" loading={loading}>
             <Row gutter={[16, 16]}>
