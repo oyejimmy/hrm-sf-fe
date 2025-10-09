@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { notificationApi } from '../../services/api/notificationApi';
 import { leaveApi } from '../../services/api/leaveApi';
+import { useAdminAttendanceNotifications } from '../../hooks/api/useAttendance';
 import styled from 'styled-components';
 
 const { Text } = Typography;
@@ -68,6 +69,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ chil
     refetchInterval: 30000,
   });
 
+  const { data: attendanceNotifications = [] } = useAdminAttendanceNotifications();
+
   const { data: generalNotifications = [], isLoading } = useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {
@@ -106,7 +109,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ chil
     }
   };
 
-  // Combine leave notifications with general notifications
+  // Combine leave, attendance, and general notifications
   const notifications = [
     ...(userRole === 'admin' || userRole === 'hr' ? leaveNotifications.map((notification: any) => {
       const mappedNotification = {
@@ -122,6 +125,16 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ chil
       console.log('Mapped leave notification:', mappedNotification);
       return mappedNotification;
     }) : []),
+    ...(userRole === 'admin' || userRole === 'hr' ? attendanceNotifications.map((notification: any, index: number) => ({
+      id: 1000000 + (notification.id || index), // Use large number prefix to avoid ID conflicts
+      title: notification.title || 'Attendance Alert',
+      message: notification.message,
+      type: 'attendance',
+      priority: notification.priority || 'medium',
+      is_read: clickedNotifications.has(1000000 + (notification.id || index)) || notification.is_read || false,
+      created_at: notification.created_at || new Date().toISOString(),
+      route: getNotificationRoute('attendance', userRole)
+    })) : []),
     ...generalNotifications.map((notification: any) => ({
       ...notification,
       route: notification.route || getNotificationRoute(notification.type, userRole)
@@ -164,7 +177,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ chil
   const handleNotificationClick = async (notification: Notification) => {
     console.log('Notification clicked:', notification);
     try {
-      if (notification.type === 'leave') {
+      if (notification.type === 'leave' || notification.type === 'attendance') {
         // Mark as read locally
         setClickedNotifications(prev => new Set(prev).add(notification.id));
       } else {
