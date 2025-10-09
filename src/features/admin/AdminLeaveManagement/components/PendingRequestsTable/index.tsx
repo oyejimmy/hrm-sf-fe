@@ -75,6 +75,9 @@ const PendingRequestsTable: React.FC<PendingRequestsTableProps> = ({ onViewDetai
         <Space direction="vertical" size={0}>
           <span style={{ fontWeight: 500, color: '#262626' }}>{record.employeeName}</span>
           <span style={{ fontSize: '12px', color: '#8c8c8c' }}>ID: {record.employeeId}</span>
+          {record.position && (
+            <span style={{ fontSize: '11px', color: '#666' }}>{record.position}</span>
+          )}
         </Space>
       ),
     },
@@ -89,11 +92,19 @@ const PendingRequestsTable: React.FC<PendingRequestsTableProps> = ({ onViewDetai
       key: 'duration',
       sorter: (a: LeaveRequest, b: LeaveRequest) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
       render: (record: LeaveRequest) => (
-        <Space direction="vertical" size={0}>
-          <span style={{ color: '#262626' }}>{dayjs(record.startDate).format(DATE_FORMATS.DISPLAY)} - {dayjs(record.endDate).format(DATE_FORMATS.DISPLAY)}</span>
-          <span style={{ fontSize: '12px', color: '#1890ff', fontWeight: 500 }}>{record.daysRequested} day{record.daysRequested !== 1 ? 's' : ''}</span>
-        </Space>
+        <span style={{ color: '#262626' }}>{dayjs(record.startDate).format(DATE_FORMATS.DISPLAY)} - {dayjs(record.endDate).format(DATE_FORMATS.DISPLAY)}</span>
       ),
+    },
+    {
+      title: 'Days',
+      dataIndex: 'days_requested',
+      sorter: (a: LeaveRequest, b: LeaveRequest) => a.days_requested - b.days_requested,
+      render: (days: number, record: LeaveRequest) => {
+        const dayCount = days || record.days_requested || (record as any).daysRequested || 0;
+        return (
+          <span style={{ fontSize: '14px', color: '#1890ff', fontWeight: 500 }}>{dayCount} day{dayCount !== 1 ? 's' : ''}</span>
+        );
+      },
     },
     {
       title: 'Reason',
@@ -186,17 +197,20 @@ const PendingRequestsTable: React.FC<PendingRequestsTableProps> = ({ onViewDetai
 
   return (
     <div>
-      <SearchContainer>
-        <Input
-          placeholder="Search..."
-          prefix={<Search size={16} />}
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          allowClear
-          style={{ width: 250 }}
-        />
-      </SearchContainer>
-      <Table 
+      <Table
+        title={() => (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0 }}>Pending Leave Requests</h3>
+            <Input
+              placeholder="Search..."
+              prefix={<Search size={16} />}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              allowClear
+              style={{ width: 250 }}
+            />
+          </div>
+        )} 
         columns={columns} 
         dataSource={filteredData} 
         loading={isLoading} 
