@@ -12,7 +12,6 @@ export interface LeaveRequest {
   end_date: string;
   endDate: string;
   days_requested: number;
-  daysRequested: number;
   reason: string;
   status: string;
   created_at: string;
@@ -25,6 +24,9 @@ export interface LeaveRequest {
   rejectionReason?: string;
   approverComments?: string;
   updatedAt?: string;
+  totalAllocated?: number;
+  usedDays?: number;
+  remainingBalance?: number;
 }
 
 export interface LeaveStats {
