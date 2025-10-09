@@ -42,13 +42,10 @@ const StyledModal = styled(Modal)<{ $isDarkMode: boolean }>`
   .ant-modal-header {
     background: ${(props) =>
       props.$isDarkMode ? "var(--surface)" : "#ffffff"};
-    border-bottom: 1px solid
-      ${(props) => (props.$isDarkMode ? "var(--border)" : "#f0f0f0")};
-    padding: 20px 24px;
+    border-bottom: none;
   }
 
   .ant-modal-body {
-    padding: 24px;
     background: ${(props) =>
       props.$isDarkMode ? "var(--surface)" : "#ffffff"};
   }
@@ -58,7 +55,6 @@ const StyledModal = styled(Modal)<{ $isDarkMode: boolean }>`
       props.$isDarkMode ? "var(--surface)" : "#ffffff"};
     border-top: 1px solid
       ${(props) => (props.$isDarkMode ? "var(--border)" : "#f0f0f0")};
-    padding: 16px 24px;
   }
 
   @media (max-width: 768px) {
@@ -125,13 +121,29 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
   const [calculatedDuration, setCalculatedDuration] = useState<number>(0);
   const [availableBalance, setAvailableBalance] = useState<number>(0);
 
+  // Calculate working days duration when dates change (excluding weekends)
+  const calculateWorkingDays = (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs): number => {
+    let workingDays = 0;
+    let current = startDate.clone();
+    
+    while (current.valueOf() <= endDate.valueOf()) {
+      const dayOfWeek = current.day(); // 0 = Sunday, 6 = Saturday
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Exclude Sunday (0) and Saturday (6)
+        workingDays++;
+      }
+      current = current.add(1, 'day');
+    }
+    
+    return workingDays;
+  };
+
   // Calculate duration when dates change
   useEffect(() => {
     if (selectedDates && selectedDates.length === 2) {
       const start = dayjs(selectedDates[0]);
       const end = dayjs(selectedDates[1]);
-      const duration = end.diff(start, "days") + 1;
-      setCalculatedDuration(duration);
+      const workingDays = calculateWorkingDays(start, end);
+      setCalculatedDuration(workingDays);
     }
   }, [selectedDates]);
 
@@ -246,6 +258,8 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
     <StyledModal
       title="Submit Leave Request"
       open={visible}
+      closable={false}
+      maskClosable={false}
       onCancel={handleCancel}
       footer={[
         <Button
@@ -377,9 +391,14 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
               format={DATE_FORMATS.DISPLAY}
               onChange={handleDateChange}
               size={screens.xs ? "small" : "middle"}
-              disabledDate={(current) =>
-                current && current < dayjs().startOf("day")
-              }
+              disabledDate={(current) => {
+                if (!current) return false;
+                // Disable past dates
+                if (current < dayjs().startOf("day")) return true;
+                // Disable weekends (Saturday = 6, Sunday = 0)
+                const dayOfWeek = current.day();
+                return dayOfWeek === 0 || dayOfWeek === 6;
+              }}
             />
           </Form.Item>
 
@@ -397,7 +416,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
                 <Col span={12}>
                   <span>
                     <strong>
-                      Duration: {calculatedDuration} day
+                      Duration: {calculatedDuration} working day
                       {calculatedDuration !== 1 ? "s" : ""}
                     </strong>
                   </span>
