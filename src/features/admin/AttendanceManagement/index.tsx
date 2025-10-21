@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Row, Col, Tabs, message, Button, Space, Spin, Alert, Card, Table, Tag, Modal, Descriptions, Avatar, Input, Select, DatePicker, Progress, Statistic } from 'antd';
+import { Row, Col, Tabs, message, Button, Space, Spin, Alert, Card, Table, Tag, Modal, Descriptions, Avatar, Input, Select, DatePicker, Progress, Statistic, Popconfirm } from 'antd';
 import { Users, BarChart3, Download, Settings, CheckCircle, XCircle, Clock, Coffee, UserCheck, User, Calendar, Eye, Search, Filter, TrendingUp, Activity, Target } from 'lucide-react';
 import dayjs from 'dayjs';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -138,7 +138,15 @@ const TodayAttendanceTable: React.FC<{
           >
             View
           </Button>
-          <Button size="small" danger onClick={() => onDelete(record.id!)}>Delete</Button>
+          <Popconfirm
+            title="Delete attendance record?"
+            description="Are you sure you want to delete this attendance record?"
+            onConfirm={() => onDelete(record.id!)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button size="small" danger>Delete</Button>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -431,58 +439,69 @@ const AdminAttendanceManagement: React.FC = () => {
             }
             key="attendance"
           >
-            <Card 
-              title="Attendance Records"
-              extra={
-                <Input
-                  placeholder="Search by name or ID..."
-                  prefix={<Search size={16} />}
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  style={{ width: 220 }}
-                  allowClear
-                />
-              }
-            >
-              <div style={{ marginBottom: 16 }}>
-                <Space wrap>
-                  <Select
-                    value={dateFilter}
-                    onChange={(value) => {
-                      setDateFilter(value);
-                      if (value !== 'custom') setCustomDateRange(null);
-                    }}
-                    style={{ width: 140 }}
-                    placeholder="Select period"
-                  >
-                    <Select.Option value="today">Today</Select.Option>
-                    <Select.Option value="3days">Last 3 Days</Select.Option>
-                    <Select.Option value="7days">Past 7 Days</Select.Option>
-                    <Select.Option value="15days">Last 15 Days</Select.Option>
-                    <Select.Option value="30days">Previous 30 Days</Select.Option>
-                    <Select.Option value="custom">Custom Range</Select.Option>
-                    <Select.Option value="all">All Time</Select.Option>
-                  </Select>
-                  {dateFilter === 'custom' && (
-                    <DatePicker.RangePicker
-                      value={customDateRange}
-                      onChange={setCustomDateRange}
-                      style={{ width: 240 }}
-                      placeholder={['Start date', 'End date']}
+            <Card title="Attendance Records">
+              <div style={{ 
+                background: '#fafafa', 
+                padding: '16px', 
+                borderRadius: '8px', 
+                marginBottom: '16px',
+                border: '1px solid #f0f0f0'
+              }}>
+                <Row gutter={[16, 16]} align="middle">
+                  <Col xs={24} sm={12} md={8}>
+                    <Input
+                      placeholder="Search by name or ID..."
+                      prefix={<Search size={16} />}
+                      value={searchText}
+                      onChange={(e) => setSearchText(e.target.value)}
+                      allowClear
                     />
+                  </Col>
+                  <Col xs={24} sm={12} md={6}>
+                    <Select
+                      value={dateFilter}
+                      onChange={(value) => {
+                        setDateFilter(value);
+                        if (value !== 'custom') setCustomDateRange(null);
+                      }}
+                      style={{ width: '100%' }}
+                      placeholder="Select period"
+                    >
+                      <Select.Option value="today">Today</Select.Option>
+                      <Select.Option value="3days">Last 3 Days</Select.Option>
+                      <Select.Option value="7days">Past 7 Days</Select.Option>
+                      <Select.Option value="15days">Last 15 Days</Select.Option>
+                      <Select.Option value="30days">Previous 30 Days</Select.Option>
+                      <Select.Option value="custom">Custom Range</Select.Option>
+                      <Select.Option value="all">All Time</Select.Option>
+                    </Select>
+                  </Col>
+                  {dateFilter === 'custom' && (
+                    <Col xs={24} sm={12} md={6}>
+                      <DatePicker.RangePicker
+                        value={customDateRange}
+                        onChange={setCustomDateRange}
+                        style={{ width: '100%' }}
+                        placeholder={['Start date', 'End date']}
+                      />
+                    </Col>
                   )}
-                  {activeFiltersCount > 0 && (
-                    <Button size="small" onClick={handleClearFilters}>
-                      Clear Filters
-                    </Button>
-                  )}
-                  {activeFiltersCount > 0 && (
-                    <Tag color="blue">
-                      <Filter size={12} style={{ marginRight: 4 }} />
-                      {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active
-                    </Tag>
-                  )}
-                </Space>
+                  <Col xs={24} sm={12} md={4}>
+                    <Space>
+                      {activeFiltersCount > 0 && (
+                        <Button size="small" onClick={handleClearFilters}>
+                          Clear All
+                        </Button>
+                      )}
+                      {activeFiltersCount > 0 && (
+                        <Tag color="blue">
+                          <Filter size={12} style={{ marginRight: 4 }} />
+                          {activeFiltersCount}
+                        </Tag>
+                      )}
+                    </Space>
+                  </Col>
+                </Row>
               </div>
               <TodayAttendanceTable
                 data={filteredData}
@@ -730,9 +749,6 @@ const AdminAttendanceManagement: React.FC = () => {
           <Button key="reject" danger>
             Reject
           </Button>,
-          <Button key="edit">
-            Edit
-          </Button>,
           <Button key="close" onClick={() => {
             setViewModalVisible(false);
             setViewRecord(null);
@@ -745,79 +761,23 @@ const AdminAttendanceManagement: React.FC = () => {
         bodyStyle={{ padding: '24px' }}
       >
         {viewRecord && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {/* Employee Information */}
-            <Card size="small" title="Employee Information" style={{ marginBottom: 0 }}>
-              <Descriptions column={3} size="small" layout="vertical" labelStyle={{ fontWeight: 'bold' }}>
-                <Descriptions.Item label="Name">{viewRecord.employeeName}</Descriptions.Item>
-                <Descriptions.Item label="ID">{viewRecord.id}</Descriptions.Item>
-                <Descriptions.Item label="Department">{viewRecord.department || 'N/A'}</Descriptions.Item>
-              </Descriptions>
-            </Card>
-
-            {/* Attendance Summary */}
-            <Card size="small" title={`${viewRecord.employeeName}'s Attendance Summary`} style={{ marginBottom: 0 }}>
-              <Descriptions column={4} size="small" layout="vertical" labelStyle={{ fontWeight: 'bold' }}>
-                <Descriptions.Item label="Total Days">1</Descriptions.Item>
-                <Descriptions.Item label="Present">{viewRecord.status === 'Present' ? '1' : '0'}</Descriptions.Item>
-                <Descriptions.Item label="Absent">{viewRecord.status === 'Absent' ? '1' : '0'}</Descriptions.Item>
-                <Descriptions.Item label="Late">{viewRecord.status === 'Late' ? '1' : '0'}</Descriptions.Item>
-              </Descriptions>
-            </Card>
-
-            {/* Current Record Details */}
-            <Card size="small" title="Record Details" style={{ marginBottom: 0 }}>
-              <Descriptions column={3} size="small" layout="vertical" labelStyle={{ fontWeight: 'bold' }}>
-                <Descriptions.Item label="Date">{new Date(viewRecord.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</Descriptions.Item>
-                <Descriptions.Item label="Status">
-                  <Tag 
-                    color={viewRecord.status === 'Present' ? 'green' : viewRecord.status === 'Absent' ? 'red' : 'orange'}
-                    style={{ fontWeight: 'bold' }}
-                  >
-                    {viewRecord.status}
-                  </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item label="Check-in">{viewRecord.checkIn ? new Date(`2000-01-01T${viewRecord.checkIn}`).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'N/A'}</Descriptions.Item>
-                <Descriptions.Item label="Check-out">{viewRecord.checkOut ? new Date(`2000-01-01T${viewRecord.checkOut}`).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'N/A'}</Descriptions.Item>
-                <Descriptions.Item label="Working Hours">{viewRecord.hoursWorked || 0}h</Descriptions.Item>
-                <Descriptions.Item label="Break Time">{viewRecord.breakTime || '0h'}</Descriptions.Item>
-                <Descriptions.Item label="Overtime">{viewRecord.overtime || '0h'}</Descriptions.Item>
-                <Descriptions.Item label="Location">{viewRecord.location || 'Office'}</Descriptions.Item>
-                <Descriptions.Item label="Remarks" span={2}>
-                  {viewRecord.remarks || 'No remarks'}
-                </Descriptions.Item>
-              </Descriptions>
-            </Card>
-
-            {/* Recent Attendance Records */}
-            <Card size="small" title={`Recent Attendance - ${viewRecord.employeeName}`} style={{ marginBottom: 0 }}>
-              <Table
-                size="small"
-                dataSource={viewRecord.recentRecords || [
-                  { key: 1, date: new Date(viewRecord.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), checkIn: viewRecord.checkIn || '-', checkOut: viewRecord.checkOut || '-', status: viewRecord.status, hours: viewRecord.hoursWorked || '0' }
-                ]}
-                columns={[
-                  { title: 'Date', dataIndex: 'date', key: 'date', width: '20%', render: (date: string) => new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) },
-                  { title: 'Check-in', dataIndex: 'checkIn', key: 'checkIn', width: '15%', render: (time: string) => time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : '-' },
-                  { title: 'Check-out', dataIndex: 'checkOut', key: 'checkOut', width: '15%', render: (time: string) => time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : '-' },
-                  { 
-                    title: 'Status', 
-                    dataIndex: 'status', 
-                    key: 'status', 
-                    width: '20%',
-                    render: (status: string) => (
-                      <Tag color={status === 'Present' ? 'green' : status === 'Absent' ? 'red' : 'orange'}>
-                        {status}
-                      </Tag>
-                    )
-                  },
-                  { title: 'Hours', dataIndex: 'hours', key: 'hours', width: '15%', render: (hours: string) => `${hours}h` }
-                ]}
-                pagination={false}
-                scroll={{ x: 400 }}
-              />
-            </Card>
-          </div>
+          <Descriptions column={2} labelStyle={{ fontWeight: 'bold' }}>
+            <Descriptions.Item label="Employee">{viewRecord.employeeName}</Descriptions.Item>
+            <Descriptions.Item label="Department">{viewRecord.department}</Descriptions.Item>
+            <Descriptions.Item label="Date">{new Date(viewRecord.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</Descriptions.Item>
+            <Descriptions.Item label="Status">
+              <Tag color={viewRecord.status === 'Present' ? 'green' : viewRecord.status === 'Absent' ? 'red' : 'orange'}>
+                {viewRecord.status}
+              </Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="Check-in">{viewRecord.checkIn || '-'}</Descriptions.Item>
+            <Descriptions.Item label="Check-out">{viewRecord.checkOut || '-'}</Descriptions.Item>
+            <Descriptions.Item label="Hours Worked">{viewRecord.hoursWorked || 0}h</Descriptions.Item>
+            <Descriptions.Item label="Location">{viewRecord.location}</Descriptions.Item>
+            {viewRecord.remarks && (
+              <Descriptions.Item label="Remarks" span={2}>{viewRecord.remarks}</Descriptions.Item>
+            )}
+          </Descriptions>
         )}
       </Modal>
     </Wrapper>
