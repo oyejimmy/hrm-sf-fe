@@ -106,3 +106,75 @@ export const useRejectAssetRequest = () => {
     },
   });
 };
+
+// Employee-specific hooks
+export const useMyAssets = () => {
+  return useQuery({
+    queryKey: ['my-assets'],
+    queryFn: async (): Promise<Asset[]> => {
+      const response = await api.get(API_ENDPOINTS.ASSETS.MY_ASSETS);
+      return response.data;
+    },
+  });
+};
+
+export const useMyAssetRequests = () => {
+  return useQuery({
+    queryKey: ['my-asset-requests'],
+    queryFn: async (): Promise<AssetRequest[]> => {
+      const response = await api.get(API_ENDPOINTS.ASSETS.MY_REQUESTS);
+      return response.data;
+    },
+  });
+};
+
+export const useReturnAsset = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: { asset_id: number; reason: string }) => {
+      const response = await api.post(API_ENDPOINTS.ASSETS.RETURN, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-assets'] });
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      message.success('Asset return request submitted successfully');
+    },
+    onError: (error: any) => {
+      message.error(error.response?.data?.detail || 'Failed to submit return request');
+    },
+  });
+};
+
+export const useAssetStats = () => {
+  return useQuery({
+    queryKey: ['asset-stats'],
+    queryFn: async () => {
+      const response = await api.get(API_ENDPOINTS.ASSETS.STATS);
+      return response.data;
+    },
+  });
+};
+
+export const useAssetActivity = () => {
+  return useQuery({
+    queryKey: ['asset-activity'],
+    queryFn: async () => {
+      const response = await api.get(API_ENDPOINTS.ASSETS.ACTIVITY);
+      return response.data;
+    },
+  });
+};
+
+
+
+export const useAvailableAssets = () => {
+  return useQuery({
+    queryKey: ['available-assets'],
+    queryFn: async () => {
+      const response = await api.get(API_ENDPOINTS.ASSETS.AVAILABLE);
+      return response.data;
+    },
+  });
+};

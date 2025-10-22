@@ -1,13 +1,12 @@
 export interface Asset {
   id: number;
   name: string;
-  type: string;
-  serialNumber: string;
-  assignmentDate: string | null;
-  status: string;
-  specifications: string;
-  custodian: string | null;
-  department: string | null;
+  asset_type: string;
+  serial_number: string;
+  assignment_date?: string;
+  status: 'available' | 'assigned' | 'maintenance';
+  specifications?: string;
+  assigned_to?: number;
 }
 
 export interface Request {

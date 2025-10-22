@@ -202,13 +202,14 @@ export const useAllAttendanceToday = () => {
 };
 
 // Get admin attendance notifications
-export const useAdminAttendanceNotifications = () => {
+export const useAdminAttendanceNotifications = (userRole?: string) => {
   return useQuery({
     queryKey: ['attendance', 'admin', 'notifications'],
     queryFn: async () => {
       const response = await api.get('/api/attendance/admin/notifications');
       return response.data || [];
     },
+    enabled: userRole === 'admin' || userRole === 'hr',
     refetchInterval: 60000, // Refetch every minute
     retry: 1,
   });
