@@ -39,7 +39,13 @@ export const API_ENDPOINTS = {
   ASSETS: {
     BASE: '/api/assets',
     BY_ID: (id: string) => `/api/assets/${id}`,
+    MY_ASSETS: '/api/assets/my-assets',
+    AVAILABLE: '/api/assets/available',
     REQUESTS: '/api/assets/requests',
+    MY_REQUESTS: '/api/assets/my-requests',
+    RETURN: '/api/assets/return',
+    STATS: '/api/assets/stats',
+    ACTIVITY: '/api/assets/activity',
     APPROVE_REQUEST: (id: string) => `/api/assets/requests/${id}/approve`,
     REJECT_REQUEST: (id: string) => `/api/assets/requests/${id}/reject`,
   },
