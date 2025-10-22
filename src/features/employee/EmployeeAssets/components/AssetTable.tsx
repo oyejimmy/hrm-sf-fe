@@ -7,7 +7,6 @@ import {
   Filter,
   Info,
   PlusCircle,
-  MinusCircle,
   Smartphone,
   Headphones,
   Printer,
@@ -40,8 +39,8 @@ const AssetTable: React.FC<TableProps> = ({
     },
     {
       title: 'Type',
-      dataIndex: 'type',
-      key: 'type',
+      dataIndex: 'asset_type',
+      key: 'asset_type',
       render: (type: string) => {
         const iconProps = { size: 16, style: { marginRight: 8 } };
         let icon: React.ReactNode;
@@ -85,21 +84,21 @@ const AssetTable: React.FC<TableProps> = ({
         { text: 'Headphones', value: 'Headphones' },
         { text: 'Printer', value: 'Printer' },
       ],
-      onFilter: (value: string, record: Asset) => record.type === value,
+      onFilter: (value: string, record: Asset) => record.asset_type === value,
     },
     {
       title: 'Serial Number',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
+      dataIndex: 'serial_number',
+      key: 'serial_number',
       responsive: ['lg']
     },
     {
       title: 'Assignment Date',
-      dataIndex: 'assignmentDate',
-      key: 'assignmentDate',
+      dataIndex: 'assignment_date',
+      key: 'assignment_date',
       render: (date: string | null) => date ? new Date(date).toLocaleDateString() : 'Not assigned',
       sorter: (a: Asset, b: Asset) => 
-        new Date(a.assignmentDate || 0).getTime() - new Date(b.assignmentDate || 0).getTime(),
+        new Date(a.assignment_date || 0).getTime() - new Date(b.assignment_date || 0).getTime(),
       responsive: ['lg']
     },
     {
@@ -109,17 +108,17 @@ const AssetTable: React.FC<TableProps> = ({
       render: (status: string) => {
         let color: string;
         switch (status) {
-          case 'Assigned': color = 'green'; break;
-          case 'Available': color = 'blue'; break;
-          case 'Maintenance': color = 'orange'; break;
+          case 'assigned': color = 'green'; break;
+          case 'available': color = 'blue'; break;
+          case 'maintenance': color = 'orange'; break;
           default: color = 'default';
         }
         return <Tag color={color}>{status}</Tag>;
       },
       filters: [
-        { text: 'Assigned', value: 'Assigned' },
-        { text: 'Available', value: 'Available' },
-        { text: 'Maintenance', value: 'Maintenance' },
+        { text: 'Assigned', value: 'assigned' },
+        { text: 'Available', value: 'available' },
+        { text: 'Maintenance', value: 'maintenance' },
       ],
       onFilter: (value: string, record: Asset) => record.status === value,
     },
@@ -135,26 +134,14 @@ const AssetTable: React.FC<TableProps> = ({
           >
             Details
           </Button>
-          {record.status === 'Available' && (
-            <Button
-              type="primary"
-              icon={<PlusCircle size={16} />}
-              onClick={() => onRequestAsset(record)}
-              size={screens.xs ? "small" : "middle"}
-            >
-              Request
-            </Button>
-          )}
-          {record.status === 'Assigned' && record.custodian === 'John Smith' && (
-            <Button
-              danger
-              icon={<MinusCircle size={16} />}
-              onClick={() => onReturnAsset(record)}
-              size={screens.xs ? "small" : "middle"}
-            >
-              Return
-            </Button>
-          )}
+          <Button
+            type="primary"
+            icon={<PlusCircle size={16} />}
+            onClick={() => onRequestAsset(record)}
+            size={screens.xs ? "small" : "middle"}
+          >
+            Request
+          </Button>
         </Space>
       ),
     },
@@ -167,8 +154,8 @@ const AssetTable: React.FC<TableProps> = ({
     if (searchText) {
       result = result.filter(item =>
         item.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.serialNumber.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.type.toLowerCase().includes(searchText.toLowerCase())
+        item.serial_number.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.asset_type.toLowerCase().includes(searchText.toLowerCase())
       );
     }
 
@@ -182,7 +169,7 @@ const AssetTable: React.FC<TableProps> = ({
 
   return (
     <Card
-      title="Asset Inventory"
+      title="Available Assets - Request from Admin"
       extra={
         <Space direction={screens.xs ? "vertical" : "horizontal"} style={screens.xs ? {width: '100%'} : {}}>
           <Input
@@ -201,9 +188,9 @@ const AssetTable: React.FC<TableProps> = ({
             onClear={() => setStatusFilter('all')}
           >
             <Option value="all">All Statuses</Option>
-            <Option value="Assigned">Assigned</Option>
-            <Option value="Available">Available</Option>
-            <Option value="Maintenance">Maintenance</Option>
+            <Option value="assigned">Assigned</Option>
+            <Option value="available">Available</Option>
+            <Option value="maintenance">Maintenance</Option>
           </Select>
           {!screens.xs && (
             <Button icon={<Filter size={16} />}>
@@ -217,7 +204,7 @@ const AssetTable: React.FC<TableProps> = ({
         columns={columns}
         dataSource={filteredData}
         rowKey="id"
-        pagination={{ pageSize: 5 }}
+        pagination={{ pageSize: 15 }}
         scroll={screens.xs ? { x: true } : undefined}
       />
     </Card>
