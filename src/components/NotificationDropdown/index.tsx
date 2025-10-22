@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { notificationApi } from '../../services/api/notificationApi';
 import { leaveApi } from '../../services/api/leaveApi';
 import { useAdminAttendanceNotifications } from '../../hooks/api/useAttendance';
+import { useAuthContext } from '../../contexts/AuthContext';
 import styled from 'styled-components';
 
 const { Text } = Typography;
@@ -49,11 +50,13 @@ interface NotificationDropdownProps {
   userRole?: 'admin' | 'hr' | 'employee' | 'team_lead';
 }
 
-export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ children, userRole = 'admin' }) => {
+export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ children, userRole }) => {
   const [open, setOpen] = useState(false);
   const [clickedNotifications, setClickedNotifications] = useState<Set<number>>(new Set());
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuthContext();
+  const currentUserRole = userRole || user?.role;
 
   const { data: leaveNotifications = [] } = useQuery({
     queryKey: ['admin-leave-notifications'],
@@ -65,11 +68,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ chil
         return [];
       }
     },
-    enabled: open && (userRole === 'admin' || userRole === 'hr'),
+    enabled: open && (currentUserRole === 'admin' || currentUserRole === 'hr'),
     refetchInterval: 30000,
   });
 
-  const { data: attendanceNotifications = [] } = useAdminAttendanceNotifications();
+  const { data: attendanceNotifications = [] } = useAdminAttendanceNotifications(currentUserRole);
 
   const { data: generalNotifications = [], isLoading } = useQuery({
     queryKey: ['notifications'],
@@ -111,7 +114,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ chil
 
   // Combine leave, attendance, and general notifications
   const notifications = [
-    ...(userRole === 'admin' || userRole === 'hr' ? leaveNotifications.map((notification: any) => {
+    ...(currentUserRole === 'admin' || currentUserRole === 'hr' ? leaveNotifications.map((notification: any) => {
       const mappedNotification = {
         id: notification.id,
         title: notification.title || 'New Leave Request',
@@ -120,12 +123,12 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ chil
         priority: 'medium',
         is_read: clickedNotifications.has(notification.id) || notification.is_read || false,
         created_at: notification.createdAt || notification.created_at || new Date().toISOString(),
-        route: getNotificationRoute('leave', userRole)
+        route: getNotificationRoute('leave', currentUserRole)
       };
       console.log('Mapped leave notification:', mappedNotification);
       return mappedNotification;
     }) : []),
-    ...(userRole === 'admin' || userRole === 'hr' ? attendanceNotifications.map((notification: any, index: number) => ({
+    ...(currentUserRole === 'admin' || currentUserRole === 'hr' ? attendanceNotifications.map((notification: any, index: number) => ({
       id: 1000000 + (notification.id || index), // Use large number prefix to avoid ID conflicts
       title: notification.title || 'Attendance Alert',
       message: notification.message,
@@ -133,11 +136,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ chil
       priority: notification.priority || 'medium',
       is_read: clickedNotifications.has(1000000 + (notification.id || index)) || notification.is_read || false,
       created_at: notification.created_at || new Date().toISOString(),
-      route: getNotificationRoute('attendance', userRole)
+      route: getNotificationRoute('attendance', currentUserRole)
     })) : []),
     ...generalNotifications.map((notification: any) => ({
       ...notification,
-      route: notification.route || getNotificationRoute(notification.type, userRole)
+      route: notification.route || getNotificationRoute(notification.type, currentUserRole)
     }))
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   
@@ -258,7 +261,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ chil
               type="link" 
               size="small"
               onClick={() => {
-                const notificationsRoute = userRole === 'employee' ? '/employee/dashboard' : '/admin/notifications';
+                const notificationsRoute = currentUserRole === 'employee' ? '/employee/dashboard' : '/admin/notifications';
                 navigate(notificationsRoute);
                 setOpen(false);
               }}

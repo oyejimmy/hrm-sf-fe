@@ -69,17 +69,17 @@ const AssetDetailsModal: React.FC<{asset: Asset | null, visible: boolean, onClos
           marginRight: screens.xs ? 0 : 16,
           marginBottom: screens.xs ? 16 : 0
         }}>
-          {asset.type === 'Laptop' && <Laptop size={48} color="#1890ff" />}
-          {asset.type === 'Monitor' && <Monitor size={48} color="#52c41a" />}
-          {asset.type === 'Phone' && <Smartphone size={48} color="#faad14" />}
-          {asset.type === 'Headphones' && <Headphones size={48} color="#722ed1" />}
-          {asset.type === 'Printer' && <Printer size={48} color="#f5222d" />}
-          {!['Laptop', 'Monitor', 'Phone', 'Headphones', 'Printer'].includes(asset.type) &&
+          {asset.asset_type === 'Laptop' && <Laptop size={48} color="#1890ff" />}
+          {asset.asset_type === 'Monitor' && <Monitor size={48} color="#52c41a" />}
+          {asset.asset_type === 'Phone' && <Smartphone size={48} color="#faad14" />}
+          {asset.asset_type === 'Headphones' && <Headphones size={48} color="#722ed1" />}
+          {asset.asset_type === 'Printer' && <Printer size={48} color="#f5222d" />}
+          {!['Laptop', 'Monitor', 'Phone', 'Headphones', 'Printer'].includes(asset.asset_type) &&
             <Package size={48} color="#8c8c8c" />}
         </div>
         <div>
           <Title level={4}>{asset.name}</Title>
-          <Tag color={asset.status === 'Assigned' ? 'green' : asset.status === 'Available' ? 'blue' : 'orange'}>
+          <Tag color={asset.status === 'assigned' ? 'green' : asset.status === 'available' ? 'blue' : 'orange'}>
             {asset.status}
           </Tag>
         </div>
@@ -95,16 +95,15 @@ const AssetDetailsModal: React.FC<{asset: Asset | null, visible: boolean, onClos
       <Row gutter={16}>
         <Col xs={24} md={12}>
           <Title level={5}>Identification</Title>
-          <p><Text strong>Serial Number:</Text> {asset.serialNumber}</p>
-          <p><Text strong>Type:</Text> {asset.type}</p>
+          <p><Text strong>Serial Number:</Text> {asset.serial_number}</p>
+          <p><Text strong>Type:</Text> {asset.asset_type}</p>
         </Col>
         <Col xs={24} md={12}>
           <Title level={5}>Assignment</Title>
-          {asset.status === 'Assigned' ? (
+          {asset.status === 'assigned' ? (
             <>
-              <p><Text strong>Custodian:</Text> {asset.custodian}</p>
-              <p><Text strong>Department:</Text> {asset.department}</p>
-              <p><Text strong>Assignment Date:</Text> {new Date(asset.assignmentDate!).toLocaleDateString()}</p>
+              <p><Text strong>Assigned To:</Text> {asset.assigned_to ? `User ID: ${asset.assigned_to}` : 'N/A'}</p>
+              <p><Text strong>Assignment Date:</Text> {asset.assignment_date ? new Date(asset.assignment_date).toLocaleDateString() : 'N/A'}</p>
             </>
           ) : (
             <Text>This asset is not currently assigned</Text>
@@ -160,7 +159,7 @@ const RequestAssetModal: React.FC<{
         form={form}
         layout="vertical"
         initialValues={{
-          assetType: asset?.type,
+          assetType: asset?.asset_type,
           quantity: 1
         }}
       >
@@ -262,7 +261,7 @@ const ReturnAssetModal: React.FC<{
       width={screens.xs ? "90%" : 520}
     >
       <div style={{ marginBottom: 16 }}>
-        <Text>You are returning <Text strong>{asset?.name}</Text> ({asset?.serialNumber})</Text>
+        <Text>You are returning <Text strong>{asset?.name}</Text> ({asset?.serial_number})</Text>
       </div>
 
       <Form
