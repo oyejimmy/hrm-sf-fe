@@ -41,9 +41,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ documents, onViewD
           <Avatar style={{ backgroundColor: getDocumentColor(record.type) }}>
             {getDocumentIcon(record.type)}
           </Avatar>
-          <Text>{name}</Text>
-          {record.isImportant && <Star size={14} color="#faad14" fill="#faad14" />}
-          {record.isPrivate && <Lock size={14} />}
+          <Text>{record.name}</Text>
         </Space>
       ),
     },
