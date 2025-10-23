@@ -37,6 +37,13 @@ import styled, { createGlobalStyle } from "styled-components";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { Wrapper } from "../../../components/Wrapper";
 import HeaderComponent from "../../../components/PageHeader";
+import { 
+  useMyTrainings,
+  useTrainingPrograms,
+  useEnrollInTraining,
+  useUpdateTrainingProgress,
+  useCompleteTraining
+} from "../../../hooks/api/useTraining";
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -96,37 +103,27 @@ const StatusTag = styled(Tag)`
 `;
 
 // TrainingModuleCard Component
-interface TrainingModule {
-  id: string;
-  title: string;
-  description: string;
-  instructor: string;
-  duration: string;
-  category: string;
-  progress: number;
-  status: "not_started" | "in_progress" | "completed";
-  type: "video" | "reading" | "interactive";
-  level: "beginner" | "intermediate" | "advanced";
-  rating: number;
-  enrolled: number;
-  thumbnail?: string;
-}
-
 interface TrainingModuleCardProps {
-  module: TrainingModule;
-  onEnroll: (id: string) => void;
-  onResume: (id: string) => void;
-  onViewCertificate: (id: string) => void;
+  program: any;
+  enrollment?: any;
+  onEnroll: (id: number) => void;
+  onResume: (id: number) => void;
+  onViewCertificate: (id: number) => void;
 }
 
 const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
-  module,
+  program,
+  enrollment,
   onEnroll,
   onResume,
   onViewCertificate,
 }) => {
+  const status = enrollment ? enrollment.status : "not_started";
+  const progress = enrollment ? enrollment.progress_percentage : 0;
+
   const getStatusIcon = () => {
-    switch (module.status) {
+    switch (status) {
+      case "enrolled":
       case "not_started":
         return <BookOpen size={16} />;
       case "in_progress":
@@ -139,7 +136,8 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
   };
 
   const getStatusColor = () => {
-    switch (module.status) {
+    switch (status) {
+      case "enrolled":
       case "not_started":
         return "default";
       case "in_progress":
@@ -152,36 +150,28 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
   };
 
   const getTypeIcon = () => {
-    switch (module.type) {
-      case "video":
-        return <Video size={16} />;
-      case "reading":
-        return <BookOpen size={16} />;
-      case "interactive":
-        return <BarChart3 size={16} />;
-      default:
-        return <BookOpen size={16} />;
-    }
+    return <BookOpen size={16} />;
   };
 
   const renderActionButton = () => {
-    switch (module.status) {
+    switch (status) {
       case "not_started":
         return (
           <Button
             type="primary"
             icon={<Play size={14} />}
-            onClick={() => onEnroll(module.id)}
+            onClick={() => onEnroll(program.id)}
           >
             Enroll
           </Button>
         );
+      case "enrolled":
       case "in_progress":
         return (
           <Button
             type="default"
             icon={<Play size={14} />}
-            onClick={() => onResume(module.id)}
+            onClick={() => onResume(program.id)}
           >
             Resume
           </Button>
@@ -191,7 +181,7 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
           <Button
             type="default"
             icon={<Award size={14} />}
-            onClick={() => onViewCertificate(module.id)}
+            onClick={() => onViewCertificate(program.id)}
           >
             Certificate
           </Button>
@@ -205,34 +195,20 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
     <StyledCard>
       <div style={{ display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", marginBottom: "12px" }}>
-          {module.thumbnail ? (
-            <img
-              src={module.thumbnail}
-              alt={module.title}
-              style={{
-                width: "100px",
-                height: "60px",
-                objectFit: "cover",
-                borderRadius: "4px",
-                marginRight: "12px",
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                width: "100px",
-                height: "60px",
-                backgroundColor: "#f0f0f0",
-                borderRadius: "4px",
-                marginRight: "12px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {getTypeIcon()}
-            </div>
-          )}
+          <div
+            style={{
+              width: "100px",
+              height: "60px",
+              backgroundColor: "#f0f0f0",
+              borderRadius: "4px",
+              marginRight: "12px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {getTypeIcon()}
+          </div>
           <div style={{ flex: 1 }}>
             <div
               style={{
@@ -242,14 +218,14 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
               }}
             >
               <Title level={5} style={{ margin: 0 }}>
-                {module.title}
+                {program.title}
               </Title>
               <StatusTag color={getStatusColor()} icon={getStatusIcon()}>
-                {module.status.replace("_", " ")}
+                {status.replace("_", " ")}
               </StatusTag>
             </div>
             <Text type="secondary" style={{ fontSize: "12px" }}>
-              By {module.instructor} • {module.duration} • {module.category}
+              By {program.instructor || "TBD"} • {program.duration_hours}h • {program.category}
             </Text>
           </div>
         </div>
@@ -258,10 +234,10 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
           ellipsis={{ rows: 2 }}
           style={{ fontSize: "14px", marginBottom: "12px" }}
         >
-          {module.description}
+          {program.description}
         </Paragraph>
 
-        {module.status !== "not_started" && (
+        {status !== "not_started" && enrollment && (
           <ProgressContainer>
             <div
               style={{
@@ -274,13 +250,13 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
                 Progress
               </Text>
               <Text type="secondary" style={{ fontSize: "12px" }}>
-                {module.progress}%
+                {progress}%
               </Text>
             </div>
             <Progress
-              percent={module.progress}
+              percent={progress}
               size="small"
-              status={module.status === "completed" ? "success" : "active"}
+              status={status === "completed" ? "success" : "active"}
             />
           </ProgressContainer>
         )}
@@ -294,9 +270,9 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
           }}
         >
           <div style={{ display: "flex", alignItems: "center" }}>
-            <Tag icon={<Clock size={12} />}>{module.duration}</Tag>
-            <Tag icon={<User size={12} />}>{module.enrolled} enrolled</Tag>
-            <Tag icon={<Star size={12} />}>{module.rating}/5</Tag>
+            <Tag icon={<Clock size={12} />}>{program.duration_hours}h</Tag>
+            <Tag icon={<User size={12} />}>{program.level}</Tag>
+            {program.is_mandatory && <Tag color="orange">Mandatory</Tag>}
           </div>
           {renderActionButton()}
         </div>
@@ -305,99 +281,7 @@ const TrainingModuleCard: React.FC<TrainingModuleCardProps> = ({
   );
 };
 
-// Mock Data
-const trainingModules: TrainingModule[] = [
-  {
-    id: "1",
-    title: "Advanced React Development",
-    description:
-      "Learn advanced React patterns, state management, and performance optimization techniques.",
-    instructor: "Jane Smith",
-    duration: "8 hours",
-    category: "Software Development",
-    progress: 0,
-    status: "not_started",
-    type: "video",
-    level: "advanced",
-    rating: 4.8,
-    enrolled: 245,
-  },
-  {
-    id: "2",
-    title: "Leadership Fundamentals",
-    description:
-      "Develop essential leadership skills to effectively manage teams and drive organizational success.",
-    instructor: "Michael Johnson",
-    duration: "6 hours",
-    category: "Leadership",
-    progress: 45,
-    status: "in_progress",
-    type: "interactive",
-    level: "intermediate",
-    rating: 4.6,
-    enrolled: 189,
-  },
-  {
-    id: "3",
-    title: "Data Visualization with D3.js",
-    description:
-      "Master the art of creating interactive and engaging data visualizations using D3.js library.",
-    instructor: "Sarah Williams",
-    duration: "10 hours",
-    category: "Data Science",
-    progress: 100,
-    status: "completed",
-    type: "video",
-    level: "intermediate",
-    rating: 4.9,
-    enrolled: 312,
-  },
-  {
-    id: "4",
-    title: "Effective Communication Skills",
-    description:
-      "Improve your communication skills for better workplace collaboration and professional relationships.",
-    instructor: "David Brown",
-    duration: "4 hours",
-    category: "Soft Skills",
-    progress: 0,
-    status: "not_started",
-    type: "reading",
-    level: "beginner",
-    rating: 4.5,
-    enrolled: 421,
-  },
-  {
-    id: "5",
-    title: "Cloud Infrastructure with AWS",
-    description:
-      "Learn to design, deploy, and manage scalable and reliable applications on AWS cloud platform.",
-    instructor: "Emily Chen",
-    duration: "12 hours",
-    category: "Cloud Computing",
-    progress: 75,
-    status: "in_progress",
-    type: "interactive",
-    level: "advanced",
-    rating: 4.7,
-    enrolled: 198,
-  },
-  {
-    id: "6",
-    title: "Agile Project Management",
-    description:
-      "Master Agile methodologies to deliver projects efficiently and adapt to changing requirements.",
-    instructor: "Robert Taylor",
-    duration: "7 hours",
-    category: "Project Management",
-    progress: 100,
-    status: "completed",
-    type: "video",
-    level: "intermediate",
-    rating: 4.8,
-    enrolled: 276,
-  },
-];
+
 
 const certifications: any = [
   {
@@ -457,36 +341,29 @@ const EmployeeTrainingDevelopment = () => {
   const { isDarkMode } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState<any>("all");
   const [searchText, setSearchText] = useState<any>("");
-  const [filteredModules, setFilteredModules] = useState<any>(trainingModules);
+  const [filteredPrograms, setFilteredPrograms] = useState<any>([]);
   const [selectedTab, setSelectedTab] = useState<any>("all");
 
-  const handleEnroll = (id: any) => {
-    message.success(
-      `Enrolled in course: ${
-        trainingModules.find((m: any) => m.id === id)?.title
-      }`
-    );
-    // Update module status to in_progress
-    setFilteredModules((prev: any) =>
-      prev.map((m: any) =>
-        m.id === id ? { ...m, status: "in_progress", progress: 5 } : m
-      )
-    );
+  // API hooks
+  const { data: programs = [], isLoading: programsLoading } = useTrainingPrograms();
+  const { data: myTrainings = [], isLoading: trainingsLoading } = useMyTrainings();
+  const enrollMutation = useEnrollInTraining();
+  const updateProgressMutation = useUpdateTrainingProgress();
+  const completeMutation = useCompleteTraining();
+
+  const handleEnroll = (programId: number) => {
+    enrollMutation.mutate({ program_id: programId });
   };
 
-  const handleResume = (id: any) => {
-    message.info(
-      `Resuming course: ${trainingModules.find((m: any) => m.id === id)?.title}`
-    );
+  const handleResume = (programId: number) => {
+    const program = programs.find((p: any) => p.id === programId);
+    message.info(`Resuming course: ${program?.title}`);
     // Navigate to course content (would be implemented in a real app)
   };
 
-  const handleViewCertificate = (id: any) => {
-    message.success(
-      `Viewing certificate for: ${
-        trainingModules.find((m: any) => m.id === id)?.title
-      }`
-    );
+  const handleViewCertificate = (programId: number) => {
+    const program = programs.find((p: any) => p.id === programId);
+    message.success(`Viewing certificate for: ${program?.title}`);
     // Open certificate modal or page (would be implemented in a real app)
   };
 
@@ -506,44 +383,55 @@ const EmployeeTrainingDevelopment = () => {
   };
 
   const filterData = (search: string, category: string, tab: string) => {
-    let filtered = trainingModules;
+    let filtered = programs.map((program: any) => {
+      const enrollment = myTrainings.find((t: any) => t.program_id === program.id);
+      return { ...program, enrollment };
+    });
 
     // Filter by search text
     if (search) {
       filtered = filtered.filter(
-        (module) =>
-          module.title.toLowerCase().includes(search.toLowerCase()) ||
-          module.description.toLowerCase().includes(search.toLowerCase()) ||
-          module.instructor.toLowerCase().includes(search.toLowerCase())
+        (program) =>
+          program.title.toLowerCase().includes(search.toLowerCase()) ||
+          program.description?.toLowerCase().includes(search.toLowerCase()) ||
+          program.instructor?.toLowerCase().includes(search.toLowerCase())
       );
     }
 
     // Filter by category
     if (category !== "all") {
-      filtered = filtered.filter((module) => module.category === category);
+      filtered = filtered.filter((program) => program.category === category);
     }
 
-    // Filter by tab
+    // Filter by tab (enrollment status)
     if (tab !== "all") {
-      filtered = filtered.filter((module) => module.status === tab);
+      if (tab === "not_started") {
+        filtered = filtered.filter((program) => !program.enrollment);
+      } else {
+        filtered = filtered.filter((program) => program.enrollment?.status === tab);
+      }
     }
 
-    setFilteredModules(filtered);
+    setFilteredPrograms(filtered);
   };
 
   useEffect(() => {
-    filterData(searchText, selectedCategory, selectedTab);
-  }, []);
+    if (programs.length > 0) {
+      filterData(searchText, selectedCategory, selectedTab);
+    }
+  }, [programs, myTrainings, searchText, selectedCategory, selectedTab]);
 
   const categories = [
     "all",
-    "Software Development",
-    "Leadership",
-    "Data Science",
-    "Soft Skills",
-    "Cloud Computing",
-    "Project Management",
+    ...Array.from(new Set(programs.map((p: any) => p.category))),
   ];
+
+  const enrolledCount = myTrainings.length;
+  const completedCount = myTrainings.filter((t: any) => t.status === "completed").length;
+  const totalHours = myTrainings.reduce((sum: number, t: any) => {
+    const program = programs.find((p: any) => p.id === t.program_id);
+    return sum + (program?.duration_hours || 0);
+  }, 0);
 
   return (
     <Wrapper $isDarkMode={isDarkMode}>
@@ -571,7 +459,7 @@ const EmployeeTrainingDevelopment = () => {
               <div>
                 <Text type="secondary">Enrolled Courses</Text>
                 <Title level={3} style={{ margin: 0 }}>
-                  4
+                  {enrolledCount}
                 </Title>
               </div>
             </div>
@@ -587,7 +475,7 @@ const EmployeeTrainingDevelopment = () => {
               <div>
                 <Text type="secondary">Completed</Text>
                 <Title level={3} style={{ margin: 0 }}>
-                  2
+                  {completedCount}
                 </Title>
               </div>
             </div>
@@ -619,7 +507,7 @@ const EmployeeTrainingDevelopment = () => {
               <div>
                 <Text type="secondary">Learning Hours</Text>
                 <Title level={3} style={{ margin: 0 }}>
-                  26
+                  {Math.round(totalHours)}
                 </Title>
               </div>
             </div>
@@ -666,10 +554,11 @@ const EmployeeTrainingDevelopment = () => {
               </div>
             </FilterSection>
             <Row gutter={[16, 16]}>
-              {filteredModules.map((module: any) => (
-                <Col xs={24} md={12} key={module.id}>
+              {filteredPrograms.map((program: any) => (
+                <Col xs={24} md={12} key={program.id}>
                   <TrainingModuleCard
-                    module={module}
+                    program={program}
+                    enrollment={program.enrollment}
                     onEnroll={handleEnroll}
                     onResume={handleResume}
                     onViewCertificate={handleViewCertificate}
@@ -678,7 +567,7 @@ const EmployeeTrainingDevelopment = () => {
               ))}
             </Row>
 
-            {filteredModules.length === 0 && (
+            {filteredPrograms.length === 0 && !programsLoading && (
               <div style={{ textAlign: "center", padding: "40px 0" }}>
                 <BookOpen
                   size={48}

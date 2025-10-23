@@ -169,6 +169,15 @@ export interface TrainingProgram {
   duration: number;
   status: 'active' | 'inactive';
   created_at: string;
+  instructor?: string;
+  level?: 'beginner' | 'intermediate' | 'advanced';
+  type?: 'video' | 'reading' | 'interactive';
+  rating?: number;
+  enrolled_count?: number;
+  thumbnail?: string;
+  prerequisites?: string;
+  learning_objectives?: string[];
+  materials?: string[];
 }
 
 export interface TrainingEnrollment {
@@ -178,6 +187,45 @@ export interface TrainingEnrollment {
   status: 'enrolled' | 'in_progress' | 'completed';
   progress: number;
   enrolled_at: string;
+  completed_at?: string;
+  certificate_url?: string;
+  program?: TrainingProgram;
+  employee_name?: string;
+}
+
+export interface TrainingSession {
+  id: number;
+  program_id: number;
+  title: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  instructor: string;
+  location?: string;
+  max_participants: number;
+  enrolled_count: number;
+  status: 'scheduled' | 'ongoing' | 'completed' | 'cancelled';
+}
+
+export interface TrainingCertificate {
+  id: number;
+  enrollment_id: number;
+  certificate_number: string;
+  issued_date: string;
+  expiry_date?: string;
+  status: 'active' | 'expired';
+  certificate_url: string;
+}
+
+export interface TrainingStats {
+  total_programs: number;
+  active_programs: number;
+  total_enrollments: number;
+  completed_trainings: number;
+  in_progress_trainings: number;
+  completion_rate: number;
+  popular_categories: { category: string; count: number }[];
+  monthly_completions: number[];
 }
 
 // Health Insurance Types

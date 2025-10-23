@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Divider, Row, Col, Button, message, Spin, Input } from "antd";
 import { Plus, Search } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Wrapper } from "../../../components/Wrapper";
 import { useTheme } from "../../../contexts/ThemeContext";
 import HeaderComponent from "../../../components/PageHeader";
@@ -9,15 +9,10 @@ import { DocumentStats } from "./components/DocumentStats";
 import { DocumentTable } from "./components/DocumentTable";
 import { DocumentPreview } from "./components/DocumentPreview";
 import { CategoryList } from "./components/CategoryList";
-
 import { DocumentUploadModal } from "./components/DocumentUploadModal";
-import {
-  fetchDocuments,
-  fetchSharedDocuments,
-  uploadDocument,
-  Document,
-} from "./mockData";
 import { DocumentCard } from "./styles";
+import { useUploadDocument } from "../../../hooks/api/useDocuments";
+import { Document, mockDocuments } from "./mockData";
 
 const EmployeeDocuments = () => {
   const { isDarkMode } = useTheme();
@@ -32,26 +27,9 @@ const EmployeeDocuments = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 7;
 
-  const { data: documents = [], isLoading: documentsLoading } = useQuery({
-    queryKey: ["documents"],
-    queryFn: fetchDocuments,
-  });
-
-  const { data: sharedDocuments = [], isLoading: sharedLoading } = useQuery({
-    queryKey: ["sharedDocuments"],
-    queryFn: fetchSharedDocuments,
-  });
-
-  const uploadMutation = useMutation({
-    mutationFn: uploadDocument,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["documents"] });
-      message.success("Document uploaded successfully!");
-    },
-    onError: () => {
-      message.error("Failed to upload document");
-    },
-  });
+  const documents = mockDocuments;
+  const documentsLoading = false;
+  const uploadMutation = useUploadDocument();
 
   const handleViewDocument = (document: Document) => {
     setSelectedDocument(document);
@@ -65,11 +43,11 @@ const EmployeeDocuments = () => {
 
   const handleUpload = (files: any) => {
     files.forEach((file: any) => {
-      uploadMutation.mutate({
-        name: file.name,
-        type: file.type?.includes("pdf") ? "pdf" : "word",
-        size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
-      });
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('document_type', file.type?.includes("pdf") ? "pdf" : "document");
+      formData.append('category', currentCategory !== "All Documents" ? currentCategory : "Personal");
+      uploadMutation.mutate(formData);
     });
   };
 
@@ -85,7 +63,7 @@ const EmployeeDocuments = () => {
         doc.type.toLowerCase().includes(searchText.toLowerCase())
     );
 
-  if (documentsLoading || sharedLoading) {
+  if (documentsLoading) {
     return (
       <Wrapper $isDarkMode={isDarkMode}>
         <div
@@ -127,7 +105,7 @@ const EmployeeDocuments = () => {
       <div style={{ marginBottom: 16 }}>
         <DocumentStats
           documents={documents}
-          sharedCount={sharedDocuments.length}
+          sharedCount={0}
         />
       </div>
 
@@ -163,6 +141,7 @@ const EmployeeDocuments = () => {
           <CategoryList
             currentCategory={currentCategory}
             onCategoryChange={setCurrentCategory}
+            documents={documents}
           />
         </Col>
       </Row>
